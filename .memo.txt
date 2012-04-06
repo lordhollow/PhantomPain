@@ -1,0 +1,175 @@
+
+
+
+
+*マルチスレッド処理の書き方
+
+スレッドの処理を別ファイルに書く。
+onmessage = function(event){}として、トリガを受けたときの処理を記載。
+それ以外の部分はロード時に実行されると思われる。
+event.dataを参照すると、データのやり取りは可能。DOMの操作はできないとの情報があるので
+やらないのが無難か。createElementだけなら通る？XMLHTTPRequestは可。
+呼び出し元への通知はpostMessage()によって実施。
+
+	onmessage = function(event)
+	{
+		var dt = event.data;
+		for (var i=dt.begins; i<dt.begins+100000 ; i++)
+		{
+			factorization(i);
+		}
+		postMessage({code: -1, begins: dt.begins});
+	}
+	function factorization(n){ ... }
+
+**Worker内で使えるもの
+	navigator
+	location(ただし読み込みに限る)
+	XMLHttpRequest
+	タイマ(setTimeout()/clearTimeout()/setInterval()/clearInterval())
+	外部スクリプト(importScripts()メソッドを使う)
+	他のワーカーを起動
+
+**Worker内で使えないもの
+	DOM
+	window
+	document
+	parent
+
+	どうやらDOMオブジェクトを含むオブジェクトですら受け渡せないようなので、
+	jsonで渡せる程度のものしか渡せないと考えたほうがよさそう。
+	そう考えると、一旦resからjsonデータを抜いてくる必要があって、
+	その手間を考えたら最初からjsonで抜いてきてonLoadでdeployしたくなるものの、
+	本文のescapeができないのでダメだな。
+
+一方でConcurrent.Thread.jsではタイマでスライシングしているだけなのでDOMの操作も可能。
+しかし、マルチスレッド化に期待する効率化（マルチコアCPUでの効率化）は期待できない。
+DOMに関わらない重い処理ならWebWorkersがよさそうだが、果たしてそんなものがどれだけあることか。
+
+
+
+
+
+
+*基本データ
+
+resDomNode[]
+resNode[] 
+	これらは常にindexにレス番号を持つ箱。
+	初期状態で1001のサイズを持つ。
+	resDomNode[n] == nullなら、そのレスは未ロード。
+	resDomNode[n] != null かつ resNode == null ならそのレスは未解釈。
+
+ロード後、バックグラウンドでてけとーにXMLHttpRequestしながら未ロードレスを埋めていく。
+
+
+
+
+
+*要求仕様
+
+**テンプレート
+>>1-10のポップアップをするための土台。
+resanchorにしておけばOK？
+
+**しおり
+**ピックアップ/透明化
+**抽出
+**画像展開
+**More/AutoReload
+**新着Notice
+**書き込み
+**設定
+
+
+**ポップアップギア
+単一レスのポップアップの場合、ギアアイコンが表示される。
+ギアアイコン上でホイールゴリゴリするとその前後のレスに内容を変更。
+ギアアイコンからフォーカスを外すと、元のレスを表示。
+
+
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+bbs2chreader スキンの仕様
+
+bbs2chreader 0.1.0 以降からスレッド表示にスキンを利用できるようになりました。
+必要なファイル
+
+プロファイルフォルダ/bbs2chreader/skin にスキン名と同じ名前のフォルダをつくり、その中に以下のファイルを作成します。
+Header.html Footer.html
+
+スレッド表示部分の最初と最後に適用されるファイルです。
+
+次のタグは、適用時に置換されます。
+
+    <THREADNAME/> : スレッドのタイトル (Header.htmlのみ)
+    <THREADURL/> : スレッドの URL
+    <SKINPATH/> : スキンの URL
+    <BOARDURL/> : スレッドの所属する板の URL
+    <SERVERURL/> : bbs2chreaderで使っているURL (ver.0.2のbbs2ch:threadに相当 / ver.0.3.0以降)
+    <FONTNAME/> : フォントの名前 (ver.0.4pre2以降)
+    <FONTSIZE/> : フォントのサイズ (ver0.4pre2以降)
+    <AAFONTNAME/> : AA表示に使うフォントの名前 (ver.0.4.1以降)
+    <AAFONTSIZE/> : AA表示に使うフォントのサイズ (ver.0.4.1以降)
+    <AALINEHEIGHT/> : AA表示に使う行の高さ (ver.0.5pre2 rev.510以降)
+    <STATUS/> : HTTP ステータスなどのスレッド取得情報 (Footer.htmlのみ)
+    <GETRESCOUNT/> : 取得したレスの数 (Footer.htmlのみ)
+    <NEWRESCOUNT/> : 新着レスの数 (Footer.htmlのみ)
+    <ALLRESCOUNT/> : レスの総数 (Footer.htmlのみ)
+    <SIZE/> : スレッドのサイズ (バイト単位 / Footer.htmlのみ / ver.0.4pre6以降)
+    <SIZEKB/> : スレッドのサイズ (キロバイト単位 / Footer.htmlのみ / ver.0.4pre6以降)
+
+Res.html NewRes.html
+
+Res.html は既読レスに、NewRes.html は新着レスに適用されるファイルです。
+
+    <NUMBER/> : レスの番号
+    <PLAINNUMBER/> : レスの番号
+    <NAME/> : 名前
+    <MAIL/> : メールアドレス
+    <MAILNAME/> : <a href="mailto:メールアドレス">名前</a>
+    <DATE/> : 投稿日
+    <ID/> : 投稿者の ID
+    <IDCOLOR/> : ID 固有の CSS カラー (ver 0.2.13以降)
+    <IDBACKGROUNDCOLOR/> : <IDCOLOR/> の背景色版(ver 0.2.13以降)
+    <BEID/> : 投稿者の BeID
+    <MESSAGE/> : レス本文
+
+NewMark.html
+
+既読レスと未読スレの間に適用されます。
+諸注意
+書き込み用リンク
+
+書き込み用リンクを追加するには、以下のようにします。
+
+<a href="bbs2ch:post:<THREADURL/>">書き込み</a>
+
+スクリプト使用時の注意
+
+置換文字列に、'\' が使われている場合、<script> 外では文字化けを起こしてしまいます。
+
+<button onclick="alert('<NAME/>')">TEST</button>
+
+次の場合は正しく動作します。
+
+<script>
+   var name_<PLAINNUMBER/> = '<NAME/>';
+</script>
+<button onclick="alert(name_<PLAINNUMBER/>)">TEST</button>
+
+スキン標準化プロジェクトとの互換性
+
+bbs2chreader のスキンは スキン標準化プロジェクト の仕様にほぼ準拠していますが、多くの 2ch ブラウザ用スキンは IE コンポーネントに特化しているため、そのままでは動作しないと思われます。
+<MESSAGE/> 内の リンク
+
+<MESSAGE/> 内のリンク(a タグ)には、以下のクラス名がつきます。resPointer (レス番リンク)outLink (外部リンク)
+<MESSAGE/> 内の AA
+
+<MESSAGE/> 内でAAと判定された部分は、aaResというクラス名を持ったspan要素になります。(ver.0.4.1以降)
+<STATUS/> の動作
+
+Footer.html 内に <STATUS/> が存在しない場合、自動的に<p class="info"><STATUS/></p> が追加されます。
+<DATE/> の動作
+
+Res.html(NewRes.html) 内に、<DATE/> しか無いときは、日付、ID そして BeID に置換されます。<ID/> や <BEID/> が存在する場合は、日付のみに置換されます。

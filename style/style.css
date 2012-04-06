@@ -1,0 +1,236 @@
+body
+{
+	margin: 0;
+	padding: 0;
+	border-right: solid 3px #F99;
+	padding-bottom: 15em;
+}
+
+/* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
+div, p, session, article, nav, aside, ul, li, h1, h2
+{
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+/* なんかのコンテナにspan.contentとspan.spaceを入れるとspaceを伸ばして余白を埋める */
+span.content
+{
+	display: table-cell;
+	white-space: nowrap;
+	padding-right: 1em;
+}
+span.space
+{
+	width: 100%;
+	background-color: #366;
+	display: table-cell;
+}
+
+/* ドロップダウンメニュー(16pxの画像ボタン入り) */
+.menu
+{
+	position: relative;
+	display: table-cell;
+}
+		.menu ul {
+			display:block;
+			list-style-type: none;
+			margin:0;
+			padding:0;
+		}
+		.menu ul ul{
+			display:none;
+			position:absolute;
+			top:100%;
+			left:0;
+		}
+		.menu li {
+			float:left;
+			line-height: 100%;
+		}
+		
+		.menu li li {
+			clear:both;
+		}
+		
+		.menu li:hover {
+			position:relative;
+		}
+		
+		.menu li:hover > ul {
+			display: block
+		}
+		.menu img
+		{
+			width: 16px;
+			height: 16px;
+			margin-right: 4px;
+		}
+
+/* ヘッダのバー */
+#headBar
+{
+	top: 0;
+	left: 0;
+	right: 0;
+	position: fixed;
+}
+
+
+	/* スレタイ表示部 */
+	#thtitle
+	{
+		background-color: #333;
+		color: #FFF;
+		margin: 0;
+		font-size: 16px;
+		text-shadow:0px 0px 2px #FFF;
+		line-height: 20px;
+		width: 100%;
+		border-bottom-left-radius: 5px;
+	}
+		
+		/* スレッドfavicon */
+		#boardfavicon
+		{
+			position: relative;
+			top: 2px;
+			left: 2px;
+			width: 16px;
+			height: 16px;
+		}
+
+		/* <a> */
+		/* #bpHandle */
+
+	/* 操作ボタンたち */
+	#ctrlbox
+	{
+		float: right;
+		line-height: 20px;
+		top: -20px;
+		padding: 1px 8px 0px 8px;
+		background-color: #699;
+	}
+
+
+
+
+
+/* スレ一覧ペイン */
+#boardPane
+{
+	height: 0;
+	background-color: #333;
+}
+#boardPane.open
+{	/* 開け閉めにこの要素のheightを弄ればよい、というのがわかた */
+	height: 20em;
+}
+#boardPane.close
+{
+}
+
+#resContainer
+{
+	padding-top: 24px; /* 最低でも#thtitleのheight以上ないと絶対に見切れる */
+	padding-left: 1em;
+}
+/* レス */
+article[data-delete="on"]
+{
+}
+article[data-bookmarked="on"]
+{
+}
+article[data-pickuped="on"]
+{
+}
+
+/* レスヘッダ */
+h2
+{
+	margin: 0;
+	padding: 0;
+	font-size: 80%;
+	margin-top: 1em;
+}
+	h2 > * 
+	{
+		display: table-cell;
+	}
+	h2.pre
+	{
+		border-top: solid 1px #99F;
+	}
+	h2.new
+	{
+	}
+	.no
+	{
+		border-left: solid 2px #99F;
+		width: 4em;
+	}
+	.dt
+	{
+		width: 12em;
+		font-family: monospace;
+	}
+	.id
+	{
+		width: 6em;
+		font-family: monospace;
+	}
+	.id:before
+	{
+		/* content: "ID:" */
+	}
+	.nm
+	{
+		padding-left: 1em;
+	}
+		.nm a:link{
+			color:red;
+		}
+		.nm a[href*="sage"]:link{
+			color:blue;
+		}
+		.nm a[href="mailto:sage"]:link{
+			color:purple;
+		}
+	.bi
+	{
+	}
+	.ml
+	{
+		color: #888;
+	}
+		.ml:before
+		{
+			content: " [";
+		}
+		.ml:after
+		{
+			content: "] ";
+		}
+		.ml[title="sage"]
+		{
+			--display: none;
+		}
+
+	#resMenu	/* (h1の最後の要素になる) */
+	{
+		vertical-align: top;
+		float: right;
+		top: -15px;
+	}
+
+/* レス本体 */
+.ct
+{
+}
+
+
+/* */

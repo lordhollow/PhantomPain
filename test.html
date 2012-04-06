@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<head>
+<title>TEsT</title>
+<style>
+/* メインメニュー */
+#ctrlbox ul {
+   display:block;
+   list-style-type: none;
+   margin:0;
+   padding:0;
+}
+
+/* サブメニュー1段目 */
+#ctrlbox ul ul{
+   display:none;
+   position:absolute;
+   top:100%;
+   left:0;
+}
+
+/* サブメニュー2段目以降 */
+#ctrlbox ul ul ul {
+   top:0;
+   left:100%;
+}
+
+/* リスト */
+#ctrlbox li {
+   float:left;
+   background-color: #9FF;
+}
+
+#ctrlbox li li {
+   clear:both;
+}
+
+#ctrlbox li:hover {
+   position:relative;
+}
+
+#ctrlbox li:hover > ul {
+   display: block
+}
+#ctrlbox img
+{
+	width: 16px;
+	height: 16px;
+}
+</style>
+</head>
+<body>
+<div id="menu">
+<ul>
+<li><a href="#"><img src="i404.png"></a></li>
+<li><a href="#"><img src="i404.png"></a></li>
+<li><a href="#"><img src="i404.png"></a></li>
+<li><a href="#"><img src="i404.png"></a>
+	<ul>
+	<li><a href="#"><img src="i404.png"></a></li>
+	<li><a href="#"><img src="i404.png"></a></li>
+	</ul>
+</li>
+<li><a href="#"><img src="i404.png"></a></li>
+<li><a href="#"><img src="i404.png"></a></li>
+</ul>
+</div>
+
+
+</body>
+</html>

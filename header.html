@@ -1,0 +1,90 @@
+<!Doctype HTML>
+<html lang="ja">
+<head>
+<metan charset="Shift_JIS" />
+<title><THREADNAME/> - PhantomPain3</title>
+<script src="<SKINPATH/>pref.js"></script>
+<script src="<SKINPATH/>script.js"></script>
+<link rel="stylesheet" href="<SKINPATH/>style/style.css">
+<script>
+var ThreadInfo = {
+	Title:  "<THREADNAME/>",
+	Url:    "<THREADURL/>",
+	Server: "<SERVERURL/>",
+	Borad:  "<BOARDURL/>",
+	Skin:   "<SKINPATH/>",
+};
+//CommonPref.setIdentifier("<THREADURL/>");
+</script>
+<style type="text/css">
+.res
+{
+	font:<FONTSIZE/> <FONTNAME/>;
+}
+.aaRes
+{
+	font:<AAFONTSIZE/> <AAFONTNAME/>;
+	line-height:<AALINEHEIGHT/>
+}
+</style>
+<base href="<SKINPATH/>"/>
+<body onload="test();">
+<div id="headBar">
+<div id="boardPane"><!--この要素のheightを変更することでタイトルバーが一緒に下がる--></div>
+<h1 id="thtitle">
+	<span class="content">
+	<img id="boardfavicon" src="<SKINPATH/>i404.png" width="16" height="16">	<!--ちゃんとしたfaviconに変更-->
+	<a><THREADNAME/></a>
+	</span>
+	<span class="space" id="bpHandle" ondblclick="$('boardPane').className = $('boardPane').className=='open' ? 'close' : 'open';"></span>
+</h1>
+<div id="ctrlbox" class="menu">
+	<ul>
+	<li><a href="#"><img src="i404.png" title="Template"></a></li>
+	<li><a href="#"><img src="i404.png" title="Bookmark"></a>
+		<ul>
+		<li><a href="#"><img src="i404.png" title="BookmarkReset"></a></li>
+		</ul>
+	</li>
+	<li><a href="#"><img src="i404.png" title="Pickup"></a>
+		<ul>
+		<li><a href="#"><img src="i404.png" title="PickupReset"></a></li>
+		<li><a href="#"><img src="i404.png" title="全透明解除"></a></li>
+		</ul>
+	</li>
+	<li><a href="#"><img src="i404.png" title="抽出"></a></li>
+	<li><a href="#"><img src="i404.png" title="展開か閲覧"></a>
+		<ul>
+		<li><a href="#"><img src="i404.png" title="画像展開"></a></li>
+		<li><a href="#"><img src="i404.png" title="画像閲覧"></a></li>
+		</ul>
+	</li>
+	<li><a href="#"><img src="i404.png" title="More"></a>
+		<ul>
+		<li><a href="#"><img src="i404.png" title="More"></a></li>
+		<li><a href="#"><img src="i404.png" title="Auto"></a></li>
+		</ul>
+	</li>
+	<li><a href="#"><img src="type-2ch.gif" title="新着"></a></li>
+	<li><a href="#"><img src="i404.png" title="書き込み"></a></li>
+	<li><a href="#"><img src="i404.png" title="設定"></a></li>
+	</ul>
+</div><!-- ctrlbox -->
+</div><!-- headBar -->
+<div id="resMenu" class="menu">
+	<ul>
+	<li><a href="#"><img src="type-2ch.gif" title="ResTo"></a></li>
+	<li><a href="#"><img src="type-2ch.gif" title="逆参照"></a>
+		<ul>
+		<li><a href="#"><img src="type-2ch.gif" title="逆参抽出"></a></li>
+		</ul>
+	</li>
+	<li><a href="#"><img src="type-2ch.gif" title="Bookmark"></a></li>
+	<li><a href="#"><img src="type-2ch.gif" title="Pickup"></a></li>
+	<li><a href="#"><img src="type-2ch.gif" title="非表示"></a></li>
+	<li><a href="#"><img src="type-2ch.gif" title="画像展開"></a></li>
+	<li><a href="#"><img src="type-2ch.gif" title="ギア"></a></li>
+	</ul>
+</div><!-- resMenu -->
+<div id="resContainer">
+<!--BODY.START-->
