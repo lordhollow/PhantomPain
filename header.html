@@ -73,17 +73,17 @@ var ThreadInfo = {
 </div><!-- headBar -->
 <div id="resMenu" class="menu">
 	<ul>
-	<li><a href="#"><img src="type-2ch.gif" title="ResTo"></a></li>
-	<li><a href="#"><img src="type-2ch.gif" title="‹tŽQÆ"></a>
+	<li><img src="type-2ch.gif" title="ResTo" onclick="MessageMenu.ResTo(event);"></li>
+	<li><img src="type-2ch.gif" title="‹tŽQÆ" onclick="MessageMenu.PopupRef(event);">
 		<ul>
-		<li><a href="#"><img src="type-2ch.gif" title="‹tŽQ’Šo"></a></li>
+		<li><img src="type-2ch.gif" title="‹tŽQ’Šo" onclick="MessageMenu.ExtractRef(event);"></li>
 		</ul>
 	</li>
-	<li><a href="#"><img src="type-2ch.gif" title="Bookmark"></a></li>
-	<li><a href="#"><img src="type-2ch.gif" title="Pickup"></a></li>
-	<li><a href="#"><img src="type-2ch.gif" title="”ñ•\Ž¦"></a></li>
-	<li><a href="#"><img src="type-2ch.gif" title="‰æ‘œ“WŠJ"></a></li>
-	<li><a href="#"><img src="type-2ch.gif" title="ƒMƒA"></a></li>
+	<li><img src="type-2ch.gif" title="Bookmark" onclick="MessageMenu.ToggleBookmark(event);"></li>
+	<li><img src="type-2ch.gif" title="Pickup" onclick="MessageMenu.TogglePickup(event);"></li>
+	<li><img src="type-2ch.gif" title="”ñ•\Ž¦" onclick="MessageMenu.ToggleHiding(event);"></li>
+	<li><img src="type-2ch.gif" title="‰æ‘œ“WŠJ" onclick="MessageMenu.ExtractImages(event);"></li>
+	<li><img src="type-2ch.gif" title="ƒMƒA" ></li>
 	</ul>
 </div><!-- resMenu -->
 <div id="resContainer">

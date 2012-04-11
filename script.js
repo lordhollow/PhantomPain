@@ -91,11 +91,34 @@ var MessageMenu = {
 		{
 			m.dataset.binding = node.dataset.no;
 			node.childNodes[0].appendChild(m);
+			//TODO: pickup, bookmark, hidingèÛë‘ÇÃîΩâf
 		}
 		else
 		{
 			m.dataset.binding = 0;
 		}
+	},
+	ResTo: function(event)
+	{
+	},
+	
+	PopupRef: function(event)
+	{
+	},
+	ExtractRef: function(event)
+	{
+	},
+	ToggleBookmark: function(event)
+	{
+	},
+	TogglePickup: function(event)
+	{
+	},
+	ToggleHiding: function(event)
+	{
+	},
+	ExtractImages: function(event)
+	{
 	},
 
 };
