@@ -54,10 +54,7 @@ var EventHandlers = {
 		var res = Util.getDecendantNode(t, "ARTICLE");
 		if (res != null)
 		{	//レスの上にポイント → レスメニューを持ってくる
-			var e= $("resMenu");
-			if (e.parentNode != null)	e.parentNode.removeChild(e);
-			e.dataset.binding = res.dataset.no;
-			res.childNodes[0].appendChild(e);
+			MessageMenu.attach(res);
 		}
 		if (t.className=="resPointer")
 		{
@@ -75,6 +72,32 @@ var EventHandlers = {
 	aboneImmidiate: function (aEvent)
 	{
 	},
+};
+
+/* ■レスメニューの処理■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var MessageMenu = {
+	init: function()
+	{
+		this._menu = $("resMenu");
+		this._menu.parentNode.removeChild(this._menu);	//これあったほうが安心感がある
+	},
+
+	attach: function(node)
+	{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
+		var m = this._menu;		//参照コピ～
+		if (m == null) return;	//レスメニューなし
+		if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
+		if ((node != null) && (node.tagName == "ARTICLE"))
+		{
+			m.dataset.binding = node.dataset.no;
+			node.childNodes[0].appendChild(m);
+		}
+		else
+		{
+			m.dataset.binding = 0;
+		}
+	},
+
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -192,7 +215,7 @@ ResPopup.prototype =
 			},false);
 	},
 	splitResNumbers: function (str)
-	{
+	{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
 		str=str.replace(/>/g,"");
 		var e=str.split(",");
 		var r=new Array();
@@ -285,6 +308,7 @@ function test()
 	worker.postMessage({begins: 0});
 //*/
 	ThreadMessages.processMessages($("resContainer"));
+	MessageMenu.init();
 	EventHandlers.init();
 };
 
