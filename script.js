@@ -2,7 +2,7 @@
 var Preference =
 {
 	ResPopupDelay: 500,
-
+	PostScheme: "bbs2ch:post:",
 };
 
 
@@ -99,9 +99,12 @@ var MessageMenu = {
 		}
 	},
 	ResTo: function(event)
-	{
+	{	//‚±‚ê‚ÉƒŒƒX
+		var resTo = this._menu.dataset.binding;
+		var url = Preference.PostScheme + ThreadInfo.Url;
+		if(resTo) url += resTo;
+		window.location.href = url;
 	},
-	
 	PopupRef: function(event)
 	{
 	},
