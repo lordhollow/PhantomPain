@@ -259,6 +259,26 @@ ResPopup.prototype =
 		this.used = true;
 		var target = this.a.textContent;
 		var ids = this.splitResNumbers(target);
+		var pos = Util.getElementPagePos(this.a);
+		this.showPopup(ids, pos);
+	},
+	showPopup: function(ids, pos)
+	{
+		var container = document.createElement("DIV");
+		for(var i=0, len=ids.length; i < len ; i++)
+		{
+			var c = ThreadMessages.domobj[ids[i]];
+			if (c != null)
+			{
+				var node = c.cloneNode(true);
+				container.appendChild(node);
+			}
+		}
+		container.className = "popup";
+		container.style.left = pos.pageX + "px";
+		container.style.top = pos.pageY + "px";
+		//console.log(pos.pageX + " , " + pos.pageY);
+		$("popupContainer").appendChild(container);
 	},
 };
 
@@ -292,7 +312,18 @@ var Util = {
 		if (e.tagName == tagName) return e;
 		if (e.parentNode  == null) return null;
 		return this.getDecendantNode(e.parentNode, tagName);
-	}
+	},
+	getElementPagePos: function(e)
+	{	//—v‘f‚Ìâ‘ÎÀ•W‚ð‹‚ß‚é
+		var pos = {pageX: 0, pageY: 0};
+		while(e != null)
+		{
+			pos.pageX += e.offsetLeft;
+			pos.pageY += e.offsetTop;
+			e = e.offsetParent;
+		}
+		return pos;
+	},
 }
 
 

@@ -233,4 +233,13 @@ h2
 }
 
 
+/* ポップアップ */
+.popup
+{
+	position: absolute;
+	background-color: #FFC;
+}
+
+
+/* */
 /* */
