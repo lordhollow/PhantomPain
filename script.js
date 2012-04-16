@@ -113,10 +113,19 @@ var MessageMenu = {
 	ExtractRef: function(event)
 	{
 	},
-	ToggleBookmark: function(event)
+	CreateRefTreeHear: function(event)
 	{
 	},
-	TogglePickup: function(event)
+	SetBookmark: function(event)
+	{
+	},
+	ResetBookmark: function(event)
+	{
+	},
+	SetPickup: function(event)
+	{
+	},
+	ResetPickup: function(event)
 	{
 	},
 	ToggleHiding: function(event)

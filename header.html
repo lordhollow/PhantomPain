@@ -76,10 +76,11 @@ var ThreadInfo = {
 	<li><img src="style/replies.png" title="‹tŽQÆ" onclick="MessageMenu.PopupRef(event);">
 		<ul>
 		<li><img src="style/replies-extract.png" title="‹tŽQ’Šo" onclick="MessageMenu.ExtractRef(event);"></li>
+		<li><img src="style/tree.png" title="‹tŽQ\’z" onclick="MessageMenu.CreateRefTreeHear(event);"></li>
 		</ul>
 	</li>
-	<li><img src="style/bookmark-g.png" title="Bookmark" onclick="MessageMenu.ToggleBookmark(event);"></li>
-	<li><img src="style/pickup-g.png" title="Pickup" onclick="MessageMenu.TogglePickup(event);"></li>
+	<li><img src="style/bookmark-g.png" title="Bookmark" onclick="MessageMenu.SetBookmark(event);" class="bmoff"><img src="style/bookmark.png" title="Bookmark" onclick="MessageMenu.ResetBookmark(event);" class="bmon"></li>
+	<li><img src="style/pickup-g.png" title="Pickup" onclick="MessageMenu.SetPickup(event);" class="pickoff"><img src="style/pickup.png" title="Pickup" onclick="MessageMenu.ResetPickup(event);" class="pickon"></li>
 	<li><img src="style/hide.png" title="”ñ•\Ž¦" onclick="MessageMenu.ToggleHiding(event);"></li>
 	<li><img src="style/picture.png" title="‰æ‘œ“WŠJ" onclick="MessageMenu.ExtractImages(event);"></li>
 	<li><img src="style/updown.png" title="ƒMƒA" ></li>

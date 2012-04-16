@@ -125,10 +125,6 @@ span.space
 			background-color: #333;
 		}
 
-
-
-
-
 /* スレ一覧ペイン */
 #boardPane
 {
@@ -241,6 +237,17 @@ h2
 		right: 0px;
 		top: 1px;
 	}
+		/* レスメニュー上のブックマークボタン切り替え */
+		.bmon   { display: none; }
+		.bmoff  { display: inline; }
+		article[data-bookmarked="on"] .bmon { display: inline; }
+		article[data-bookmarked="on"] .bmoff{ display: none; }
+
+		/* レスメニュー上のピックアップボタン切り替え */
+		.pickon { display: none; }
+		.pickoff{ display: inline; }
+		article[data-pickuped="on"] .pickon { display: inline; }
+		article[data-pickuped="on"] .pickoff{ display: none; }
 
 /* レス本体 */
 .ct
