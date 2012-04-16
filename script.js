@@ -200,6 +200,8 @@ var ThreadMessages = {
 				var obj = new messageAnnotation();
 				obj.no = no;
 				obj.aid = node.dataset.aid;
+				obj.idcolor = node.dataset.idcolor;
+				obj.idbackcolor = node.dataset.idbackcolor;
 				obj.author = node.childNodes[0].childNodes[3].textContent;	//authorもトリップに対してaが付与されるようなので、こちらで。
 				obj.date = node.dataset.date;
 				obj.message = msgNode.textContent;
@@ -265,9 +267,9 @@ var MessageStructure = {
 			if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
 			this.nodesById[obj.aid].push(obj.no);
 			if (this.nodesById[obj.aid].length == 2)
-			{	//TODO: これで複数IDになるので、何かしらの強調表示をする
+			{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
 				var s = $("scriptedStyle");
-				s.innerHTML += "article[data-aid=\"" + obj.aid +"\"]{}\n";
+				s.innerHTML += "article[data-aid=\"{0}\"] .id { color: {1}; background-color: {2}; font-weight: bold; }".format(obj.aid, obj.idcolor, obj.idbackcolor);
 			}
 		}
 		
@@ -279,8 +281,9 @@ var MessageStructure = {
 			if(!this.nodesReplyFrom[t])
 			{
 				this.nodesReplyFrom[t] = new Array();
+				//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
 				var s = $("scriptedStyle");
-				s.innerHTML += "article[data-no=\"" + t +"\"] .menu .resto { display:table-cell; }\n";
+				s.innerHTML += "article[data-no=\"{0}\"] .menu .resto { display:table-cell; }\n".format(t);
 			}
 			this.nodesReplyFrom[t].push(obj.no);
 		}
@@ -474,5 +477,23 @@ function test()
 	ThreadMessages.processMessages($("resContainer"));
 	MessageMenu.init();
 	EventHandlers.init();
+};
+
+//簡易版string.format。置換しかできない。
+// http://www.geekdaily.net/2007/06/21/cs-stringformat-for-javascript/
+String.format = function(p_txt){
+	if ( arguments.length <= 1 ) {
+		return p_txt;
+	}
+	for( var v_idx = 1, v_num = arguments.length; v_idx < v_num; v_idx++ )
+	{
+		p_txt = p_txt.replace(new RegExp("\\{" + (v_idx - 1) + "\\}", "gi"), arguments[v_idx]);
+	}
+	return p_txt;
+};
+
+String.prototype.format = function(){
+Array.prototype.unshift.apply(arguments, [this]);
+return String.format.apply(String, arguments);
 };
 

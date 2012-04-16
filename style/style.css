@@ -193,6 +193,8 @@ h2
 	{
 		width: 6em;
 		font-family: monospace;
+		font-weight: normal;
+		text-align: center;
 	}
 	.id:before
 	{
