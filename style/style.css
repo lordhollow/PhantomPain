@@ -1,6 +1,6 @@
 /*
 	z-index:
-		#headBar         1000
+		#headBar	1000
 		#ViewerContainer 1000
 		.popup           1250
 		.overlay         1500
@@ -41,6 +41,39 @@ span.space
 {
 	width: 100%;
 	display: table-cell;
+}
+
+/* 画像が回転する */
+/* 1毎の画像をくるくる回すには、div.riの中に画像を１つだけ入れる。 */
+.ri
+{
+	/* 回転するのに必要な分だけスペースが確保されるようなので、サイズを指定するべき */
+	height: 16px;
+	width: 16px;
+	-moz-animation: turnImage 1s linear 5;
+}
+/* 2枚の画像でくるくる回すには、div.rcの中に画像を２枚入れる。 */
+.rc
+{
+	display: block;
+	position: relative;
+	height: 16px;
+	width: 16px;
+	-moz-transform-style: preserve-3d;
+	-moz-transform: rotateX(0) rotateY(0) rotateZ(0);
+	-moz-animation: turnImage 1s linear 5;
+}
+.rc img:nth-child(1)
+{
+	position: absolute; 
+	-moz-backface-visibility: visible;
+	-moz-transform:  translateZ(.1px);
+}
+.rc img:nth-child(2)
+{
+	position: absolute; 
+	-moz-backface-visibility: visible;
+	-moz-transform:  rotateY(180deg) translateZ(.1px);
 }
 
 /* ドロップダウンメニュー(16pxの画像ボタン入り) */
@@ -147,12 +180,12 @@ span.space
 	background-color: #333;
 }
 	#boardList
-	{
+{
 		width:100%;
 		height:100%;
 		overflow:auto;
 		background-color: #CFF;
-	}
+}
 
 #resContainer
 {
@@ -434,6 +467,7 @@ article article
 /* 検索 */
 .popup[data-finder="y"] { opacity: 0.5; }
 .popup[data-finder="y"]:hover { opacity: 1;}
+
 #finder
 {
 }
@@ -635,6 +669,12 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	100% { opacity: 0; }
 }
 
+@-moz-keyframes turnImage
+{
+	/* rotateYの代わりにrotateZにすると、時計回りにぐるぐる回る。 */
+	0% { -moz-transform: rotateY(0) ;}
+	100% {-moz-transform: rotateY(360deg) ; }
+}
 /* */
 
 .icon_template      { background-image: -moz-image-rect(url(buttons.png),  0, 16, 16,  0); }
