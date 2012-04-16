@@ -1,3 +1,9 @@
+/*
+	z-index:
+		#headBar	1000
+		.popup		500
+*/
+
 body
 {
 	margin: 0;
@@ -76,6 +82,7 @@ span.space
 	left: 0;
 	right: 0;
 	position: fixed;
+	z-index: 1000;
 }
 
 
@@ -133,21 +140,26 @@ span.space
 {
 }
 
+
 #resContainer
 {
 	padding-top: 24px; /* 最低でも#thtitleのheight以上ないと絶対に見切れる */
 	padding-left: 1em;
 }
 /* レス */
-article[data-delete="on"]
+.res
 {
+	position: relative;
 }
-article[data-bookmarked="on"]
-{
-}
-article[data-pickuped="on"]
-{
-}
+	article[data-delete="on"]
+	{
+	}
+	article[data-bookmarked="on"]
+	{
+	}
+	article[data-pickuped="on"]
+	{
+	}
 
 /* レスヘッダ */
 h2
@@ -222,9 +234,9 @@ h2
 
 	#resMenu	/* (h1の最後の要素になる) */
 	{
-		vertical-align: top;
-		float: right;
-		top: -15px;
+		position: absolute;
+		right: 0px;
+		top: 1px;
 	}
 
 /* レス本体 */
@@ -238,6 +250,7 @@ h2
 {
 	position: absolute;
 	background-color: #FFC;
+	z-index: 500;
 }
 
 

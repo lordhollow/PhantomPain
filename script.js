@@ -90,7 +90,9 @@ var MessageMenu = {
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
-			node.childNodes[0].appendChild(m);
+			//node.childNodes[0].appendChild(m);
+			node.insertBefore(m, node.childNodes[1]);
+			//node.appendChild(m);
 			//TODO: pickup, bookmark, hidingèÛë‘ÇÃîΩâf
 		}
 		else
