@@ -115,8 +115,39 @@ var MessageMenu = {
 	{
 	},
 	CreateRefTreeHear: function(event)
-	{
+	{	//参照ツリーを構築する
+		var current = this._menu.dataset.binding;
+		if (current == 0) return;
+		var node = this._menu.parentNode;
+		if (node == null) return;
+		this._deleteExistTree(node);
+		this._createNodeTree(current, node);
 	},
+	_deleteExistTree: function(node)
+	{	//既存のツリーを削除
+		while(node.childNodes.length > 3)
+		{
+			node.removeChild(node.childNodes[3]);
+		}
+	},
+	_createNodeTree: function(from, c)
+	{	//使ったノードを削除するかどうかは、議論が分かれるところ。とりあえず残しておく。
+		if (MessageStructure.nodesReplyFrom[from])
+		{	//fromにレスしているコメントがある・・・
+			var rf = MessageStructure.nodesReplyFrom[from];
+			for(var i=0, j = rf.length; i < j; i++)
+			{
+				var node = ThreadMessages.domobj[rf[i]].cloneNode(true);	//ARTICLE
+				if (rf[i] > from)
+				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
+					this._createNodeTree(rf[i], node);
+				}
+				this._deleteExistTree(node);
+				c.appendChild(node);
+			}
+		}
+	},
+	
 	SetBookmark: function(event)
 	{
 	},
@@ -235,7 +266,8 @@ var MessageStructure = {
 			this.nodesById[obj.aid].push(obj.no);
 			if (this.nodesById[obj.aid].length == 2)
 			{	//TODO: これで複数IDになるので、何かしらの強調表示をする
-				//pp2では<style>code[title="obj.adi"]{font-weight:bold;}</style>"をheadに追加してた
+				var s = $("scriptedStyle");
+				s.innerHTML += "article[data-aid=\"" + obj.aid +"\"]{}\n";
 			}
 		}
 		
@@ -247,7 +279,8 @@ var MessageStructure = {
 			if(!this.nodesReplyFrom[t])
 			{
 				this.nodesReplyFrom[t] = new Array();
-				//TODO:ここで、逆参照があることがわかるように何かしらの強調表示をする
+				var s = $("scriptedStyle");
+				s.innerHTML += "article[data-no=\"" + t +"\"] .menu .resto { display:table-cell; }\n";
 			}
 			this.nodesReplyFrom[t].push(obj.no);
 		}
