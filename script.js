@@ -3,6 +3,7 @@ var Preference =
 {
 	ResPopupDelay: 500,
 	PostScheme: "bbs2ch:post:",
+	ReplyCheckMaxWidth: 10,	//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
 };
 
 
@@ -138,7 +139,6 @@ var MessageMenu = {
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-
 var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
 	jsobj: new Array(),		//DOMオブジェクトから抽出したコンテンツ。indexはレス番号
@@ -165,6 +165,7 @@ var ThreadMessages = {
 				this.replaceStr(msgNode);
 				this.domobj[no] = node;
 				
+				//アノテーション作成
 				var obj = new messageAnnotation();
 				obj.no = no;
 				obj.aid = node.dataset.aid;
@@ -173,6 +174,9 @@ var ThreadMessages = {
 				obj.message = msgNode.textContent;
 				//mail, beidは要らんのじゃないかな？
 				this.jsobj[no] = obj;
+				
+				//メッセージ構造解析
+				MessageStructure.push(node, obj);
 		}
 	},
 	extendAnchor: function(e)
@@ -217,6 +221,62 @@ var ThreadMessages = {
 	
 };
 
+//スレッド構造
+var MessageStructure = {
+	nodesById: new Array(),		//いわゆるID
+	nodesReplyFrom: new Array(),	//いわゆる逆参照情報
+	//ノードを構造に追加。
+	push: function(node, obj)
+	{
+		//IDによる構造
+		if (obj.aid.length > 5)		//"????"回避
+		{
+			if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
+			this.nodesById[obj.aid].push(obj.no);
+			if (this.nodesById[obj.aid].length == 2)
+			{	//TODO: これで複数IDになるので、何かしらの強調表示をする
+				//pp2では<style>code[title="obj.adi"]{font-weight:bold;}</style>"をheadに追加してた
+			}
+		}
+		
+		//Replyによる構造
+		var replyTo = this.getReplyTo(node);
+		for(var i=0, j=replyTo.length; i < j; i++)
+		{
+			var t = replyTo[i];
+			if(!this.nodesReplyFrom[t])
+			{
+				this.nodesReplyFrom[t] = new Array();
+				//TODO:ここで、逆参照があることがわかるように何かしらの強調表示をする
+			}
+			this.nodesReplyFrom[t].push(obj.no);
+		}
+	},
+	getReplyTo: function(node)
+	{	//あるノードがレスしている番号の配列を取得する
+		var anchors = node.getElementsByClassName("resPointer");
+		var replyTo = new Array();
+		for (var i=0, j=anchors.length; i<j; i++)
+		{
+			var target = anchors[i].textContent;
+			var ids = MessageUtil.splitResNumbers(target);
+			if (ids.length < Preference.ReplyCheckMaxWidth)
+			{
+				for (var ii=0, jj = ids.length; ii < jj; ii++)
+				{
+					replyTo[ids[ii]] = 1;
+				}
+			}
+		}
+		var ret = new Array();
+		for(var i=0, j=replyTo.length; i<j; i++)
+		{
+			if (replyTo[i]) ret.push(i);
+		}
+		return ret;
+	},
+};
+
 //レスのあのテーション情報。検索処理などにはこれを使う。
 function messageAnnotation(){ };
 messageAnnotation.prototype = {
@@ -251,25 +311,11 @@ ResPopup.prototype =
 					//if (pp.used == false) alert("out");
 			},false);
 	},
-	splitResNumbers: function (str)
-	{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
-		str=str.replace(/>/g,"");
-		var e=str.split(",");
-		var r=new Array();
-		for(var i=0;i<e.length;i++){
-			if(e[i].match(/(\d+)-(\d+)/)){
-				for(var j=parseInt(RegExp.$1);j <= parseInt(RegExp.$2);j++){
-					r.push(j);
-				}
-			}else if(!isNaN(parseInt(e[i])))r.push(parseInt(e[i]));
-		}
-		return r;
-	},
 	popup: function()
 	{	//ポップアップを表示
 		this.used = true;
 		var target = this.a.textContent;
-		var ids = this.splitResNumbers(target);
+		var ids = MessageUtil.splitResNumbers(target);
 		var pos = Util.getElementPagePos(this.a);
 		this.showPopup(ids, pos);
 	},
@@ -334,6 +380,23 @@ var Util = {
 			e = e.offsetParent;
 		}
 		return pos;
+	},
+};
+
+var MessageUtil = {
+	splitResNumbers: function (str)
+	{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
+		str=str.replace(/>/g,"");
+		var e=str.split(",");
+		var r=new Array();
+		for(var i=0;i<e.length;i++){
+			if(e[i].match(/(\d+)-(\d+)/)){
+				for(var j=parseInt(RegExp.$1);j <= parseInt(RegExp.$2);j++){
+					r.push(j);
+				}
+			}else if(!isNaN(parseInt(e[i])))r.push(parseInt(e[i]));
+		}
+		return r;
 	},
 }
 
