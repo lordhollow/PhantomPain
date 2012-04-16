@@ -358,18 +358,20 @@ ResPopup.prototype =
 	showPopup: function(ids, pos)
 	{
 		var container = document.createElement("DIV");
+		var innerContainer = document.createElement("DIV");
+		container.appendChild(innerContainer);
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
 			var c = ThreadMessages.domobj[ids[i]];
 			if (c != null)
 			{
 				var node = c.cloneNode(true);
-				container.appendChild(node);
+				innerContainer.appendChild(node);
 			}
 		}
 		container.className = "popup";
-		container.style.left = pos.pageX + "px";
-		container.style.top = pos.pageY + "px";
+		container.style.left = (pos.pageX + 16) + "px";
+		container.style.top = (pos.pageY + 16) + "px";
 		container.addEventListener("mouseout", this.onMouseOut.bind(this), false);
 		//console.log(pos.pageX + " , " + pos.pageY);
 		$("popupContainer").appendChild(container);

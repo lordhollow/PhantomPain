@@ -268,10 +268,23 @@ article article
 .popup
 {
 	position: absolute;
-	background-color: #FFC;
+	border-left: 12px solid #FFC;
+	border-top: 12px solid transparent;
+/*	background-color: rgba(0,0,0,0.8);
+	border: solid 1px blue;
+*/
 	z-index: 500;
+	opacity: 0.9;
 }
-
+.popup > div
+{
+	float: left;
+	margin-left: -20px;
+	background: #FFC;
+	padding: 0 1em 1em 1em;
+	border-radius: 8px;
+	box-shadow: 3px 5px 5px 0px #000;
+}
 
 /* */
 /* */
