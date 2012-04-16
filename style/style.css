@@ -30,7 +30,6 @@ span.content
 span.space
 {
 	width: 100%;
-	background-color: #366;
 	display: table-cell;
 }
 
@@ -72,7 +71,8 @@ span.space
 		{
 			width: 16px;
 			height: 16px;
-			margin-right: 4px;
+			cmargin-right: 4px;
+			margin: 0px 1px;
 		}
 
 /* ヘッダのバー */
@@ -89,7 +89,6 @@ span.space
 	/* スレタイ表示部 */
 	#thtitle
 	{
-		background-color: #333;
 		color: #FFF;
 		margin: 0;
 		font-size: 16px;
@@ -97,6 +96,7 @@ span.space
 		line-height: 20px;
 		width: 100%;
 		border-bottom-left-radius: 5px;
+		background-color: #333;
 	}
 		
 		/* スレッドfavicon */
@@ -119,8 +119,11 @@ span.space
 		line-height: 20px;
 		top: -20px;
 		padding: 1px 8px 0px 8px;
-		background-color: #699;
 	}
+		#ctrlbox li
+		{
+			background-color: #333;
+		}
 
 
 
