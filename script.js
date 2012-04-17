@@ -78,6 +78,33 @@ var EventHandlers = {
 	},
 };
 
+
+/* ■板一覧ペイン■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var BoardPane = {
+	init: function()
+	{
+		this.container = $("boardPane");
+		this.container.innerHTML = "";	//全子供殺す
+
+		this.boardList = document.createElement("IFRAME");
+		this.boardList.id = "boardList";
+
+		this.container.appendChild(this.boardList);
+		
+		$("bpHandle").addEventListener("dblclick", this.toggle.bind(this), false);
+	},
+	toggle: function()
+	{
+		this.container.className = this.container.className=='open' ? 'close' : 'open';
+		this.update();
+	},
+	update: function()
+	{
+		var url = "bbs2ch:board:" + ThreadInfo.Board;
+		this.boardList.src = url;
+	},
+};
+
 /* ■レスメニューの処理■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageMenu = {
 	init: function()
@@ -583,6 +610,7 @@ function test()
 	ThreadMessages.processMessages($("resContainer"));
 	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
+	BoardPane.init();
 	EventHandlers.init();
 };
 

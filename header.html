@@ -11,7 +11,7 @@ var ThreadInfo = {
 	Title:  "<THREADNAME/>",
 	Url:    "<THREADURL/>",
 	Server: "<SERVERURL/>",
-	Borad:  "<BOARDURL/>",
+	Board:  "<BOARDURL/>",
 	Skin:   "<SKINPATH/>",
 };
 //CommonPref.setIdentifier("<THREADURL/>");
@@ -30,13 +30,13 @@ var ThreadInfo = {
 <base href="<SKINPATH/>"/>
 <body onload="test();">
 <div id="headBar">
-<div id="boardPane"><!--この要素のheightを変更することでタイトルバーが一緒に下がる--></div>
+<div id="boardPane"></div>
 <h1 id="thtitle">
 	<span class="content">
 	<img id="boardfavicon" src="<SKINPATH/>i404.png" width="16" height="16">	<!--ちゃんとしたfaviconに変更-->
 	<a><THREADNAME/></a>
 	</span>
-	<span class="space" id="bpHandle" ondblclick="$('boardPane').className = $('boardPane').className=='open' ? 'close' : 'open';"></span>
+	<span class="space" id="bpHandle"></span>
 </h1>
 <div id="ctrlbox" class="menu">
 	<ul>
