@@ -286,6 +286,10 @@ article article
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
 }
+.popup article
+{
+	font-size: 80%;
+}
 
 /* */
 /* */
