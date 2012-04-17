@@ -375,6 +375,7 @@ ResPopup.prototype =
 		if (fixed) container.style.position = "fixed";
 		container.addEventListener("mouseout", this.onMouseOut.bind(this), false);
 		$("popupContainer").appendChild(container);
+		this.limitSize(innerContainer);
 		this.container = container;
 	},
 	onMouseOut: function(aEvent)
@@ -388,6 +389,20 @@ ResPopup.prototype =
 	close: function()
 	{
 		this.container.parentNode.removeChild(this.container);
+	},
+	//ƒTƒCƒY§ŒÀ
+	limitSize: function(e)
+	{
+		var maxWidth = window.innerWidth *0.8;
+		var maxHeight = window.innerHeight *0.7;
+		if(e.clientWidth > maxWidth)
+		{
+			e.style.width = maxWidth + "px";
+		}
+		if(e.clientHeight > maxHeight)
+		{
+			e.style.height = maxHeight + "px";
+		}
 	},
 };
 

@@ -285,6 +285,7 @@ article article
 	padding: 0 1em 1em 1em;
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
+	overflow: auto;
 }
 .popup article
 {
