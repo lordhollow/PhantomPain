@@ -259,6 +259,38 @@ var ThreadMessages = {
 	replaceStr: function(e)
 	{	//replaceStr.txtによる置換
 	},
+	getNode: function(id, clone, load, loaded)
+	{
+		if (this.domobj[id] != null)
+		{
+			var obj = this.domobj[id];
+			if (clone)
+			{
+				obj = obj.cloneNode(true);
+				//objから、本来備わっていないもの(=レスメニューと展開済みツリー、展開済み画像）を削除する。
+				//article> { H , (div) , p , オマケたち } の順に並んでいるので、divとオマケを削除する。
+				if (obj.childNodes[1].tagName == "DIV")
+				{
+					obj.removeChild(obj.childNodes[1]);
+				}
+				while(obj.childNodes.length > 2)
+				{
+					obj.removeChild(obj.childNodes[2]);
+				}
+			}
+			return obj
+		}
+		else
+		{	
+			if (load)
+			{	//TODO: XmlHttpRequest
+				//非同期で読み出しかけて、結果はコールバック関数(loaded)で返す。
+			}
+			//ここがnullを返すのは固定。
+			return null;
+		}
+	},
+	
 	_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
 	
 };
@@ -362,10 +394,9 @@ ResPopup.prototype =
 		container.appendChild(innerContainer);
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
-			var c = ThreadMessages.domobj[ids[i]];
-			if (c != null)
+			var node = ThreadMessages.getNode(ids[i], true, false, function(){});
+			if (node != null)
 			{
-				var node = c.cloneNode(true);
 				innerContainer.appendChild(node);
 			}
 		}
