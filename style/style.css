@@ -277,6 +277,8 @@ article article
 	border-top: 12px solid transparent;
 	z-index: 500;
 	opacity: 0.9;
+	left: -10000px;
+	top:  -10000px;
 }
 .popup > div
 {
