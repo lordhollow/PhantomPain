@@ -126,6 +126,7 @@ var MessageMenu = {
 	},
 	_deleteExistTree: function(node)
 	{	//既存のツリーを削除
+		//TODO::3になるのはレスメニューがあるやつだけなので何とかしないとダメだ。
 		while(node.childNodes.length > 3)
 		{
 			node.removeChild(node.childNodes[3]);
@@ -138,12 +139,11 @@ var MessageMenu = {
 			var rf = MessageStructure.nodesReplyFrom[from];
 			for(var i=0, j = rf.length; i < j; i++)
 			{
-				var node = ThreadMessages.domobj[rf[i]].cloneNode(true);	//ARTICLE
+				var node = ThreadMessages.getNode(rf[i], true, false, function(){});	//ARTICLE
 				if (rf[i] > from)
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
 					this._createNodeTree(rf[i], node);
 				}
-				this._deleteExistTree(node);
 				c.appendChild(node);
 			}
 		}
