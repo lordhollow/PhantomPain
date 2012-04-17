@@ -365,6 +365,8 @@ function messageAnnotation(){ };
 messageAnnotation.prototype = {
 	no: 0,
 	aid: "",
+	idcolor: "black",
+	idbackcolor: "transparent",
 	author: "",
 	date: "",
 	message: "",
