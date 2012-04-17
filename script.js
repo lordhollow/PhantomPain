@@ -4,6 +4,7 @@ var Preference =
 	ResPopupDelay: 500,
 	PostScheme: "bbs2ch:post:",
 	ReplyCheckMaxWidth: 10,	//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
+	TemplateAnchor: ">>1-6",
 };
 
 
@@ -166,7 +167,15 @@ var MessageMenu = {
 	ExtractImages: function(event)
 	{
 	},
+};
 
+var Menu = {
+
+	PopupTemplate: function()
+	{
+		var pp = new ResPopup(null);
+		pp.popup(Preference.TemplateAnchor, Util.getElementPagePos($("Menu.Template")), true);
+	},
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -330,20 +339,23 @@ ResPopup.prototype =
 	init: function(anchor)
 	{
 		//Delayを仕掛ける
-		var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor)), Preference.ResPopupDelay);
-		anchor.addEventListener("mouseout", 
-			function(){
-				clearTimeout(tid);
-				anchor.removeEventListener("mouseout", arguments.callee, false);
-			},false);
+		if (anchor != null)
+		{
+			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), false), Preference.ResPopupDelay);
+			anchor.addEventListener("mouseout", 
+				function(){
+					clearTimeout(tid);
+					anchor.removeEventListener("mouseout", arguments.callee, false);
+				},false);
+		}
 	},
-	popup: function(target, pos)
+	popup: function(target, pos, fixed)
 	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
 		this.used = true;
 		var ids = MessageUtil.splitResNumbers(target);
-		this.showPopup(ids, pos);
+		this.showPopup(ids, pos, fixed);
 	},
-	showPopup: function(ids, pos)
+	showPopup: function(ids, pos, fixed)
 	{
 		var container = document.createElement("DIV");
 		var innerContainer = document.createElement("DIV");
@@ -360,6 +372,7 @@ ResPopup.prototype =
 		container.className = "popup";
 		container.style.left = (pos.pageX + 16) + "px";
 		container.style.top = (pos.pageY + 16) + "px";
+		if (fixed) container.style.position = "fixed";
 		container.addEventListener("mouseout", this.onMouseOut.bind(this), false);
 		$("popupContainer").appendChild(container);
 		this.container = container;
