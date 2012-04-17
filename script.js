@@ -1,12 +1,14 @@
 
 var Preference =
 {
-	ResPopupDelay: 500,
-	PostScheme: "bbs2ch:post:",
-	ReplyCheckMaxWidth: 10,	//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
-	TemplateAnchor: ">>1-6",
+	ResPopupDelay: 500,			//ポップアップ表示ディレイ
+	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
+	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
+	TemplateAnchor: ">>1-6",	//テンプレポップアップで表示するアンカー
+	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
+	PopupOffsetY: 16,			//ポップアップのオフセット
+	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
 };
-
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 Function.prototype.bind = function() {
@@ -409,12 +411,11 @@ ResPopup.prototype =
 			}
 		}
 		container.className = "popup";
-		container.style.left = (pos.pageX + 16) + "px";
-		container.style.top = (pos.pageY + 16) + "px";
 		if (fixed) container.style.position = "fixed";
 		container.addEventListener("mouseout", this.onMouseOut.bind(this), false);
 		$("popupContainer").appendChild(container);
 		this.limitSize(innerContainer);
+		this.adjust(innerContainer, pos);
 		this.container = container;
 	},
 	onMouseOut: function(aEvent)
@@ -447,31 +448,46 @@ ResPopup.prototype =
 			e.style.height = maxHeight + "px";
 		}
 	},
-	//画面内に押し込む(サイズ制限されているので必ず入るはず)
-	adjust: function(){
-		var e=this.element;
-		var pad=10;//ゆりもどし量
-		//scrollXは0と仮定してもいいんじゃねぇかﾅｧ
-		var x=window.innerWidth-e.clientWidth-e.x-ScrollBar.size;
-		if(x>0){
-			if(e.x<0)e.x=pad;
-			e.style.left=e.x+"px";
-		}else{
-			e.style.left="auto";
-			e.style.right=pad+"px";
+	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
+	adjust: function(e , pos)
+	{
+		//指定アンカー位置からのオフセット
+		pos.pageX += Preference.PopupOffsetX;
+		pos.pageY += Preference.PopupOffsetY;
+		//そこに置いたとき、横方向にはみ出す量
+		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅)
+		var x = (pos.pageX + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size); 
+		if(x > 0)
+		{
+			pos.pageX -= x;
+			//pos.pageX = 50;
 		}
-		e.x=e.offsetLeft;
-		
-		var clientBottom=window.innerHeight+window.scrollY;
-		var popupBottom=e.y+e.clientHeight;
-		if(clientBottom<popupBottom){//under
-			e.y=clientBottom-e.clientHeight-pad;
-		}
-		if(window.scrollY>e.y){//over
-			e.y=window.scrollY+pad;
-		}
-		e.style.top=e.y+"px";
+		e.parentNode.style.left = pos.pageX  + "px";
+		e.parentNode.style.top  = pos.pageY + "px";
+		//TODO:: ヒゲの位置調整
 	},
+};
+
+/* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var ScrollBar=
+{
+	size: 26,	//残低地
+	VScroll: function(){
+		if(window.innerWidth!=document.body.clientWidth){
+			this.size=window.innerWidth-document.body.clientWidth;
+			return true;
+		}else{
+			return false;
+		}
+	},
+	HScroll: function(){
+		if(window.innerHeight!=document.body.clientHeight){
+			this.size=window.innerWidth-document.body.clientHeight;
+			return true;
+		}else{
+			return false;
+		}
+	}
 };
 
 
@@ -574,6 +590,7 @@ function test()
 	worker.postMessage({begins: 0});
 //*/
 	ThreadMessages.processMessages($("resContainer"));
+	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
 	EventHandlers.init();
 };
