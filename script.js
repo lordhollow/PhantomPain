@@ -393,8 +393,12 @@ ResPopup.prototype =
 	//サイズ制限
 	limitSize: function(e)
 	{
+		//幅・・・画面幅の80%
+		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
 		var maxWidth = window.innerWidth *0.8;
-		var maxHeight = window.innerHeight *0.7;
+		var maxHeight = window.innerHeight - (Util.getElementPagePos(e).pageY - window.pageYOffset) - 40;
+		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
+		
 		if(e.clientWidth > maxWidth)
 		{
 			e.style.width = maxWidth + "px";
@@ -403,6 +407,31 @@ ResPopup.prototype =
 		{
 			e.style.height = maxHeight + "px";
 		}
+	},
+	//画面内に押し込む(サイズ制限されているので必ず入るはず)
+	adjust: function(){
+		var e=this.element;
+		var pad=10;//ゆりもどし量
+		//scrollXは0と仮定してもいいんじゃねぇかﾅｧ
+		var x=window.innerWidth-e.clientWidth-e.x-ScrollBar.size;
+		if(x>0){
+			if(e.x<0)e.x=pad;
+			e.style.left=e.x+"px";
+		}else{
+			e.style.left="auto";
+			e.style.right=pad+"px";
+		}
+		e.x=e.offsetLeft;
+		
+		var clientBottom=window.innerHeight+window.scrollY;
+		var popupBottom=e.y+e.clientHeight;
+		if(clientBottom<popupBottom){//under
+			e.y=clientBottom-e.clientHeight-pad;
+		}
+		if(window.scrollY>e.y){//over
+			e.y=window.scrollY+pad;
+		}
+		e.style.top=e.y+"px";
 	},
 };
 
