@@ -327,32 +327,20 @@ messageAnnotation.prototype = {
 function ResPopup(anchor){ this.init(anchor); }
 ResPopup.prototype = 
 {
-	a: null,
-	used: false,
 	init: function(anchor)
 	{
-		this.a = anchor;
-		var pp = this;
-
 		//Delayを仕掛ける
-		var tid = setTimeout(this.popup.bind(this), Preference.ResPopupDelay);
+		var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor)), Preference.ResPopupDelay);
 		anchor.addEventListener("mouseout", 
 			function(){
-					//うっかり同じtidが頒布されても大丈夫なように。
-					if (pp.used == false) clearTimeout(tid);
-					var arg = arguments.callee;
-					anchor.removeEventListener("mouseout", arg, false);
-					//alert(tid);	//これを見る限り、常にインクリメントされてる様子ではある
-					//if (pp.used != false) alert("OUT");
-					//if (pp.used == false) alert("out");
+				clearTimeout(tid);
+				anchor.removeEventListener("mouseout", arguments.callee, false);
 			},false);
 	},
-	popup: function()
-	{	//ポップアップを表示
+	popup: function(target, pos)
+	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
 		this.used = true;
-		var target = this.a.textContent;
 		var ids = MessageUtil.splitResNumbers(target);
-		var pos = Util.getElementPagePos(this.a);
 		this.showPopup(ids, pos);
 	},
 	showPopup: function(ids, pos)
@@ -373,7 +361,6 @@ ResPopup.prototype =
 		container.style.left = (pos.pageX + 16) + "px";
 		container.style.top = (pos.pageY + 16) + "px";
 		container.addEventListener("mouseout", this.onMouseOut.bind(this), false);
-		//console.log(pos.pageX + " , " + pos.pageY);
 		$("popupContainer").appendChild(container);
 		this.container = container;
 	},
