@@ -310,7 +310,7 @@ var MessageStructure = {
 			if (this.nodesById[obj.aid].length == 2)
 			{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
 				var s = $("scriptedStyle");
-				s.innerHTML += "article[data-aid=\"{0}\"] .id { color: {1}; background-color: {2}; font-weight: bold; }".format(obj.aid, obj.idcolor, obj.idbackcolor);
+				s.innerHTML += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }".format(obj.aid, obj.idcolor, obj.idbackcolor);
 			}
 		}
 		
@@ -324,7 +324,7 @@ var MessageStructure = {
 				this.nodesReplyFrom[t] = new Array();
 				//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
 				var s = $("scriptedStyle");
-				s.innerHTML += "article[data-no=\"{0}\"] .menu .resto { display:table-cell; }\n".format(t);
+				s.innerHTML += "article[data-no=\"{0}\"] > .menu > ul > .resto { display:table-cell; }\n".format(t);
 			}
 			this.nodesReplyFrom[t].push(obj.no);
 		}
