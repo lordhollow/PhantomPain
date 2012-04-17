@@ -95,13 +95,17 @@ var BoardPane = {
 	},
 	toggle: function()
 	{
-		this.container.className = this.container.className=='open' ? 'close' : 'open';
+		this._size = this._size ? 0 : window.innerHeight /2;
 		this.update();
 	},
 	update: function()
 	{
-		var url = "bbs2ch:board:" + ThreadInfo.Board;
-		this.boardList.src = url;
+		this.container.style.height = this._size + "px";
+		if (this._size)
+		{
+			var url = "bbs2ch:board:" + ThreadInfo.Board;
+			if (!this.boardList.src) this.boardList.src = url;
+		}
 	},
 };
 

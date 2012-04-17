@@ -138,14 +138,6 @@ span.space
 		overflow:auto;
 		background-color: #CFF;
 	}
-#boardPane.open
-{	/* ŠJ‚¯•Â‚ß‚É‚±‚Ì—v‘f‚Ìheight‚ğ˜M‚ê‚Î‚æ‚¢A‚Æ‚¢‚¤‚Ì‚ª‚í‚©‚½ */
-	height: 20em;
-}
-#boardPane.close
-{
-}
-
 
 #resContainer
 {
