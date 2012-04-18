@@ -9,7 +9,6 @@ body
 	margin: 0;
 	padding: 0;
 	border-right: solid 3px #F99;
-	padding-bottom: 15em;
 }
 
 /* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
@@ -299,5 +298,22 @@ article article
 	font-size: 80%;
 }
 
-/* */
+/* フッタメニュー */
+#footmenu
+{
+	margin-top: 2em;
+	border-top: dotted 2px #CCC;
+	text-align: right;
+}
+
+/* フッタ */
+#footer
+{
+	color: #CCC;
+	font-size: 10px;
+	text-align: left;
+	margin-left: 8px;
+	padding-top: 15em;
+}
+
 /* */

@@ -14,7 +14,7 @@ var ThreadInfo = {
 	Board:  "<BOARDURL/>",
 	Skin:   "<SKINPATH/>",
 };
-//CommonPref.setIdentifier("<THREADURL/>");
+CommonPref.setIdentifier("<THREADURL/>");
 </script>
 <style type="text/css" id="scriptedStyle">
 .res
@@ -26,6 +26,8 @@ var ThreadInfo = {
 	font:<AAFONTSIZE/> <AAFONTNAME/>;
 	line-height:<AALINEHEIGHT/>
 }
+#error { display: none; }
+#footmenu{ display: block !important;}
 </style>
 <base href="<SKINPATH/>"/>
 <body onload="test();">
