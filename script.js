@@ -207,6 +207,7 @@ var Menu = {
 	PopupTemplate: function()
 	{
 		var pp = new ResPopup(null);
+		pp.offsetX = 8; pp.offsetY = 16;
 		pp.popup(Preference.TemplateAnchor, Util.getElementPagePos($("Menu.Template")), true);
 	},
 };
@@ -409,6 +410,8 @@ messageAnnotation.prototype = {
 function ResPopup(anchor){ this.init(anchor); }
 ResPopup.prototype = 
 {
+	offsetX: Preference.PopupOffsetX,
+	offsetY: Preference.PopupOffsetY,
 	init: function(anchor)
 	{
 		//Delayを仕掛ける
@@ -474,19 +477,20 @@ ResPopup.prototype =
 	adjust: function(e , pos)
 	{
 		//指定アンカー位置からのオフセット
-		pos.pageX += Preference.PopupOffsetX;
-		pos.pageY += Preference.PopupOffsetY;
+		pos.pageX += this.offsetX;
+		pos.pageY += this.offsetY;
+		
 		//そこに置いたとき、横方向にはみ出す量
 		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅)
 		var x = (pos.pageX + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size); 
-		if(x > 0)
-		{
-			pos.pageX -= x;
-			//pos.pageX = 50;
-		}
-		e.parentNode.style.left = pos.pageX  + "px";
+		if (x < 0) x = 0;	//動かす必要がないときは動かさない
+		
+		//ポインタ（ひげの先）を持ってくる
+		e.parentNode.style.left = pos.pageX + "px";
 		e.parentNode.style.top  = pos.pageY + "px";
-		//TODO:: ヒゲの位置調整
+		
+		//箱を持ってくる
+		e.style.marginLeft = -(x + 20) + "px";
 	},
 };
 
