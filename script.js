@@ -148,20 +148,26 @@ var MessageMenu = {
 	ExtractRef: function(event)
 	{
 	},
-	CreateRefTreeHear: function(event)
+	CreateRefTree: function(event)
 	{	//参照ツリーを構築する
+		this.DeleteRefTree(event);	//一回削除
+		
 		var current = this._menu.dataset.binding;
 		if (current == 0) return;
 		var node = this._menu.parentNode;
 		if (node == null) return;
-		this._deleteExistTree(node);
+		node.dataset.treed = "y";
 		this._createNodeTree(current, node);
 	},
-	_deleteExistTree: function(node)
+	
+	DeleteRefTree: function(event)
 	{	//既存のツリーを削除
-		//TODO::3になるのはレスメニューがあるやつだけなので何とかしないとダメだ。
+		var node = this._menu.parentNode;
+		if (node == null) return;
+		node.dataset.treed = "n";
+		
 		while(node.childNodes.length > 3)
-		{
+		{	//3なのはレスメニューが居るときだけ。居ないときは2ですが、必ず居るので3にする。
 			node.removeChild(node.childNodes[3]);
 		}
 	},

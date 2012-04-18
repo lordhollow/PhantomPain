@@ -255,6 +255,12 @@ h2
 		article[data-pickuped="on"] .pickon { display: inline; }
 		article[data-pickuped="on"] .pickoff{ display: none; }
 
+		/* レスメニュー上のツリー */
+		.treeon { display: inline; }
+		.treeoff{ display: none; }
+		article[data-treed="y"] > div > ul > li > ul > li> .treeon { display: none; }
+		article[data-treed="y"] > div > ul > li > ul > li> .treeoff{ display: inline; }
+
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
 		.menu .resto { display: none; }
 
