@@ -144,6 +144,9 @@ var MessageMenu = {
 	},
 	PopupRef: function(event)
 	{
+		var pp = new ResPopup(null);
+		pp.offsetX = 8; pp.offsetY = 16;
+		pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , false);
 	},
 	ExtractRef: function(event)
 	{
@@ -435,6 +438,11 @@ ResPopup.prototype =
 	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
 		this.used = true;
 		var ids = MessageUtil.splitResNumbers(target);
+		this.showPopup(ids, pos, fixed);
+	},
+	popupNumbers: function(ids, pos, fixed)
+	{	//ポップアップを表示, idsはレス番号の配列。
+		this.used = true;
 		this.showPopup(ids, pos, fixed);
 	},
 	showPopup: function(ids, pos, fixed)
