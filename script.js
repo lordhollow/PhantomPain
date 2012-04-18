@@ -141,6 +141,8 @@ var MessageMenu = {
 	init: function()
 	{
 		this._menu = $("resMenu");
+		$("RMenu.Gear").addEventListener("DOMMouseScroll",this.GearWheel.bind(this),false);
+		
 		this._menu.parentNode.removeChild(this._menu);	//これあったほうが安心感がある
 	},
 
@@ -148,7 +150,9 @@ var MessageMenu = {
 	{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
 		var m = this._menu;		//参照コピ～
 		if (m == null) return;	//レスメニューなし
+		if (node == m.parentNode) return;	//同じとこに割り当て→無視
 		if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
+		this.gearNode = null;
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
@@ -236,6 +240,28 @@ var MessageMenu = {
 	ExtractImages: function(event)
 	{
 	},
+	BeginGear: function(event)
+	{
+		if (this.gearNode)
+		{	//今のところ表示に戻す？
+			return;
+		}
+		var pp = new ResPopup(null);
+		pp.offsetX = 8; pp.offsetY = 16; pp.offsetXe = 20;
+		pp.popupNumbers([this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Gear")) , false);
+		pp.onClose = (function(p){this.gearNode = NULL;}).bind(this);
+		var c = pp.container;
+		c.style.border = "none";
+		this.gearNode = c.childNodes[0];
+	},
+	GearWheel: function(event)
+	{
+		if (this.gearNode == null)
+		{
+			this.BeginGear(event);
+		}
+		event.preventDefault();
+	}
 };
 
 var Menu = {
@@ -458,6 +484,7 @@ ResPopup.prototype =
 {
 	offsetX: Preference.PopupOffsetX,
 	offsetY: Preference.PopupOffsetY,
+	offsetXe: 0,
 	init: function(anchor)
 	{
 		//Delayを仕掛ける
@@ -497,6 +524,7 @@ ResPopup.prototype =
 		container.appendChild(innerContainer);
 		container.className = "popup";
 		if (fixed) container.style.position = "fixed";
+		this.fixed = fixed;
 		container.addEventListener("mouseleave", this.close.bind(this), false);
 		$("popupContainer").appendChild(container);
 		this.limitSize(innerContainer, pos);
@@ -506,6 +534,7 @@ ResPopup.prototype =
 	close: function()
 	{
 		this.container.parentNode.removeChild(this.container);
+		if (this.onClose) this.onClose(this);
 	},
 	//サイズ制限
 	limitSize: function(e, pos)
@@ -532,8 +561,8 @@ ResPopup.prototype =
 		pos.pageY += this.offsetY;
 		
 		//そこに置いたとき、横方向にはみ出す量
-		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅)
-		var x = (pos.pageX + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size); 
+		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅 + 追加オフセット)
+		var x = (pos.pageX + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size + this.offsetXe) ; 
 		if (x < 0) x = 0;	//動かす必要がないときは動かさない
 		
 		//ポインタ（ひげの先）を持ってくる
