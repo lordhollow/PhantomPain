@@ -253,13 +253,27 @@ var MessageMenu = {
 		var c = pp.container;
 		c.style.border = "none";
 		this.gearNode = c.childNodes[0];
+		this.gearPopup = pp;
 	},
 	GearWheel: function(event)
 	{
 		if (this.gearNode == null)
-		{
+		{	//TODO::もしかして必ずしも自動開始したくないかも？
 			this.BeginGear(event);
 		}
+		var id = parseInt(this.gearNode.firstChild.dataset.no);
+		id += (event.detail < 0 ) ? -1 : +1;
+		if (ThreadMessages.isReady(id))
+		{	//TODO::読み込んでくるのもアリのはず
+			var n = ThreadMessages.getNode(id, true, false, function(){});
+			if (n != null)
+			{
+				this.gearNode.removeChild(this.gearNode.firstChild);
+				this.gearNode.appendChild(n);
+				this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
+			}
+		}
+		
 		event.preventDefault();
 	}
 };
