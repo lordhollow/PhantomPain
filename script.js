@@ -1,3 +1,6 @@
+var skinName = "PhantomPain3";
+var skinVer  = "ver. \"closed alpha\"";
+var ownerApp;
 
 var Preference =
 {
@@ -601,7 +604,7 @@ var MessageUtil = {
 
 
 
-function test()
+function init()
 {
 /*  //マルチスレッド処理：通常の処理。しばらく固まって、一気に２００まで表示した
 	for(var i=0; i< 200 ;i++)
@@ -634,6 +637,9 @@ function test()
 	MessageMenu.init();
 	BoardPane.init();
 	EventHandlers.init();
+	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
+	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
+	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
 };
 
 //簡易版string.format。置換しかできない。
