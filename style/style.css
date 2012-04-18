@@ -115,9 +115,9 @@ span.space
 	#ctrlbox
 	{
 		float: right;
-		line-height: 20px;
-		top: -20px;
-		padding: 1px 8px 0px 8px;
+		height: 0px;
+		top: -19px;
+		padding: 0px 8px 0px 8px;
 	}
 		#ctrlbox li
 		{
