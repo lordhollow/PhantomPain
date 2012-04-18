@@ -75,6 +75,30 @@ var EventHandlers = {
 	},
 	mouseClick: function (aEvent)
 	{
+		var t = aEvent.target;
+		var cancel = false;
+		if (t.className == "resPointer")
+		{
+			//TODO: jumpTo
+			if(t.textContent.match(/(\d+)/))
+			{
+				var id = parseInt(RegExp.$1);
+				if (ThreadMessages.isDeployed(id))
+				{
+					var node = ThreadMessages.domobj[id];
+					//îÚÇ‘
+					window.scrollTo(0, Util.getElementPagePos(node).pageY - (window.innerHeight * 0.3));
+					//ñ⁄óßÇΩÇπÇÈ
+					node.dataset.focus = "on";
+					setTimeout(function(){ node.dataset.focus = "no"; }, 1000)
+				}
+			}
+			cancel = true;
+		}
+		if(cancel){
+			aEvent.preventDefault();
+			aEvent.stopPropagation();
+		}
 	},
 	aboneImmidiate: function (aEvent)
 	{
@@ -336,7 +360,17 @@ var ThreadMessages = {
 			return null;
 		}
 	},
-	
+	isReady: function(id)
+	{	//ì«Ç›çûÇ›çœÇ›Ç©ÅH
+		return (this.domobj[id]);
+	},
+	isDeployed: function(id)
+	{	//ïÅí Ç…ï\é¶Ç≥ÇÍÇƒÇ¢ÇÈÇ©ÅH
+		if ( this.domobj[id])
+			if (this.domobj[id].parentNode)
+					return true;
+		return false;
+	},
 	_dblSizeAnchorRegExp: new RegExp("(ÅÑÅÑ|ÅÑ|&gt;&gt;|&gt;)([0-9ÇO-ÇX,\-]+)","g"),
 	
 };

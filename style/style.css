@@ -167,6 +167,11 @@ h2
 	margin-top: 12px;
 	white-space:nowrap;
 }
+	article[data-focus="on"]
+	{
+		background-color: #CFC;
+	}
+
 	h2 > * 
 	{
 		display: table-cell;
