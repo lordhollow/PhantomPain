@@ -64,9 +64,14 @@ var EventHandlers = {
 			MessageMenu.attach(res);
 		}
 		if (t.className=="resPointer")
-		{
+		{	//レスアンカーにポイント → レスポップアップ
 			new ResPopup(t);
-		}		//レスアンカーにポイント → レスポップアップ
+		}
+		else if (t.className == "outLink")
+		{
+			var p = OutlinkPlugins.getOutlinkPlugin(t);
+			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
+		}
 		//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
 		//スレURLにポイント → スレタイのポップアップ
 		//その他URLにポイント → simpleapi
@@ -492,6 +497,114 @@ messageAnnotation.prototype = {
 	date: "",
 	message: "",
 };
+
+/* ■外部リンク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+const OUTLINK_NON   = 0;	//outlinkじゃない
+const OUTLINK_IMAGE = 1;	//画像
+const OUTLINK_MOVIE = 2;	//動画
+const OUTLINK_2CH   = 3;	//2ch
+const OUTLINK_ETC   = 4;	//その他
+
+var OutlinkPlugins = {
+
+	getOutlinkPlugin: function(node)
+	{	//適合するアウトリンクプラグインを求める。
+		//適合率1ならそれに決定。
+		//そうでなければ、より適合率の高そうなものが出るまで繰り返す。
+		if (node.className != "outLink") return null;
+		var mp = 0;
+		var mpt = null;
+		for(var i=0, j=this.plugins.length; i < j ; i++)
+		{
+			var p = this.plugins[i].posivility(node.href);
+			if (p >= 1)
+			{
+				return this.plugins[i];
+			}
+			else
+			{
+				if (mp < p)
+				{
+					mp = p;
+					mpt = this.plugins[i];
+				}
+			}
+		}
+		return mpt;
+	},
+	popupPreview: function(plugin, anchor, ev)
+	{	//Outlinkのプレビューをポップアップする
+	},
+};
+
+//画像URL用
+var OutlinkPluginForImage = {
+	type: OUTLINK_IMAGE,
+	posivility: function(href)
+	{
+		if (href.match(/\.jpg$|jpeg$|bmp$|png$|gif$/i))
+		{
+			return 1;
+		}
+		return 0;
+	},
+	getPopupContent: function()
+	{
+	},
+};
+
+//動画URL用
+var OutlinkPluginForMovie = {
+	type: OUTLINK_MOVIE,
+	posivility: function(href)
+	{
+		return 0;
+	},
+	getPopupContent: function()
+	{
+	},
+};
+
+var OutlinkPluginFor2ch = {
+	type: OUTLINK_2CH,
+	posivility: function(href)
+	{
+		return (this.is2ch(href)) ? 1 : 0;
+	},
+	getPopupContent: function()
+	{
+	},
+	//b2rで読めそうなアドレスだとtrueを返す
+	is2ch: function(url)
+	{
+		return (url.match(/\/test\/read.cgi\//));
+	},
+	//2ch.net, bbspinkならtrue
+	isPure2ch: function(url)
+	{
+		return (url.match(/(2ch.net|bbspink.com|machi.to)\//));
+	},
+	
+	//b2rで表示中？
+	isb2r: function(url)
+	{
+		return (url.match(/\/\/127.0.0.1:\d+\/thread\//));
+	},
+};
+
+var OutlinkPluginForDefault = {
+	type: OUTLINK_ETC,
+	posivility: function(href)
+	{
+		return 1;
+	},
+	getPopupContent: function()
+	{
+	},
+};
+
+OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginFor2ch, OutlinkPluginForDefault];
+
 
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function ResPopup(anchor){ this.init(anchor); }
