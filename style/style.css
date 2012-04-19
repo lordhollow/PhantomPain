@@ -164,8 +164,7 @@ h2
 	margin: 0;
 	padding: 0;
 	font-size: 80%;
-	margin-top: 12px;
-	margin-bottom: 6px;
+	margin-top: 6px;
 	white-space:nowrap;
 	font-weight: normal;
 }
@@ -267,6 +266,13 @@ h2
 		article[data-treed="y"] > div > ul > li > ul > li> .treeon { display: none; }
 		article[data-treed="y"] > div > ul > li > ul > li> .treeoff{ display: inline; }
 
+		/* トラッキング */
+		.trackon { display: inline; }
+		.trackoff{ display: none; }
+		article[data-track^="m"] > div > ul > li > .trackon { display: none; }
+		article[data-track^="m"] > div > ul > li > .trackoff{ display: inline; }
+		
+
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
 		.menu .resto { display: none; }
 
@@ -277,9 +283,19 @@ article article
 /* レス本体 */
 .ct
 {
-	margin-left: 1em;
+	margin: 6px 1em;
 }
-
+	article[data-track^="m"] > .ct
+	{
+		border-radius: 6px;
+		margin: 3px .5em;
+		padding: 3px .5em;
+		margin-bottom: -3px;
+	}
+	article[data-track^="m"] > .ct { background-color: #DFF; } 
+	article[data-track="m0"] > .ct { background-color: #DDF; } 
+	article[data-track="m1"] > .ct { background-color: #DFD; } 
+	article[data-track="m2"] > .ct { background-color: #FDD; } 
 
 /* ポップアップ */
 .popup
