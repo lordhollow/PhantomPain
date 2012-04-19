@@ -4,7 +4,7 @@ var ownerApp;
 
 var Preference =
 {
-	ResPopupDelay: 500,			//ポップアップ表示ディレイ
+	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
 	TemplateAnchor: ">>1-6",	//テンプレポップアップで表示するアンカー
