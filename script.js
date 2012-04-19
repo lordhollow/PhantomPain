@@ -627,58 +627,25 @@ OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkP
 
 
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function ResPopup(anchor){ this.init(anchor); }
-ResPopup.prototype = 
-{
+function Popup() { }
+Popup.prototype = {
 	offsetX: Preference.PopupOffsetX,
 	offsetY: Preference.PopupOffsetY,
 	offsetXe: 0,
-	init: function(anchor)
-	{
-		//Delayを仕掛ける
-		if (anchor != null)
-		{
-			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), false), Preference.ResPopupDelay);
-			anchor.addEventListener("mouseout", 
-				function(){
-					clearTimeout(tid);
-					anchor.removeEventListener("mouseout", arguments.callee, false);
-				},false);
-		}
-	},
-	popup: function(target, pos, fixed)
-	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
-		this.used = true;
-		var ids = MessageUtil.splitResNumbers(target);
-		this.showPopup(ids, pos, fixed);
-	},
-	popupNumbers: function(ids, pos, fixed)
-	{	//ポップアップを表示, idsはレス番号の配列。
-		this.used = true;
-		this.showPopup(ids, pos, fixed);
-	},
-	showPopup: function(ids, pos, fixed)
+	show: function(content, pos, fixed)
 	{
 		var container = document.createElement("DIV");
-		var innerContainer = document.createElement("DIV");
-		for(var i=0, len=ids.length; i < len ; i++)
-		{
-			var node = ThreadMessages.getNode(ids[i], true, false, function(){});
-			if (node != null)
-			{
-				innerContainer.appendChild(node);
-			}
-		}
-		container.appendChild(innerContainer);
+		container.appendChild(content);
 		container.className = "popup";
 		if (fixed) container.style.position = "fixed";
 		this.fixed = fixed;
 		container.addEventListener("mouseleave", this.close.bind(this), false);
 		$("popupContainer").appendChild(container);
-		this.limitSize(innerContainer, pos);
-		this.adjust(innerContainer, pos);
+		this.limitSize(content, pos);
+		this.adjust(content, pos);
 		this.container = container;
 	},
+	
 	close: function()
 	{
 		this.container.parentNode.removeChild(this.container);
@@ -721,6 +688,49 @@ ResPopup.prototype =
 		e.style.marginLeft = -(x + 20) + "px";
 	},
 };
+
+function ResPopup(anchor){ this.init(anchor); }
+ResPopup.prototype = new Popup();
+
+	ResPopup.prototype.init = function(anchor)
+	{
+		//Delayを仕掛ける
+		if (anchor != null)
+		{
+			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), false), Preference.ResPopupDelay);
+			anchor.addEventListener("mouseout", 
+				function(){
+					clearTimeout(tid);
+					anchor.removeEventListener("mouseout", arguments.callee, false);
+				},false);
+		}
+	};
+	ResPopup.prototype.popup =  function(target, pos, fixed)
+	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
+		this.used = true;
+		var ids = MessageUtil.splitResNumbers(target);
+		this.showPopup(ids, pos, fixed);
+	};
+	ResPopup.prototype.popupNumbers =  function(ids, pos, fixed)
+	{	//ポップアップを表示, idsはレス番号の配列。
+		this.used = true;
+		this.showPopup(ids, pos, fixed);
+	};
+	ResPopup.prototype.showPopup =  function(ids, pos, fixed)
+	{
+		var innerContainer = document.createElement("DIV");
+		for(var i=0, len=ids.length; i < len ; i++)
+		{
+			var node = ThreadMessages.getNode(ids[i], true, false, function(){});
+			if (node != null)
+			{
+				innerContainer.appendChild(node);
+			}
+		}
+		this.show(innerContainer, pos, fixed);
+	};
+
+
 
 /* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ScrollBar=
