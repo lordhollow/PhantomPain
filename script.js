@@ -256,7 +256,7 @@ var MessageMenu = {
 		pp.popupNumbers([this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Gear")) , false);
 		pp.onClose = (function(p){this.gearNode = NULL;}).bind(this);
 		var c = pp.container;
-		c.style.border = "none";
+		c.dataset.gearmode = "y";
 		this.gearNode = c.childNodes[0];
 		this.gearPopup = pp;
 	},

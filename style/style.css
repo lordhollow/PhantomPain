@@ -321,6 +321,15 @@ article article
 {
 	font-size: 80%;
 }
+/* ギアモーポップアップ */
+.popup[data-gearmode="y"]
+{
+	border: none;
+}
+.popup[data-gearmode="y"] > div
+{
+	background-color: #CFF;
+}
 
 /* フッタメニュー */
 #footmenu
