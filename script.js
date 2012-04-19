@@ -322,38 +322,38 @@ var ThreadMessages = {
 	{
 		if (node.tagName == "ARTICLE")
 		{
-				var no = new Number(node.dataset.no) + 0;
-				var msgNode = node.childNodes[1];
-				this.extendAnchor(msgNode);
-				this.replaceStr(msgNode);
-				this.domobj[no] = node;
-				
-				//アノテーション作成
-				var obj = new messageAnnotation();
-				obj.no = no;
-				obj.aid = node.dataset.aid;
-				obj.idcolor = node.dataset.idcolor;
-				obj.idbackcolor = node.dataset.idbackcolor;
-				obj.author = node.childNodes[0].childNodes[3].textContent;	//authorもトリップに対してaが付与されるようなので、こちらで。
-				obj.date = node.dataset.date;
-				obj.message = msgNode.textContent;
-				//mail, beidは要らんのじゃないかな？
-				this.jsobj[no] = obj;
-				
-				//名前とトリップの抽出
-				var name = node.childNodes[0].childNodes[3].textContent;
-				node.dataset.author = obj.author = name;
-				if (name.match(/◆([^\s]+)/))
-				{
-					node.dataset.trip = obj.trip = RegExp.$1;
-				}
-				if (name.match(/^(\d+)(◆.+)?/))
-				{
-					node.dataset.numberdName = "y";
-					obj.numberdName = true;
-				}
-				//メッセージ構造解析
-				MessageStructure.push(node, obj);
+			var no = new Number(node.dataset.no) + 0;
+			var msgNode = node.childNodes[1];
+			this.extendAnchor(msgNode);
+			this.replaceStr(msgNode);
+			this.domobj[no] = node;
+			
+			//アノテーション作成
+			var obj = new messageAnnotation();
+			obj.no = no;
+			obj.aid = node.dataset.aid;
+			obj.idcolor = node.dataset.idcolor;
+			obj.idbackcolor = node.dataset.idbackcolor;
+			obj.author = node.childNodes[0].childNodes[3].textContent;	//authorもトリップに対してaが付与されるようなので、こちらで。
+			obj.date = node.dataset.date;
+			obj.message = msgNode.textContent;
+			//mail, beidは要らんのじゃないかな？
+			this.jsobj[no] = obj;
+			
+			//名前とトリップの抽出
+			var name = node.childNodes[0].childNodes[3].textContent;
+			node.dataset.author = obj.author = name;
+			if (name.match(/◆([^\s]+)/))
+			{
+				node.dataset.trip = obj.trip = RegExp.$1;
+			}
+			if (name.match(/^(\d+)(◆.+)?/))
+			{
+				node.dataset.numberdName = "y";
+				obj.numberdName = true;
+			}
+			//メッセージ構造解析
+			MessageStructure.push(node, obj);
 		}
 	},
 	extendAnchor: function(e)
