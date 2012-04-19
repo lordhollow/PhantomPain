@@ -165,7 +165,9 @@ h2
 	padding: 0;
 	font-size: 80%;
 	margin-top: 12px;
+	margin-bottom: 6px;
 	white-space:nowrap;
+	font-weight: normal;
 }
 	article[data-focus="on"]
 	{
@@ -275,6 +277,7 @@ article article
 /* ƒŒƒX–{‘Ì */
 .ct
 {
+	margin-left: 1em;
 }
 
 
