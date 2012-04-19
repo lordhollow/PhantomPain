@@ -340,6 +340,18 @@ var ThreadMessages = {
 				//mail, beidは要らんのじゃないかな？
 				this.jsobj[no] = obj;
 				
+				//名前とトリップの抽出
+				var name = node.childNodes[0].childNodes[3].textContent;
+				node.dataset.author = obj.author = name;
+				if (name.match(/◆([^\s]+)/))
+				{
+					node.dataset.trip = obj.trip = RegExp.$1;
+				}
+				if (name.match(/^(\d+)(◆.+)?/))
+				{
+					node.dataset.numberdName = "y";
+					obj.numberdName = true;
+				}
 				//メッセージ構造解析
 				MessageStructure.push(node, obj);
 		}
