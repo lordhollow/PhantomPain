@@ -280,7 +280,15 @@ var MessageMenu = {
 		}
 		
 		event.preventDefault();
-	}
+	},
+	WatchThisId: function(event)
+	{	//指定レスのIDと同じレスを全部強調表示する。
+		//その中にトリップつきのレスがあれば、そのトリップのレス全てを強調表示する。
+		//レスの背景色が変わる。５件まで登録可能（５色）。この状態は記憶される。
+	},
+	EndWatchThisId: function(event)
+	{	//WatchThisIdの効果をやめる
+	},
 };
 
 var Menu = {
