@@ -290,6 +290,18 @@ var MessageMenu = {
 	{	//トラッキングの終了
 		Tracker.EndTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
 	},
+	PopupTracked: function(event)
+	{
+		var obj =ThreadMessages.jsobj[this._menu.dataset.binding];
+		if (obj && obj.tracking)
+		{
+			var ids = obj.tracking.getTrackingNumbers();
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
+			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , false);
+		}
+
+	}
 };
 
 var Menu = {
@@ -548,7 +560,7 @@ TrackerEntry.prototype = {
 			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
 			if (m > 0)
 			{
-				obj.tracking = 1;
+				obj.tracking = this;
 				ThreadMessages.domobj[obj.no].dataset.track = "m" + this.index;
 				if ((m == 1) && (obj.aid.length > 5) && (!this.containsId(obj.aid)))
 				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
@@ -571,10 +583,24 @@ TrackerEntry.prototype = {
 			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
 			if (m > 0)
 			{
-				obj.tracking = 0;
+				obj.tracking = null;
 				ThreadMessages.domobj[obj.no].dataset.track = "";
 			}
 		}
+	},
+	getTrackingNumbers: function()
+	{
+		var res = new Array();
+		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
+		{
+			var obj = ThreadMessages.jsobj[i];
+			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
+			if (m > 0)
+			{
+				res.push(obj.no);
+			}
+		}
+		return res;
 	},
 
 };
