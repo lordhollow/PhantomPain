@@ -281,13 +281,14 @@ var MessageMenu = {
 		
 		event.preventDefault();
 	},
-	WatchThisId: function(event)
-	{	//指定レスのIDと同じレスを全部強調表示する。
-		//その中にトリップつきのレスがあれば、そのトリップのレス全てを強調表示する。
-		//レスの背景色が変わる。５件まで登録可能（５色）。この状態は記憶される。
+	BeginTracking: function(event)
+	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
+		//IDとtripで個人特定し、連鎖的に強調表示。
+		Tracker.BeginTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
 	},
-	EndWatchThisId: function(event)
-	{	//WatchThisIdの効果をやめる
+	EndTracking: function(event)
+	{	//トラッキングの終了
+		Tracker.EndTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
 	},
 };
 
@@ -440,7 +441,145 @@ var ThreadMessages = {
 	
 };
 
-//スレッド構造
+/* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Tracker= {
+	_trackers: [],
+	
+	BeginTracking: function(jsobj)
+	{
+		for(var i=0, j=this._trackers.length; i<j; i++)
+		{
+			if (this._trackers[i].check(jsobj)) 
+			{
+				return; //already tracking
+			}
+		}
+		var tr = new TrackerEntry(jsobj);
+		tr.index = this.findBrankIndex();
+		this._trackers.push(tr);
+		tr.setMark();
+	},
+	EndTracking: function(jsobj)
+	{
+		var nt = new Array();
+		var tr = null;
+		for(var i=0, j=this._trackers.length; i<j; i++)
+		{
+			if (this._trackers[i].check(jsobj))
+			{
+				tr = this._trackers[i];
+			}
+			else
+			{
+				nt.push(this._trackers[i]);
+			}
+		}
+		this._trackers = nt;
+		if (tr) tr.resetMark();
+	},
+	findBrankIndex: function()
+	{
+		//空いてる番号を探す
+		for(var ni=0; ni<1001; ni++)
+		{
+			var used = false;
+			for(var i=0,j=this._trackers.length; i<j; i++)
+			{
+				if (this._trackers[i].index == ni)
+				{
+					used = true;
+					break;
+				}
+			}
+			if (!used) return ni;
+		}
+		return 0;
+	},
+};
+
+function TrackerEntry(jsobj){ this.init(jsobj); };
+TrackerEntry.prototype = {
+	aid: null,
+	trip: null,
+	index: 0,
+	
+	init: function(jsobj)
+	{
+		this.trip = [];
+		this.aid = [];
+		if (jsobj.trip)
+		{
+			this.trip.push(jsobj.trip);
+		}
+		if (jsobj.aid.length > 5)
+		{
+			this.aid.push(jsobj.aid);
+		}
+	},
+	check: function(obj)
+	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
+		var m = 0;
+		if (!obj) return 0;
+		if (obj.trip)
+		{
+			if (this.containsTrip(obj.trip)) m += 1;
+		}
+		if (!m && (obj.aid.length > 5))
+		{
+			if (this.containsId(obj.aid)) m += 2;
+		}
+		return m;
+	},
+	containsId: function(id)
+	{
+		return this.aid.include(id);
+	},
+	containsTrip: function(trip)
+	{
+		return this.trip.include(trip);
+	},
+
+	setMark: function()
+	{
+		//alert("setMark {0} {1}".format(entry.aid, entry.trip));
+		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
+		{
+			var obj = ThreadMessages.jsobj[i];
+			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
+			if (m > 0)
+			{
+				obj.tracking = 1;
+				ThreadMessages.domobj[obj.no].dataset.track = "m" + this.index;
+				if ((m == 1) && (obj.aid.length > 5) && (!this.containsId(obj.aid)))
+				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
+					this.aid.push(obj.aid);
+					this.setMark();
+				}
+				else if ((m==2) && (obj.trip) && (!this.containsTrip(obj.trip)))
+				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
+					this.trip.push(obj.trip);
+					this.setMark();
+				}
+			}
+		}
+	},
+	resetMark: function()
+	{
+		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
+		{
+			var obj = ThreadMessages.jsobj[i];
+			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
+			if (m > 0)
+			{
+				obj.tracking = 0;
+				ThreadMessages.domobj[obj.no].dataset.track = "";
+			}
+		}
+	},
+
+};
+
+/* ■スレッド構造■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageStructure = {
 	nodesById: new Array(),		//いわゆるID
 	nodesReplyFrom: new Array(),	//いわゆる逆参照情報
@@ -506,7 +645,7 @@ var MessageStructure = {
 	},
 };
 
-//レスのあのテーション情報。検索処理などにはこれを使う。
+//レスのアノテーション情報。検索処理などにはこれを使う。
 function messageAnnotation(){ };
 messageAnnotation.prototype = {
 	no: 0,
