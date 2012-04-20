@@ -269,8 +269,10 @@ h2
 		/* トラッキング */
 		.trackon { display: inline; }
 		.trackoff{ display: none; }
+		.trackpop{ display: none; }
 		article[data-track^="m"] > div > ul > li > .trackon { display: none; }
 		article[data-track^="m"] > div > ul > li > .trackoff{ display: inline; }
+		article[data-track^="m"] > div > ul > li > ul > li .trackpop { display: inline; }
 		
 
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
