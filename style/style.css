@@ -249,10 +249,13 @@ h2
 		top: 1px;
 	}
 		/* レスメニュー上のブックマークボタン切り替え */
-		.bmon   { display: none; }
-		.bmoff  { display: inline; }
-		article[data-bookmarked="on"] .bmon { display: inline; }
-		article[data-bookmarked="on"] .bmoff{ display: none; }
+		.bmon { display: none; }
+		.bmoff{ display: inline; }
+		li[data-bm="y"] > .bmon { display: inline; }
+		li[data-bm="y"] > .bmoff{ display: none; }
+		li[data-bm="y"] > ul > li > .bmon { display: inline; }
+		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
+		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
 
 		/* レスメニュー上のピックアップボタン切り替え */
 		.pickon { display: none; }

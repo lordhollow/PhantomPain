@@ -88,15 +88,7 @@ var EventHandlers = {
 			if(t.textContent.match(/(\d+)/))
 			{
 				var id = parseInt(RegExp.$1);
-				if (ThreadMessages.isDeployed(id))
-				{
-					var node = ThreadMessages.domobj[id];
-					//飛ぶ
-					window.scrollTo(0, Util.getElementPagePos(node).pageY - (window.innerHeight * 0.3));
-					//目立たせる
-					node.dataset.focus = "on";
-					setTimeout(function(){ node.dataset.focus = "no"; }, 1000)
-				}
+				MessageUtil.focus(id);
 			}
 			cancel = true;
 		}
@@ -230,9 +222,14 @@ var MessageMenu = {
 	
 	SetBookmark: function(event)
 	{
+		Bookmark.set(this._menu.dataset.binding);
 	},
 	ResetBookmark: function(event)
 	{
+		if (Bookmark.no == this._menu.dataset.binding)
+		{
+			Bookmark.reset();
+		}
 	},
 	SetPickup: function(event)
 	{
@@ -313,6 +310,16 @@ var Menu = {
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
 		pp.popup(Preference.TemplateAnchor, Util.getElementPagePos($("Menu.Template")), true);
+	},
+	
+	JumpToBookmark: function()
+	{
+		MessageUtil.focus(Bookmark.no);
+	},
+	
+	ResetBookmark: function()
+	{
+		Bookmark.Reset();
 	},
 };
 
@@ -454,6 +461,66 @@ var ThreadMessages = {
 	_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
 	
 };
+
+/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Bookmark = {
+
+	init: function()
+	{
+		var no = 0;
+		try{
+			no = parseInt(CommonPref.getBookmark());
+		} finally {}
+		if(!no)
+		{
+			no=0;
+		}
+		else
+		{
+			this.set(no);
+		}
+	},
+	
+	set: function(no)
+	{
+		if (this.no) this.reset();
+		if (ThreadMessages.jsobj[no])
+		{
+			ThreadMessages.jsobj[no].marked = true;
+			var domobj = document.body.getElementsByTagName("ARTICLE");
+			for (var i=0, j=domobj.length; i<j; i++)
+			{
+				if (domobj[i].dataset.no == no)
+				{
+					domobj[i].dataset.bm = "y";
+				}
+			}
+			$("Menu.Bookmark").dataset.bm = "y";
+			this.no = no;
+			CommonPref.setBookmark(no);
+		}
+	},
+	reset: function()
+	{
+		if (this.no)
+		{
+			var domobj = document.body.getElementsByTagName("ARTICLE");
+			for (var i=0, j=domobj.length; i<j; i++)
+			{
+				if (domobj[i].dataset.no == this.no)
+				{
+					domobj[i].dataset.bm = "";
+				}
+			}
+			ThreadMessages.jsobj[this.no].marked = false;
+		}
+		this.no = 0;
+		$("Menu.Bookmark").dataset.bm = "n";
+		CommonPref.setBookmark(0);
+	},
+
+};
+
 
 /* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Tracker= {
@@ -990,6 +1057,19 @@ var MessageUtil = {
 		}
 		return r;
 	},
+	
+	focus: function(no)
+	{
+		if (ThreadMessages.isDeployed(no))
+		{
+			var node = ThreadMessages.domobj[no];
+			//飛ぶ
+			window.scrollTo(0, Util.getElementPagePos(node).pageY - (window.innerHeight * 0.3));
+			//目立たせる
+			node.dataset.focus = "on";
+			setTimeout(function(){ node.dataset.focus = "no"; }, 1000)
+		}
+	},
 }
 
 
@@ -1034,6 +1114,7 @@ function init()
 	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
 	BoardPane.init();
+	Bookmark.init();
 	EventHandlers.init();
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
