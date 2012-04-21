@@ -496,6 +496,7 @@ var Bookmark = {
 				}
 			}
 			$("Menu.Bookmark").dataset.bm = "y";
+			$("Menu.Bookmark").dataset.bmn= no;
 			this.no = no;
 			CommonPref.setBookmark(no);
 		}

@@ -258,11 +258,21 @@ h2
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
 		.bmoff{ display: inline; }
-		#ctrlbox li[data-bm="y"] > .bmon { display: inline; 		/* メニューバー */}
+		#ctrlbox li[data-bm="y"] > .bmon { display: inline;} 		/* メニューバー */
 		#ctrlbox li[data-bm="y"] > .bmoff{ display: none; }		/* メニューバー */
 		li[data-bm="y"] > ul > li > .bmon { display: inline; }
 		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
 		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
+		#ctrlbox li[data-bm="y"]:before
+		{
+			content: attr(data-bmn);
+			position: absolute;
+			font-size: 8px;
+			color: #FFF;
+			top: 6px;
+			font-family: monospace;
+			font-weight: bold;
+		}
 
 		/* レスメニュー上のピックアップボタン切り替え */
 		.pickon { display: none; }
