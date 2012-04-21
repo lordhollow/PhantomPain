@@ -158,6 +158,7 @@ var MessageMenu = {
 		if (node == m.parentNode) return;	//同じとこに割り当て→無視
 		if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
 		this.gearNode = null;
+		this.popTrack = null;
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
@@ -292,6 +293,7 @@ var MessageMenu = {
 	},
 	PopupTracked: function(event)
 	{
+		if (this.popTrack)return;	//すでに表示されている
 		var obj =ThreadMessages.jsobj[this._menu.dataset.binding];
 		if (obj && obj.tracking)
 		{
@@ -299,8 +301,8 @@ var MessageMenu = {
 			var pp = new ResPopup(null);
 			pp.offsetX = 8; pp.offsetY = 16;
 			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , false);
+			this.popTrack = pp;
 		}
-
 	}
 };
 
