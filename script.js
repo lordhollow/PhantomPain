@@ -574,6 +574,11 @@ TrackerEntry.prototype = {
 					this.trip.push(obj.trip);
 					this.setMark();
 				}
+				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
+				for(var l=0, ll=ps.length; l<ll; l++)
+				{
+					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "m" + this.index;
+				}
 			}
 		}
 	},
@@ -587,6 +592,11 @@ TrackerEntry.prototype = {
 			{
 				obj.tracking = null;
 				ThreadMessages.domobj[obj.no].dataset.track = "";
+				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
+				for(var l=0, ll=ps.length; l<ll; l++)
+				{
+					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "";
+				}
 			}
 		}
 	},
