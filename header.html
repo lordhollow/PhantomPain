@@ -43,9 +43,9 @@ CommonPref.setIdentifier("<THREADURL/>");
 <div id="ctrlbox" class="menu">
 	<ul>
 	<li><img src="style/about.png" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></li>
-	<li id="Menu.Bookmark"><img src="style/bookmark.png" title="ブックマークあり" class="bmon" onclick="Menu.JumpToBookmark();"><img src="style/bookmark-g.png" title="ブックマークなし" class="bmoff">
+	<li id="Menu.Bookmark"><img src="style/bookmark.png" title="しおりあり(クリックでジャンプ)" class="bmon" onclick="Menu.JumpToBookmark();"><img src="style/bookmark-g.png" title="しおりなし" class="bmoff">
 		<ul>
-		<li><img src="style/bookmark-g.png" title="ブックマーク解除" class="bmon" onclick="Menu.ResetBookmark();"></li>
+		<li><img src="style/bookmark-g.png" title="しおり解除" class="bmon" onclick="Menu.ResetBookmark();"></li>
 		</ul>
 	</li>
 	<li><img src="style/pickup-g.png" title="Pickup">
@@ -86,7 +86,7 @@ CommonPref.setIdentifier("<THREADURL/>");
 		<li><img src="style/track-p.png" title="TrackingPopup" class="trackpop" id="RMenu.TrPop" onclick="MessageMenu.PopupTracked(event);"></li>
 		</ul>
 	</li>
-	<li><img src="style/bookmark-g.png" title="Bookmark" onclick="MessageMenu.SetBookmark(event);" class="bmoff"><img src="style/bookmark.png" title="Bookmark" onclick="MessageMenu.ResetBookmark(event);" class="bmon"></li>
+	<li><img src="style/bookmark-g.png" title="しおりを挟む" onclick="MessageMenu.SetBookmark(event);" class="bmoff"><img src="style/bookmark.png" title="しおり(クリックで除去)" onclick="MessageMenu.ResetBookmark(event);" class="bmon"></li>
 	<li><img src="style/pickup-g.png" title="Pickup" onclick="MessageMenu.SetPickup(event);" class="pickoff"><img src="style/pickup.png" title="Pickup" onclick="MessageMenu.ResetPickup(event);" class="pickon"></li>
 	<li><img src="style/hide.png" title="非表示" onclick="MessageMenu.ToggleHiding(event);"></li>
 	<li><img src="style/picture.png" title="画像展開" onclick="MessageMenu.ExtractImages(event);"></li>

@@ -180,13 +180,20 @@ h2
 	h2.pre
 	{
 		border-top: solid 1px #99F;
+		border-left: solid 2px #99F;
 	}
 	h2.new
 	{
+		border-top: solid 1px #F99;
+		border-left: solid 2px #F99;
+	}
+	article[data-bm="y"] > h2
+	{
+		border-top: solid 1px #F9F;
+		border-left: solid 2px #F9F;
 	}
 	.no
 	{
-		border-left: solid 2px #99F;
 		width: 4em;
 	}
 	.dt
@@ -251,8 +258,8 @@ h2
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
 		.bmoff{ display: inline; }
-		li[data-bm="y"] > .bmon { display: inline; }
-		li[data-bm="y"] > .bmoff{ display: none; }
+		#ctrlbox li[data-bm="y"] > .bmon { display: inline; 		/* メニューバー */}
+		#ctrlbox li[data-bm="y"] > .bmoff{ display: none; }		/* メニューバー */
 		li[data-bm="y"] > ul > li > .bmon { display: inline; }
 		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
 		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
