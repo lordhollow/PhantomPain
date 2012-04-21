@@ -74,7 +74,7 @@ var CommonPref = {
 			this._identifier = "machi." + _bbskey + "." + _thread;
 		} else {
 			//2ch
-			if (ThreadURL.match(/([^\/]+)\/([^\/]+)\/$/)) {
+			if (aThreadURL.match(/([^\/]+)\/([^\/]+)\/$/)) {
 				this._identifier = RegExp.$1 + "." + RegExp.$2;
 			}
 		}

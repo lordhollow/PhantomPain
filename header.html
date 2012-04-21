@@ -14,7 +14,7 @@ var ThreadInfo = {
 	Board:  "<BOARDURL/>",
 	Skin:   "<SKINPATH/>",
 };
-//CommonPref.setIdentifier("<THREADURL/>");
+CommonPref.setIdentifier("<THREADURL/>");
 </script>
 <style type="text/css" id="scriptedStyle">
 .res
@@ -43,9 +43,9 @@ var ThreadInfo = {
 <div id="ctrlbox" class="menu">
 	<ul>
 	<li><img src="style/about.png" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></li>
-	<li><img src="style/bookmark-g.png" title="ブックマーク">
+	<li id="Menu.Bookmark"><img src="style/bookmark.png" title="ブックマークあり" class="bmon" onclick="Menu.JumpToBookmark();"><img src="style/bookmark-g.png" title="ブックマークなし" class="bmoff">
 		<ul>
-		<li><img src="style/bookmark-g.png" title="ブックマーク解除"></li>
+		<li><img src="style/bookmark-g.png" title="ブックマーク解除" class="bmon" onclick="Menu.ResetBookmark();"></li>
 		</ul>
 	</li>
 	<li><img src="style/pickup-g.png" title="Pickup">
