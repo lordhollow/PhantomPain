@@ -319,7 +319,7 @@ var Menu = {
 	
 	ResetBookmark: function()
 	{
-		Bookmark.Reset();
+		Bookmark.reset();
 	},
 };
 
