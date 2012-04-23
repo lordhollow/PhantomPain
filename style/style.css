@@ -272,6 +272,8 @@ h2
 			top: 6px;
 			font-family: monospace;
 			font-weight: bold;
+			width: 16px;
+			text-align: right;
 		}
 
 		/* レスメニュー上のピックアップボタン切り替え */
