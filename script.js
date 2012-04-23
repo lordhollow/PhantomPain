@@ -517,7 +517,7 @@ var ThreadMessages = {
 					obj.removeChild(obj.childNodes[2]);
 				}
 			}
-			return obj
+			return obj;
 		}
 		else
 		{	
