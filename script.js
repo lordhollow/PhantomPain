@@ -338,7 +338,7 @@ var Menu = {
 	{
 	},
 	
-	JumpToBookmark: function()
+	JumpToBookmark: function(autoDeploy)
 	{
 		MessageUtil.focus(Bookmark.no);
 	},
@@ -582,7 +582,6 @@ var ThreadMessages = {
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = {
-
 	init: function()
 	{
 		var no = CommonPref.readThreadObject("bm");
@@ -615,11 +614,23 @@ var Bookmark = {
 					domobj[i].dataset.bm = "y";
 				}
 			}
-			$("Menu.Bookmark").dataset.bm = "y";
-			$("Menu.Bookmark").dataset.bmn= no;
-			this.no = no;
-			this.save();
 		}
+		//メニューバー
+		if (no < ThreadMessages.deployedMin)
+		{
+			$("Menu.Bookmark").dataset.bm = "b";
+		}
+		else if (no > ThreadMessages.deployedMax)
+		{
+			$("Menu.Bookmark").dataset.bm = "a";
+		}
+		else
+		{
+			$("Menu.Bookmark").dataset.bm = "y";
+		}
+		$("Menu.Bookmark").dataset.bmn= no;
+		this.no = no;
+		this.save();
 	},
 	reset: function()
 	{
@@ -644,6 +655,7 @@ var Bookmark = {
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Pickup = {
+	//TODO:中途追加品対応
 	init: function()
 	{
 		this.pickups = CommonPref.readThreadObject("pk", true);
