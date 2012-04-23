@@ -85,10 +85,17 @@ var CommonPref = {
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
 		this._storage.setItem(pn, jsonStr);
 	},
-	readThreadObject: function(objName)
+	readThreadObject: function(objName ,isArray)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-		return eval(this._storage.getItem(pn)+"");
+		if (isArray)
+		{	//Array: Ç±ÇÍÅAâﬂãéÇÃå›ä∑ê´ÇÃÇΩÇﬂÇæÇØÇ…Ç†ÇÈÅB
+			return eval("[" + this._storage.getItem(pn) + "]");
+		}
+		else
+		{
+			return eval(this._storage.getItem(pn)+"");
+		}
 	},
 	writeGlobalObject: function(objName, jsonStr)
 	{
