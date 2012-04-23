@@ -79,50 +79,16 @@ var CommonPref = {
 			}
 		}
 	},
-	
-	getBookmark: function() {
-		var item = this._storage.getItem(this._resolvePrefName("bm."));
-		if(item == null) return "";
-		return item.value;
-	},
-	
-	setBookmark: function(aResNo) {
-		var value = this.createArrayString(aResNo);
-		this._storage.setItem(this._resolvePrefName("bm."), value);
-		return value;
-	},
-	
-	getPickups: function() {
-		var item = this._storage.getItem(this._resolvePrefName("pk."));
-		if(item == null) return new Array();
-		return this.stringToArray(item.value);
-		
-	},
-	
-	setPickups: function(ResNumbers) {
-		var value = this.createArrayString(ResNumbers);
-		this._storage.setItem(this._resolvePrefName("pk."), value);
-		return value;
-	},
-	
-	getIgnores: function() {
-		var item = this._storage.getItem(this._resolvePrefName("ig."));
-		if(item == null) return new Array();
-		return this.stringToArray(item.value);
-	},
-	
-	setIgnores: function(ResNumbers) {
-		var value = this.createArrayString(ResNumbers);
-		this._storage.setItem(this._resolvePrefName("ig."), value);
-		return value;
-	},
+	//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
 	writeThreadObject: function(objName, jsonStr)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+		this._storage.setItem(pn, jsonStr);
 	},
 	readThreadObject: function(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+		return eval(this._storage.getItem(pn)+"");
 	},
 	writeGlobalObject: function(objName, jsonStr)
 	{
@@ -134,41 +100,4 @@ var CommonPref = {
 		var pn = "bbs2chSkin.common." + objName;
 		return eval(this._storage.getItem(pn)+"");
 	},
-	createArrayString: function(a) {
-		if (a instanceof Array) {
-			var flg=false;
-			var res="";
-			for (var i=0; i< a.length; i++) {
-				if (!isNaN(parseInt(a[i]))) {
-					if (flg) {
-						res += ("," + a[i]);
-					} else {
-						res = a[i];
-						flg=true;
-					}
-				}
-			}
-			return res;
-		} else {
-			return a;
-		}
-	},
-	
-	stringToArray: function(s) {
-		//↓ときたまうまくいかない・・・なんでだろう
-		//return eval("new Array(" + s + ")");
-		var e = s.split(",");
-		var r = new Array();
-		for (var i=0;i<e.length;i++) {
-			if (e[i].match(/(\d+)-(\d+)/)) {
-				for (var j = parseInt(RegExp.$1) ; j <= parseInt(RegExp.$2) ; j++ ) {
-					r.push(j);
-				}
-			} else if (!isNaN(parseInt(e[i]))) r.push(parseInt(e[i]));
-		}
-		return r;
-		
-		
-	}
-
 };

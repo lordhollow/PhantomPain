@@ -571,18 +571,20 @@ var Bookmark = {
 
 	init: function()
 	{
-		var no = 0;
-		try{
-			no = parseInt(CommonPref.getBookmark());
-		} finally {}
-		if(!no)
+		var no = CommonPref.readThreadObject("bm");
+		if (!no)
 		{
-			no=0;
+			no = 0;
 		}
 		else
 		{
 			this.set(no);
 		}
+	},
+	
+	save: function()
+	{
+		CommonPref.writeThreadObject("bm", this.no);
 	},
 	
 	set: function(no)
@@ -602,7 +604,7 @@ var Bookmark = {
 			$("Menu.Bookmark").dataset.bm = "y";
 			$("Menu.Bookmark").dataset.bmn= no;
 			this.no = no;
-			CommonPref.setBookmark(no);
+			this.save();
 		}
 	},
 	reset: function()
@@ -621,7 +623,7 @@ var Bookmark = {
 		}
 		this.no = 0;
 		$("Menu.Bookmark").dataset.bm = "n";
-		CommonPref.setBookmark(0);
+		this.save();
 	},
 
 };
