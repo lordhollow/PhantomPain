@@ -300,6 +300,12 @@ h2
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
 		.menu .resto { display: none; }
 
+		/* 新着インジケータ */
+		.nron { display: none; }
+		.nroff{ display: inline; }
+		body[data-hasNew="y"] .nron { display: inline; }
+		body[data-hasNew="y"] .nroff{ display: none; }
+
 article article
 {
 	margin-left: 2em;
