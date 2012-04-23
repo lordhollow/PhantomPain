@@ -279,8 +279,8 @@ h2
 		/* レスメニュー上のピックアップボタン切り替え */
 		.pickon { display: none; }
 		.pickoff{ display: inline; }
-		article[data-pickuped="on"] .pickon { display: inline; }
-		article[data-pickuped="on"] .pickoff{ display: none; }
+		article[data-pickuped="on"] > div> ul> li> .pickon { display: inline; }
+		article[data-pickuped="on"] > div> ul> li> .pickoff{ display: none; }
 
 		/* レスメニュー上のツリー */
 		.treeon { display: inline; }

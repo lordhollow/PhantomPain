@@ -247,9 +247,17 @@ var MessageMenu = {
 	},
 	SetPickup: function(event)
 	{
+		if (this._menu.dataset.binding != 0)
+		{
+			Pickup.pickup(this._menu.dataset.binding);
+		}
 	},
 	ResetPickup: function(event)
 	{
+		if (this._menu.dataset.binding != 0)
+		{
+			Pickup.release(this._menu.dataset.binding);
+		}
 	},
 	ToggleHiding: function(event)
 	{
@@ -628,6 +636,63 @@ var Bookmark = {
 
 };
 
+/* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Pickup = {
+	init: function()
+	{
+		this.pickups = CommonPref.readThreadObject("pk", true);
+		this.setMark(this.pickups);
+	},
+	save: function()
+	{
+		var idss = this.pickups + "";
+		CommonPref.writeThreadObject("pk", idss);
+	},
+	setMark: function(ids)
+	{
+		for(var i=0, j=ids.length; i<j; i++)
+		{
+			var id = ids[i];
+			var rs = document.body.getElementsByTagName("ARTICLE");
+			for (var k=0, km=rs.length; k<km; k++)
+			{
+				if (rs[k].dataset.no == id)
+					rs[k].dataset.pickuped = "on";
+			}
+		}
+	},
+	resetMark: function(ids)
+	{
+		for(var i=0, j=ids.length; i<j; i++)
+		{
+			var id = ids[i];
+			var rs = document.body.getElementsByTagName("ARTICLE");
+			for (var k=0, km=rs.length; k<km; k++)
+			{
+				if (rs[k].dataset.no == id)
+					rs[k].dataset.pickuped = "";
+			}
+		}
+	},
+	pickup: function(id)
+	{
+		if (!this.pickups.include(id))
+		{
+			this.pickups.push(id);
+			this.setMark([id]);
+			this.save();
+		}
+	},
+	release: function(id)
+	{
+		if (this.pickups.include(id))
+		{
+			this.pickups = this.pickups.filter(function(item, index, array){ return item != id });
+			this.resetMark([id]);
+			this.save();
+		}
+	},
+};
 
 /* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Tracker= {
@@ -1265,6 +1330,7 @@ function init()
 	MessageMenu.init();
 	BoardPane.init();
 	Bookmark.init();
+	Pickup.init();
 	Tracker.init();
 	EventHandlers.init();
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
