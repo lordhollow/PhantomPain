@@ -116,7 +116,24 @@ var CommonPref = {
 		this._storage.setItem(this._resolvePrefName("ig."), value);
 		return value;
 	},
-	
+	writeThreadObject: function(objName, jsonStr)
+	{
+		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+	},
+	readThreadObject: function(objName)
+	{
+		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+	},
+	writeGlobalObject: function(objName, jsonStr)
+	{
+		var pn = "bbs2chSkin.common." + objName;
+		this._storage.setItem(pn, jsonStr);
+	},
+	readGlobalObject: function(objName)
+	{
+		var pn = "bbs2chSkin.common." + objName;
+		return eval(this._storage.getItem(pn)+"");
+	},
 	createArrayString: function(a) {
 		if (a instanceof Array) {
 			var flg=false;

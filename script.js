@@ -15,22 +15,36 @@ var Preference =
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 Function.prototype.bind = function() {
-  var __method = this, args = $A(arguments), object = args.shift();
-  return function() {
-    return __method.apply(object, args.concat($A(arguments)));
-  }
+	var __method = this, args = $A(arguments), object = args.shift();
+	return function() {
+		return __method.apply(object, args.concat($A(arguments)));
+	}
 }
 var $A = Array.from = function(iterable) {
-  if (!iterable) return [];
-  if (iterable.toArray) {
-    return iterable.toArray();
-  } else {
-    var results = [];
-    for (var i = 0, length = iterable.length; i < length; i++)
-      results.push(iterable[i]);
-    return results;
-  }
+	if (!iterable) return [];
+	if (iterable.toArray) {
+		return iterable.toArray();
+	} else {
+		var results = [];
+		for (var i = 0, length = iterable.length; i < length; i++)
+			results.push(iterable[i]);
+		return results;
+	}
 }
+
+var $qA = function(iterable)
+{	//$Aなんだけどクオートで囲む。クオートが入っていればエスケープ。
+	if (!iterable) return [];
+	var results = [];
+	for (var i=0, j=iterable.length; i<j; i++)
+	{
+		var str = iterable[i];
+		str=str.replace(/\"/g, '\\"');
+		results.push('"' + str + '"');
+	}
+	 return results;
+}
+
 Array.prototype.include = function(val) {
 	for(var i=0;i<this.length;i++){
 		if (this[i]==val) return true;
@@ -619,6 +633,30 @@ var Tracker= {
 	
 	init: function()
 	{	//保存されているトラック情報を元にトラッキングを開始
+		var obj = CommonPref.readGlobalObject("tracker");
+		for (var i=0, j=obj.length; i<j; i++)
+		{
+			var tr = new TrackerEntry();
+			tr.index = obj[i].index;
+			tr.trip = obj[i].trip;
+			tr.aid = obj[i].aid;
+			this._trackers.push(tr);
+			tr.setMark();
+		}
+		this.save();
+	},
+	save: function()
+	{
+		var tss = [];
+		for(var i=0,j=this._trackers.length; i<j; i++)
+		{
+			if(this._trackers[i])
+			{
+				tss.push(this._trackers[i].toString());
+			}
+		}
+		var json =  "[{0}]".format(tss);
+		CommonPref.writeGlobalObject("tracker", json);
 	},
 	
 	BeginTracking: function(jsobj)
@@ -634,6 +672,7 @@ var Tracker= {
 		tr.index = this.findBrankIndex();
 		this._trackers.push(tr);
 		tr.setMark();
+		this.save();
 	},
 	EndTracking: function(jsobj)
 	{
@@ -652,6 +691,7 @@ var Tracker= {
 		}
 		this._trackers = nt;
 		if (tr) tr.resetMark();
+		this.save();
 	},
 	findBrankIndex: function()
 	{
@@ -684,17 +724,27 @@ TrackerEntry.prototype = {
 	
 	init: function(jsobj)
 	{
-		this.trip = [];
-		this.aid = [];
-		if (jsobj.trip)
+		if (jsobj)
 		{
-			this.trip.push(jsobj.trip);
-		}
-		if (jsobj.aid.length > 5)
-		{
-			this.aid.push(jsobj.aid);
+			this.trip = [];
+			this.aid = [];
+			if (jsobj.trip)
+			{
+				this.trip.push(jsobj.trip);
+			}
+			if (jsobj.aid.length > 5)
+			{
+				this.aid.push(jsobj.aid);
+			}
 		}
 	},
+	
+	toString: function()
+	{
+		var str = "{index: {0}, aid: [{1}], trip: [{2}]}".format(this.index, $qA(this.aid), $qA(this.trip));
+		return str;
+	},
+	
 	check: function(obj)
 	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
 		var m = 0;
