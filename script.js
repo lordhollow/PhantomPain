@@ -333,6 +333,47 @@ var ThreadMessages = {
 		return (this.jsobj[no] != null)
 	},
 
+	load: function(min, max, deploy)
+	{	//指定範囲のレス(f-t)を読み込み。chaikaが未取得のレスはアクセスしない。
+		//deploy=trueのとき、画面にも表示する。
+		var r=(min==max)? min+"n" : min+"-"+max+"n";
+		var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + r;
+		var req = new XMLHttpRequest();
+		req.open('GET', loardUrlStr, false);	//sync
+		req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+		req.send(null);	
+		if ((req.readyState==4)&&(req.status==200)){
+			var html = req.responseText;
+			if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+			{
+				var nc = document.createElement("DIV");
+				nc.innerHTML = RegExp.$1;
+				this.push($A(nc.getElementsByTagName("ARTICLE")), deploy);
+			}
+		}
+		else
+		{
+			return false;
+		}
+	},
+	
+	push: function(nodes, deploy)
+	{
+		for (var i=0, j=nodes.length; i<j; i++)
+		{
+			var node = nodes[i];
+			var no = parseInt(node.dataset.no);
+			if (!this.isReady(no))
+			{
+				this.processMessage(node);
+			}
+			if (deploy && !this.isDeployed(no))
+			{
+				this.deployNode(node)
+			}
+		}
+	},
+
 	processMessages: function (e)
 	{	//e: articleのコンテナ
 		for(var i=0; i<e.childNodes.length; i++)
@@ -378,6 +419,38 @@ var ThreadMessages = {
 			MessageStructure.push(node, obj);
 		}
 	},
+	
+	deployNode: function(node)
+	{
+		if (node.parentNode)
+		{	//既存の親を除外。loadから来た仮のdivだと思われる。
+			node.parentNode.removeChild(node);
+		}
+		var rc = $("resContainer");
+		var nn =  parseInt(node.dataset.no);
+		var nextSibling = this.findDeployedNextSibling(nn);
+		if (nextSibling)
+		{
+			rc.insertBefore(node, nextSibling);
+		}
+		else
+		{
+			rc.appendChild(node);
+		}
+	},
+	
+	findDeployedNextSibling: function(no)
+	{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
+		for(var i=no; i<99999; i++)
+		{
+			if(this.isDeployed(i))
+			{
+				return this.domobj[i];
+			}
+		}
+		return null;
+	},
+	
 	extendAnchor: function(e)
 	{	//全角アンカー等拡張
 		var as=e.getElementsByTagName("A");
@@ -455,6 +528,7 @@ var ThreadMessages = {
 	{	//普通に表示されているか？
 		if ( this.domobj[id])
 			if (this.domobj[id].parentNode)
+				if (this.domobj[id].parentNode.id == "resContainer")
 					return true;
 		return false;
 	},
