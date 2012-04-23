@@ -328,6 +328,20 @@ var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
 	jsobj: new Array(),		//DOMオブジェクトから抽出したコンテンツ。indexはレス番号
 
+	deployedMin: 0,
+	deployedMax: 0,
+	
+	init: function()
+	{
+		var e = $("resContainer");
+		for(var i=0; i<e.childNodes.length; i++)
+		{	//これ、キューに登録して非同期とかにしたほうがいいのかも。
+			this.processMessage(e.childNodes[i]);
+		}
+		this.deployedMin = parseInt(e.firstElementChild.dataset.no);
+		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
+	},
+	
 	contains: function(no)
 	{
 		return (this.jsobj[no] != null)
@@ -374,13 +388,6 @@ var ThreadMessages = {
 		}
 	},
 
-	processMessages: function (e)
-	{	//e: articleのコンテナ
-		for(var i=0; i<e.childNodes.length; i++)
-		{	//これ、キューに登録して非同期とかにしたほうがいいのかも。
-			this.processMessage(e.childNodes[i]);
-		}
-	},
 	processMessage: function (node)
 	{
 		if (node.tagName == "ARTICLE")
@@ -437,6 +444,8 @@ var ThreadMessages = {
 		{
 			rc.appendChild(node);
 		}
+		if (nn < this.deployedMin) this.deployedMin = nn;
+		if (nn > this.deployedMax) this.deployedMax = nn;
 	},
 	
 	findDeployedNextSibling: function(no)
@@ -1185,7 +1194,7 @@ function init()
 	};
 	worker.postMessage({begins: 0});
 //*/
-	ThreadMessages.processMessages($("resContainer"));
+	ThreadMessages.init();
 	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
 	BoardPane.init();
