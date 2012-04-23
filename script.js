@@ -312,6 +312,10 @@ var Menu = {
 		pp.popup(Preference.TemplateAnchor, Util.getElementPagePos($("Menu.Template")), true);
 	},
 	
+	JumpToNewMark: function()
+	{
+	},
+	
 	JumpToBookmark: function()
 	{
 		MessageUtil.focus(Bookmark.no);
