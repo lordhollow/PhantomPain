@@ -344,6 +344,8 @@ var ThreadMessages = {
 		}
 		this.deployedMin = parseInt(e.firstElementChild.dataset.no);
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
+		//↓はTracker.initの中で実施されるので、やらない
+		//Tracker.notifyNewMessage($A(e.childElementNodes), obj);
 	},
 	
 	contains: function(no)
@@ -390,6 +392,7 @@ var ThreadMessages = {
 				this.deployNode(node)
 			}
 		}
+		Tracker.notifyNewMessage($A(e.childElementNodes), obj);
 	},
 
 	processMessage: function (node)
@@ -614,6 +617,10 @@ var Bookmark = {
 var Tracker= {
 	_trackers: [],
 	
+	init: function()
+	{	//保存されているトラック情報を元にトラッキングを開始
+	},
+	
 	BeginTracking: function(jsobj)
 	{
 		for(var i=0, j=this._trackers.length; i<j; i++)
@@ -663,6 +670,9 @@ var Tracker= {
 			if (!used) return ni;
 		}
 		return 0;
+	},
+	notifyNewMessage: function(nodes)
+	{	//新しいレスが来た。希望のレスだ。
 	},
 };
 
@@ -1203,6 +1213,7 @@ function init()
 	MessageMenu.init();
 	BoardPane.init();
 	Bookmark.init();
+	Tracker.init();
 	EventHandlers.init();
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
