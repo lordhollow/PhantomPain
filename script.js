@@ -347,6 +347,12 @@ var Menu = {
 	{
 		Bookmark.reset();
 	},
+	PopupPickups: function()
+	{
+		var pp = new ResPopup(null);
+		pp.offsetX = 8; pp.offsetY = 16;
+		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
+	},
 };
 
 /* Å°ÉåÉXÇÃèàóùÅ°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å° */
@@ -642,6 +648,7 @@ var Pickup = {
 	{
 		this.pickups = CommonPref.readThreadObject("pk", true);
 		this.setMark(this.pickups);
+		this.adjustMenuStyle();
 	},
 	save: function()
 	{
@@ -682,6 +689,7 @@ var Pickup = {
 			this.setMark([id]);
 			this.save();
 		}
+		this.adjustMenuStyle();
 	},
 	release: function(id)
 	{
@@ -691,6 +699,19 @@ var Pickup = {
 			this.resetMark([id]);
 			this.save();
 		}
+		this.adjustMenuStyle();
+	},
+	adjustMenuStyle: function()
+	{
+		if (this.pickups.length)
+		{
+			$("Menu.Pickup").dataset.pk = "y";
+		}
+		else
+		{
+			$("Menu.Pickup").dataset.pk = "n";
+		}
+		$("Menu.Pickup").dataset.pkc= this.pickups.length;
 	},
 };
 
