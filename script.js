@@ -437,6 +437,56 @@ var ThreadMessages = {
 		}
 	},
 	
+	_checkingNewMessage: false,
+	_checkNewMessageCallback: new Array(),
+	_checkNewMessageRequest: null,
+	checkNewMessage: function(callback)
+	{
+		this._checkNewMessageCallback.push(callback);
+		if(!this._checkingNewMessage)
+		{
+			this._checkingNewMessage = true;
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = this._loadCheck.bind(this);
+			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n");
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
+			req.send(null);
+			this._checkNewMessageRequest=req;
+		}
+	},
+	
+	_loadCheck: function()
+	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
+		var req = this._checkNewMessageRequest;
+		if (!req) return;
+		if (req.readyState==4)	//end
+		{
+			if ((req.status>=200)&&(req.status<300))
+			{	//OK～
+				var html = req.responseText;
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+				{	//追加でロードした分はpush(deployはしません)
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					this.push($A(nc.getElementsByTagName("ARTICLE")));
+				}
+				if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
+				{
+					var obj;
+					eval("obj = "+ RegExp.$1);
+					for (var i=0, j=this._checkNewMessageCallback.length; i<j; i++)
+					{
+						var c = this._checkNewMessageCallback[i];
+						if (c) c(obj);
+					}
+				}
+			}
+			this._checkNewMessageCallback = new Array();
+			this._checkingNewMessage = false;
+			this._checkNewMessageRequest = null;
+		}
+	},
+	
 	push: function(nodes)
 	{
 		for (var i=0, j=nodes.length; i<j; i++)
