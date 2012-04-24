@@ -272,7 +272,7 @@ var MessageMenu = {
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16; pp.offsetXe = 20;
 		pp.popupNumbers([this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Gear")) , false);
-		pp.onClose = (function(p){this.gearNode = NULL;}).bind(this);
+		pp.onClose = (function(p){this.gearNode = null;}).bind(this);
 		var c = pp.container;
 		c.dataset.gearmode = "y";
 		this.gearNode = c.childNodes[0];
@@ -286,8 +286,12 @@ var MessageMenu = {
 		}
 		var id = parseInt(this.gearNode.firstChild.dataset.no);
 		id += (event.detail < 0 ) ? -1 : +1;
+		if (!ThreadMessages.isReady(id))
+		{
+			ThreadMessages.load(id,id,false);	//‚ë[‚Ç
+		}
 		if (ThreadMessages.isReady(id))
-		{	//TODO::“Ç‚Ýž‚ñ‚Å‚­‚é‚Ì‚àƒAƒŠ‚Ì‚Í‚¸
+		{
 			var n = ThreadMessages.getNode(id, true, false, function(){});
 			if (n != null)
 			{
@@ -418,7 +422,7 @@ var ThreadMessages = {
 				this.deployNode(node)
 			}
 		}
-		Tracker.notifyNewMessage($A(e.childElementNodes), obj);
+		Tracker.notifyNewMessage(nodes);
 	},
 
 	processMessage: function (node)
