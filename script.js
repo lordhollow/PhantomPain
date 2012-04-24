@@ -290,19 +290,13 @@ var MessageMenu = {
 			}
 			var id = parseInt(this.gearNode.firstChild.dataset.no);
 			id += (event.detail < 0 ) ? -1 : +1;
-			if (!ThreadMessages.isReady(id))
+			ThreadMessages.load(id,id);	//ろーど
+			var n = ThreadMessages.getNode(id, true, false, function(){});
+			if (n != null)
 			{
-				ThreadMessages.load(id,id,false);	//ろーど
-			}
-			if (ThreadMessages.isReady(id))
-			{
-				var n = ThreadMessages.getNode(id, true, false, function(){});
-				if (n != null)
-				{
-					this.gearNode.removeChild(this.gearNode.firstChild);
-					this.gearNode.appendChild(n);
-					this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
-				}
+				this.gearNode.innerHTML = "";
+				this.gearNode.appendChild(n);
+				this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
 			}
 		}
 		this._csGearWheel = false;
@@ -362,7 +356,12 @@ var Menu = {
 	},
 	More: function()
 	{
-		ThreadMessages.load(ThreadMessages.deployedMax+1,ThreadMessages.deployedMax+10, true);
+		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
+		var min = ThreadMessages.deployedMax+1;
+		var max = ThreadMessages.deployedMax+10;
+		ThreadMessages.load(min, max);
+		ThreadMessages.deploy(min, max);
+		MessageUtil.focus(min);
 	},
 };
 
@@ -391,34 +390,51 @@ var ThreadMessages = {
 	{
 		return (this.jsobj[no] != null)
 	},
-
-	load: function(min, max, deploy)
-	{	//指定範囲のレス(f-t)を読み込み。chaikaが未取得のレスはアクセスしない。
-		//deploy=trueのとき、画面にも表示する。
-		var r=(min==max)? min+"n" : min+"-"+max+"n";
-		var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + r;
-		var req = new XMLHttpRequest();
-		req.open('GET', loardUrlStr, false);	//sync
-		req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
-		req.send(null);	
-		if ((req.readyState==4)&&(req.status==200)){
-			var html = req.responseText;
-			if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-			{
-				var nc = document.createElement("DIV");
-				nc.innerHTML = RegExp.$1;
-				this.push($A(nc.getElementsByTagName("ARTICLE")), deploy);
-				return true;
-			}
-			return false;
+	
+	load: function(min, max)
+	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
+		var tmin = min;
+		var tmax = max;
+		if (tmax > ThreadInfo.Total) tmax = ThreadInfo.Total;	//絶対取れないところはとりに行かない。
+		for(; tmin <= tmax; tmin++)
+		{	//tmin位置が読み込み済みならtminを+1
+			if (!this.isReady(tmin))	break;
 		}
-		else
-		{
-			return false;
+		for(; tmax >= tmin; tmax--)
+		{	//tmax位置が読み込み済みならtmaxを-1
+			if (!this.isReady(tmax))	break;	
+		}
+		if (tmin <= tmax)
+		{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
+			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
+			var req = new XMLHttpRequest();
+			req.open('GET', loardUrlStr, false);	//sync
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+			req.send(null);	
+			if ((req.readyState==4)&&(req.status==200)){
+				var html = req.responseText;
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+				{
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					this.push($A(nc.getElementsByTagName("ARTICLE")));
+					return true;
+				}
+				return false;
+			}
 		}
 	},
 	
-	push: function(nodes, deploy)
+	deploy: function(min, max)
+	{	//minからmaxまでをdeployNodeする。
+		//ロードされていないものはロードしないのであらかじめload(min, maxしておくように!）
+		for(var i=min; i<=max; i++)
+		{
+			this.deployNode(this.domobj[i]);
+		}
+	},
+	
+	push: function(nodes)
 	{
 		for (var i=0, j=nodes.length; i<j; i++)
 		{
@@ -427,10 +443,6 @@ var ThreadMessages = {
 			if (!this.isReady(no))
 			{
 				this.processMessage(node);
-			}
-			if (deploy && !this.isDeployed(no))
-			{
-				this.deployNode(node)
 			}
 		}
 		Tracker.notifyNewMessage(nodes);
@@ -477,6 +489,8 @@ var ThreadMessages = {
 	
 	deployNode: function(node)
 	{
+		if(!node)return;	//ほぎゃ！
+		if(node.tagName != "ARTICLE") return;	//ほぎゃ！
 		if (node.parentNode)
 		{	//既存の親を除外。loadから来た仮のdivだと思われる。
 			node.parentNode.removeChild(node);
