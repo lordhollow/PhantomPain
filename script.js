@@ -278,29 +278,34 @@ var MessageMenu = {
 		this.gearNode = c.childNodes[0];
 		this.gearPopup = pp;
 	},
+	_csGearWheel: false,
 	GearWheel: function(event)
 	{
-		if (this.gearNode == null)
-		{	//TODO::もしかして必ずしも自動開始したくないかも？
-			this.BeginGear(event);
-		}
-		var id = parseInt(this.gearNode.firstChild.dataset.no);
-		id += (event.detail < 0 ) ? -1 : +1;
-		if (!ThreadMessages.isReady(id))
+		if (this._csGearWheel) return;
+		this._csGearWheel = true;	//超簡易クリティカルセクション。javascriptはシングルスレッドなのでこれでOK。このオブジェクトはworkerに突っ込めないしね！
 		{
-			ThreadMessages.load(id,id,false);	//ろーど
-		}
-		if (ThreadMessages.isReady(id))
-		{
-			var n = ThreadMessages.getNode(id, true, false, function(){});
-			if (n != null)
+			if (this.gearNode == null)
+			{	//TODO::もしかして必ずしも自動開始したくないかも？
+				this.BeginGear(event);
+			}
+			var id = parseInt(this.gearNode.firstChild.dataset.no);
+			id += (event.detail < 0 ) ? -1 : +1;
+			if (!ThreadMessages.isReady(id))
 			{
-				this.gearNode.removeChild(this.gearNode.firstChild);
-				this.gearNode.appendChild(n);
-				this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
+				ThreadMessages.load(id,id,false);	//ろーど
+			}
+			if (ThreadMessages.isReady(id))
+			{
+				var n = ThreadMessages.getNode(id, true, false, function(){});
+				if (n != null)
+				{
+					this.gearNode.removeChild(this.gearNode.firstChild);
+					this.gearNode.appendChild(n);
+					this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
+				}
 			}
 		}
-		
+		this._csGearWheel = false;
 		event.preventDefault();
 	},
 	BeginTracking: function(event)
@@ -399,7 +404,9 @@ var ThreadMessages = {
 				var nc = document.createElement("DIV");
 				nc.innerHTML = RegExp.$1;
 				this.push($A(nc.getElementsByTagName("ARTICLE")), deploy);
+				return true;
 			}
+			return false;
 		}
 		else
 		{
