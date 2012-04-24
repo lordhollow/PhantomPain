@@ -222,7 +222,7 @@ var MessageMenu = {
 			var rf = MessageStructure.nodesReplyFrom[from];
 			for(var i=0, j = rf.length; i < j; i++)
 			{
-				var node = ThreadMessages.getNode(rf[i], true, false, function(){});	//ARTICLE
+				var node = ThreadMessages.getNode(rf[i], true);	//ARTICLE
 				if (rf[i] > from)
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
 					this._createNodeTree(rf[i], node);
@@ -291,7 +291,7 @@ var MessageMenu = {
 			var id = parseInt(this.gearNode.firstChild.dataset.no);
 			id += (event.detail < 0 ) ? -1 : +1;
 			ThreadMessages.load(id,id);	//ろーど
-			var n = ThreadMessages.getNode(id, true, false, function(){});
+			var n = ThreadMessages.getNode(id, true);
 			if (n != null)
 			{
 				this.gearNode.innerHTML = "";
@@ -560,7 +560,7 @@ var ThreadMessages = {
 	replaceStr: function(e)
 	{	//replaceStr.txtによる置換
 	},
-	getNode: function(id, clone, load, loaded)
+	getNode: function(id, clone)
 	{
 		if (this.domobj[id] != null)
 		{
@@ -581,15 +581,7 @@ var ThreadMessages = {
 			}
 			return obj;
 		}
-		else
-		{	
-			if (load)
-			{	//TODO: XmlHttpRequest
-				//非同期で読み出しかけて、結果はコールバック関数(loaded)で返す。
-			}
-			//ここがnullを返すのは固定。
-			return null;
-		}
+		return null;
 	},
 	isReady: function(id)
 	{	//読み込み済みか？
@@ -1238,7 +1230,7 @@ ResPopup.prototype = new Popup();
 		var innerContainer = document.createElement("DIV");
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
-			var node = ThreadMessages.getNode(ids[i], true, false, function(){});
+			var node = ThreadMessages.getNode(ids[i], true);
 			if (node != null)
 			{
 				innerContainer.appendChild(node);
