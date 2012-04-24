@@ -7,7 +7,7 @@ var Preference =
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
-	TemplateAnchor: ">>1-6",	//テンプレポップアップで表示するアンカー
+	TemplateLength: 6,			//テンプレポップアップで表示するレスの数
 	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
 	PopupOffsetY: 16,			//ポップアップのオフセット
 	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
@@ -332,7 +332,10 @@ var Menu = {
 	{
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
-		pp.popup(Preference.TemplateAnchor, Util.getElementPagePos($("Menu.Template")), true);
+		ThreadMessages.load(1, Preference.TemplateLength);
+		var tids = [];
+		for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+		pp.popupNumbers(tids, Util.getElementPagePos($("Menu.Template")), true);
 	},
 	
 	JumpToNewMark: function()
