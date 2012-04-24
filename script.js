@@ -98,7 +98,7 @@ var EventHandlers = {
 		var cancel = false;
 		if (t.className == "resPointer")
 		{
-			//TODO: jumpTo
+			//jumpTo
 			if(t.textContent.match(/(\d+)/))
 			{
 				var id = parseInt(RegExp.$1);
@@ -168,10 +168,8 @@ var MessageMenu = {
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
-			//node.childNodes[0].appendChild(m);
 			node.insertBefore(m, node.childNodes[1]);
-			//node.appendChild(m);
-			//TODO: pickup, bookmark, hidingó‘Ô‚Ì”½‰f
+			//pickup, bookmark, hidingó‘Ô‚Ì”½‰f ¨ Bookmark, Pickup, Hiding,Track‚Ådataset‚Éİ’èACSS‚Å”½‰f
 		}
 		else
 		{
@@ -777,12 +775,11 @@ var Tracker= {
 	EndTracking: function(jsobj)
 	{
 		var nt = new Array();
-		var tr = null;
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
 			if (this._trackers[i].check(jsobj))
 			{
-				tr = this._trackers[i];
+				this._trackers[i].resetMark();
 			}
 			else
 			{
@@ -790,7 +787,6 @@ var Tracker= {
 			}
 		}
 		this._trackers = nt;
-		if (tr) tr.resetMark();
 		this.save();
 	},
 	findBrankIndex: function()
