@@ -360,6 +360,10 @@ var Menu = {
 		pp.offsetX = 8; pp.offsetY = 16;
 		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
 	},
+	More: function()
+	{
+		ThreadMessages.load(ThreadMessages.deployedMax+1,ThreadMessages.deployedMax+10, true);
+	},
 };
 
 /* ¡ƒŒƒX‚Ìˆ—¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡ */
