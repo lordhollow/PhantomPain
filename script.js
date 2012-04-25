@@ -83,11 +83,10 @@ var EventHandlers = {
 			new ResPopup(t);
 		}
 		else if (t.className == "outLink")
-		{
+		{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
 			var p = OutlinkPlugins.getOutlinkPlugin(t);
 			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
 		}
-		//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
 		//スレURLにポイント → スレタイのポップアップ
 		//その他URLにポイント → simpleapi
 		//名前が数字 → ポップアップ
@@ -106,6 +105,25 @@ var EventHandlers = {
 				MessageUtil.focus(id);
 			}
 			cancel = true;
+		}
+		else if(t.className == "id")
+		{	//IDポップアップ
+			if (t.__idpopup)
+			{
+				t.__idpopup.close();
+			}
+			else
+			{
+				var ids = MessageStructure.nodesById[t.textContent];
+				if (ids)
+				{
+					var pp = new ResPopup(null);
+					pp.offsetX = 32; pp.offsetY = 16;
+					pp.popupNumbers(ids, Util.getElementPagePos(t) , false);
+					t.__idpopup = pp;
+					pp.onClose = function(){ t.__idpopup = null; } ;
+				}
+			}
 		}
 		if(cancel){
 			aEvent.preventDefault();
