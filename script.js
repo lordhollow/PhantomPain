@@ -367,6 +367,15 @@ var Menu = {
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
+	MoreBack: function()
+	{
+	},
+	BeginAutoMore: function()
+	{
+	},
+	EndAutoMore: function()
+	{
+	},
 };
 
 /* Å°ÉåÉXÇÃèàóùÅ°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å° */

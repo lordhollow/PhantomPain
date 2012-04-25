@@ -66,11 +66,15 @@ CommonPref.setIdentifier("<THREADURL/>");
 		<li><img src="style/picture-extract.png" title="画像閲覧"></li>
 		</ul>
 	</li>
-	<li><img src="style/automore-g.png" title="More" onClick="Menu.More();">
+	<li class="automoreoff">
+		<img src="style/more.png" title="More" onclick="Menu.More();">
 		<ul>
-		<li><img src="style/more.png" title="More"></li>
-		<li><img src="style/automore.png" title="Auto"></li>
+		<li><img src="style/moreback.png" title="MoreBack" onclick="Menu.MoreBack();"></li>
+		<li><img src="style/automore.png" title="AutoMore" onclick="Menu.BeginAutoMore();"></li>
 		</ul>
+	</li>
+	<li class="automoreon">
+		<img src="style/automore.png" title="AutoMore" onclick="Menu.EndAutoMore();">
 	</li>
 	<li>
 		<img src="style/new.png" title="新着あり(クリックでジャンプ)" click="Menu.JumpToNewMark();" class="nron">

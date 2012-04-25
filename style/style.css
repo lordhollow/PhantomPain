@@ -123,6 +123,10 @@ span.space
 		{
 			background-color: #333;
 		}
+		.automoreon { display: none; }
+		.automoreoff{ display: list-item; }
+		body[data-autoload="y"] .automoreon { display: list-item; }
+		body[data-autoload="y"] .automoreoff{ display: none; }
 
 /* ƒXƒŒˆê——ƒyƒCƒ“ */
 #boardPane
