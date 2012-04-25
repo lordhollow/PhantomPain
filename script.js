@@ -117,6 +117,7 @@ var EventHandlers = {
 				var ids = MessageStructure.nodesById[t.textContent];
 				if (ids)
 				{
+					ids = ids.sort(function(a,b){return a-b;});
 					var pp = new ResPopup(null);
 					pp.offsetX = 32; pp.offsetY = 16;
 					pp.popupNumbers(ids, Util.getElementPagePos(t) , false);
