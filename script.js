@@ -11,6 +11,7 @@ var Preference =
 	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
 	PopupOffsetY: 16,			//ポップアップのオフセット
 	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
+	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -290,7 +291,7 @@ var MessageMenu = {
 			}
 			var id = parseInt(this.gearNode.firstChild.dataset.no);
 			id += (event.detail < 0 ) ? -1 : +1;
-			ThreadMessages.load(id,id);	//ろーど
+			MessageLoader.load(id,id);	//ろーど
 			var n = ThreadMessages.getNode(id, true);
 			if (n != null)
 			{
@@ -332,7 +333,7 @@ var Menu = {
 	{
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
-		ThreadMessages.load(1, Preference.TemplateLength);
+		MessageLoader.load(1, Preference.TemplateLength);
 		var tids = [];
 		for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
 		pp.popupNumbers(tids, Util.getElementPagePos($("Menu.Template")), true);
@@ -362,7 +363,7 @@ var Menu = {
 		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
 		var min = ThreadMessages.deployedMax+1;
 		var max = ThreadMessages.deployedMax+10;
-		ThreadMessages.load(min, max);
+		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
@@ -394,96 +395,12 @@ var ThreadMessages = {
 		return (this.jsobj[no] != null)
 	},
 	
-	load: function(min, max)
-	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
-		var tmin = min;
-		var tmax = max;
-		if (tmax > ThreadInfo.Total) tmax = ThreadInfo.Total;	//絶対取れないところはとりに行かない。
-		for(; tmin <= tmax; tmin++)
-		{	//tmin位置が読み込み済みならtminを+1
-			if (!this.isReady(tmin))	break;
-		}
-		for(; tmax >= tmin; tmax--)
-		{	//tmax位置が読み込み済みならtmaxを-1
-			if (!this.isReady(tmax))	break;	
-		}
-		if (tmin <= tmax)
-		{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
-			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
-			var req = new XMLHttpRequest();
-			req.open('GET', loardUrlStr, false);	//sync
-			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
-			req.send(null);	
-			if ((req.readyState==4)&&(req.status==200)){
-				var html = req.responseText;
-				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-				{
-					var nc = document.createElement("DIV");
-					nc.innerHTML = RegExp.$1;
-					this.push($A(nc.getElementsByTagName("ARTICLE")));
-					return true;
-				}
-				return false;
-			}
-		}
-	},
-	
 	deploy: function(min, max)
 	{	//minからmaxまでをdeployNodeする。
 		//ロードされていないものはロードしないのであらかじめload(min, maxしておくように!）
 		for(var i=min; i<=max; i++)
 		{
 			this.deployNode(this.domobj[i]);
-		}
-	},
-	
-	_checkingNewMessage: false,
-	_checkNewMessageCallback: new Array(),
-	_checkNewMessageRequest: null,
-	checkNewMessage: function(callback)
-	{
-		this._checkNewMessageCallback.push(callback);
-		if(!this._checkingNewMessage)
-		{
-			this._checkingNewMessage = true;
-			var req = new XMLHttpRequest();
-			req.onreadystatechange = this._loadCheck.bind(this);
-			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n");
-			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
-			req.send(null);
-			this._checkNewMessageRequest=req;
-		}
-	},
-	
-	_loadCheck: function()
-	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
-		var req = this._checkNewMessageRequest;
-		if (!req) return;
-		if (req.readyState==4)	//end
-		{
-			if ((req.status>=200)&&(req.status<300))
-			{	//OK～
-				var html = req.responseText;
-				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-				{	//追加でロードした分はpush(deployはしません)
-					var nc = document.createElement("DIV");
-					nc.innerHTML = RegExp.$1;
-					this.push($A(nc.getElementsByTagName("ARTICLE")));
-				}
-				if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
-				{
-					var obj;
-					eval("obj = "+ RegExp.$1);
-					for (var i=0, j=this._checkNewMessageCallback.length; i<j; i++)
-					{
-						var c = this._checkNewMessageCallback[i];
-						if (c) c(obj);
-					}
-				}
-			}
-			this._checkNewMessageCallback = new Array();
-			this._checkingNewMessage = false;
-			this._checkNewMessageRequest = null;
 		}
 	},
 	
@@ -650,6 +567,109 @@ var ThreadMessages = {
 	},
 	_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
 	
+};
+
+/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var MessageLoader = {
+	loadPrev: function()
+	{
+		var w = Preference.MoreWidth;
+	},
+	loadNext: function()
+	{
+		var w = Preference.MoreWidth;
+	},
+	beginAutoLoad: function()
+	{
+	},
+	endAutoLoad: function()
+	{
+	},
+	
+	load: function(min, max)
+	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
+		var tmin = min;
+		var tmax = max;
+		if (tmax > ThreadInfo.Total) tmax = ThreadInfo.Total;	//絶対取れないところはとりに行かない。
+		for(; tmin <= tmax; tmin++)
+		{	//tmin位置が読み込み済みならtminを+1
+			if (!ThreadMessages.isReady(tmin))	break;
+		}
+		for(; tmax >= tmin; tmax--)
+		{	//tmax位置が読み込み済みならtmaxを-1
+			if (!ThreadMessages.isReady(tmax))	break;	
+		}
+		if (tmin <= tmax)
+		{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
+			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
+			var req = new XMLHttpRequest();
+			req.open('GET', loardUrlStr, false);	//sync
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+			req.send(null);	
+			if ((req.readyState==4)&&(req.status==200)){
+				var html = req.responseText;
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+				{
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
+					return true;
+				}
+				return false;
+			}
+		}
+	},
+	
+	_checkingNewMessage: false,
+	_checkNewMessageCallback: new Array(),
+	_checkNewMessageRequest: null,
+	checkNewMessage: function(callback)
+	{
+		this._checkNewMessageCallback.push(callback);
+		if(!this._checkingNewMessage)
+		{
+			this._checkingNewMessage = true;
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = this._loadCheck.bind(this);
+			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n");
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
+			req.send(null);
+			this._checkNewMessageRequest=req;
+		}
+	},
+	
+	_loadCheck: function()
+	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
+		var req = this._checkNewMessageRequest;
+		if (!req) return;
+		if (req.readyState==4)	//end
+		{
+			if ((req.status>=200)&&(req.status<300))
+			{	//OK～
+				var html = req.responseText;
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+				{	//追加でロードした分はpush(deployはしません)
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
+				}
+				if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
+				{
+					var obj;
+					eval("obj = "+ RegExp.$1);
+					for (var i=0, j=this._checkNewMessageCallback.length; i<j; i++)
+					{
+						var c = this._checkNewMessageCallback[i];
+						if (c) c(obj);
+					}
+				}
+			}
+			this._checkNewMessageCallback = new Array();
+			this._checkingNewMessage = false;
+			this._checkNewMessageRequest = null;
+		}
+	},
+
 };
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
