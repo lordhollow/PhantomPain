@@ -1289,7 +1289,9 @@ var OutlinkPluginForDefault = {
 	},
 	getPreview: function(href)
 	{
-		return (new ImageThumbnail("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false)).container;
+		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false);
+		p.rel = href;
+		return p.container;
 	},
 };
 
@@ -1380,6 +1382,23 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function()
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
 	ov.innerHTML = '<div><img src="{0}"></div>'.format(this.src);
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
+	document.body.appendChild(ov);
+}
+
+/* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
+function ImageThumbnailOnClickOverlayFrame(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+ImageThumbnailOnClickOverlayFrame.prototype = new ImageThumbnail();
+ImageThumbnailOnClickOverlayFrame.prototype.loaded = function(e)
+{
+	ImageThumbnail.prototype.loaded.call(this, e);
+	this.container.addEventListener("click", this.showOverlay.bind(this), false);
+}
+ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function()
+{
+	var ov = document.createElement("DIV");
+	ov.className="overlay";
+	ov.innerHTML = '<div><iframe src="{0}"></div>'.format(this.rel);
 	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
 	document.body.appendChild(ov);
 }
