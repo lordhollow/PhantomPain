@@ -12,6 +12,7 @@ var Preference =
 	PopupOffsetY: 16,			//ポップアップのオフセット
 	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
+	ImagePopupSize: 200,		//画像ポップアップのサイズ
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1201,7 +1202,7 @@ var OutlinkPluginForImage = {
 	},
 	getPreview: function(href)
 	{
-		return (new ImageThumbnail(href)).container;
+		return (new ImageThumbnail(href,Preference.ImagePopupSize,false)).container;
 	},
 };
 
@@ -1262,14 +1263,14 @@ OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkP
 
 
 /* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function ImageThumbnail(url){this.init(url);}
+function ImageThumbnail(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
 ImageThumbnail.prototype = {
 	//thumbSizeを超えない範囲の大きさを持つ、DIV.ithumbcontainer>CANVASという形の要素を作る。
 	//canvasができるのは画像ロード完了後のみ。エラー時はできない。
 	thumbSize: 200,
 	container: null,	//nodeの子。
 	loading: true,
-	replaceToCanvas: false,
+	useCanvas: false,
 	init: function(href)
 	{
 		this.container = document.createElement("DIV");
@@ -1292,7 +1293,7 @@ ImageThumbnail.prototype = {
 		var i = this.img;
 		var ds = this.ds(i.naturalWidth,i.naturalHeight);
 		var c;
-		if (this.replaceToCanvas)
+		if (this.useCanvas)
 		{	//canvasに置換すると軽い・・・か？
 			c = document.createElement("CANVAS");
 			c.width = ds.width;
