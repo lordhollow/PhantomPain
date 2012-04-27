@@ -1269,6 +1269,7 @@ ImageThumbnail.prototype = {
 	thumbSize: 200,
 	container: null,	//nodeの子。
 	loading: true,
+	replaceToCanvas: false,
 	init: function(href)
 	{
 		this.container = document.createElement("DIV");
@@ -1288,15 +1289,26 @@ ImageThumbnail.prototype = {
 		this.loading = false;
 		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
 		//現状、直接URL叩いたほうがマシかも？
-		var c = document.createElement("CANVAS");
-		var context=c.getContext("2d");
 		var i = this.img;
 		var ds = this.ds(i.naturalWidth,i.naturalHeight);
-		c.width = ds.width;
-		c.height= ds.height;
-		context.fillStyle="rgba(0,0,0,1)";
-		context.fillRect(0,0,c.width,c.height);
-		context.drawImage(i,0,0,i.naturalWidth,i.naturalHeight,0,0 ,ds.width,ds.height);
+		var c;
+		if (this.replaceToCanvas)
+		{	//canvasに置換すると軽い・・・か？
+			c = document.createElement("CANVAS");
+			c.width = ds.width;
+			c.height= ds.height;
+			context=c.getContext("2d");
+			context.fillStyle="rgba(0,0,0,1)";
+			context.fillRect(0,0,c.width,c.height);
+			context.drawImage(i,0,0,i.naturalWidth,i.naturalHeight,0,0 ,ds.width,ds.height);
+		}
+		else
+		{
+			c = document.createElement("IMG");
+			c.width = ds.width;
+			c.height= ds.height;
+			c.src=this.img.src;
+		}
 		this.container.innerHTML = "";
 		this.container.appendChild(c);
 		this.container.dataset.state="ok";
