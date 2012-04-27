@@ -1285,6 +1285,8 @@ ImageThumbnail.prototype = {
 	loaded: function(e)
 	{
 		this.loading = false;
+		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
+		//現状、直接URL叩いたほうがマシかも？
 		var c = document.createElement("CANVAS");
 		var context=c.getContext("2d");
 		var i = this.img;
