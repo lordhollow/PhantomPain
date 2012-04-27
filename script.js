@@ -1213,7 +1213,7 @@ var OutlinkPluginForImage = {
 	},
 	getPreview: function(href)
 	{
-		return (new ImageThumbnail(href,Preference.ImagePopupSize,false)).container;
+		return (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false)).container;
 	},
 };
 
@@ -1315,7 +1315,7 @@ ImageThumbnail.prototype = {
 		var img = new Image();
 		img.addEventListener("load", this.loaded.bind(this), false);
 		img.addEventListener("error", this.error.bind(this), false);
-		img.src = href;
+		this.src = img.src = href;
 		this.img = img;
 	},
 	
@@ -1367,6 +1367,22 @@ ImageThumbnail.prototype = {
 		return {width: w, height: h, offsetX: Math.floor(ms-w)/2, offsetY: Math.floor(ms-h)/2 };
 	},
 };
+/* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
+function ImageThumbnailOnClickOverlay(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+ImageThumbnailOnClickOverlay.prototype = new ImageThumbnail();
+ImageThumbnailOnClickOverlay.prototype.loaded = function(e)
+{
+	ImageThumbnail.prototype.loaded.call(this, e);
+	this.container.addEventListener("click", this.showOverlay.bind(this), false);
+}
+ImageThumbnailOnClickOverlay.prototype.showOverlay = function()
+{
+	var ov = document.createElement("DIV");
+	ov.className="overlay";
+	ov.innerHTML = '<div><img src="{0}"></div>'.format(this.src);
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
+	document.body.appendChild(ov);
+}
 
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function Popup() { }
