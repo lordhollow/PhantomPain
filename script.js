@@ -1225,7 +1225,7 @@ var OutlinkPluginFor2ch = {
 	{
 		return (this.is2ch(href)) ? 1 : 0;
 	},
-	getPreview: function()
+	getPreview: function(href)
 	{
 		return null;
 	},
@@ -1253,9 +1253,9 @@ var OutlinkPluginForDefault = {
 	{
 		return 1;
 	},
-	getPreview: function()
+	getPreview: function(href)
 	{
-		return null;
+		return (new ImageThumbnail("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false)).container;
 	},
 };
 
