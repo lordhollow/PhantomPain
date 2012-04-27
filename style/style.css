@@ -12,7 +12,7 @@ body
 }
 
 /* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
-div, p, session, article, nav, aside, ul, li, h1, h2, iframe
+div, p, session, article, nav, aside, ul, li, h1, h2, iframe, canvas
 {
 	margin: 0;
 	padding: 0;
@@ -346,22 +346,42 @@ article article
 .popup
 {
 	position: absolute;
-	border-left: 12px solid #FFC;
+	border-left: 12px solid rgba(255,255,192,0.9);
 	border-top: 12px solid transparent;
 	z-index: 500;
-	opacity: 0.9;
 	left: -10000px;
 	top:  -10000px;
 }
 .popup > div
 {
 	float: left;
-	background: #FFC;
+	background: rgba(255,255,192,0.9);
 	padding: 0 12px 12px 12px;
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
 	overflow: auto;
 }
+.ithumbcontainer
+{
+}
+	.popup .ithumbcontainer
+	{
+		margin-top: 12px;
+	}
+	.ithumbcontainer[data-state="loading"]
+	{
+		background: url("loading.gif") center center no-repeat;
+		width: 32px;
+		height: 32px;
+	}
+	.ithumbcontainer[data-state="error"]
+	{
+		background: url("error.png") center center no-repeat;
+		width: 32px;
+		height: 32px;
+	}
+
+
 .popup article
 {
 	font-size: 80%;

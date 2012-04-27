@@ -1164,6 +1164,26 @@ var OutlinkPlugins = {
 	},
 	popupPreview: function(plugin, anchor, ev)
 	{	//Outlinkのプレビューをポップアップする
+		if (anchor != null)
+		{
+			var tid = setTimeout(this.popup.bind(this, plugin, anchor.href, Util.getElementPagePos(anchor), false), Preference.ResPopupDelay);
+			anchor.addEventListener("mouseout", 
+				function(){
+					clearTimeout(tid);
+					anchor.removeEventListener("mouseout", arguments.callee, false);
+				},false);
+		}
+	},
+	popup: function(plugin, href, pos, fixed)
+	{
+		var c = plugin.getPreview(href);
+		if (c)
+		{
+			var p = new Popup();
+			var innerCont = document.createElement("DIV");
+			innerCont.appendChild(c);
+			p.show(innerCont, pos, fixed);
+		}
 	},
 };
 
@@ -1178,8 +1198,9 @@ var OutlinkPluginForImage = {
 		}
 		return 0;
 	},
-	getPopupContent: function()
+	getPreview: function(href)
 	{
+		return (new ImageThumbnail(href)).container;
 	},
 };
 
@@ -1190,8 +1211,9 @@ var OutlinkPluginForMovie = {
 	{
 		return 0;
 	},
-	getPopupContent: function()
+	getPreview: function(href)
 	{
+		return null;
 	},
 };
 
@@ -1201,8 +1223,9 @@ var OutlinkPluginFor2ch = {
 	{
 		return (this.is2ch(href)) ? 1 : 0;
 	},
-	getPopupContent: function()
+	getPreview: function()
 	{
+		return null;
 	},
 	//b2rで読めそうなアドレスだとtrueを返す
 	is2ch: function(url)
@@ -1228,13 +1251,72 @@ var OutlinkPluginForDefault = {
 	{
 		return 1;
 	},
-	getPopupContent: function()
+	getPreview: function()
 	{
+		return null;
 	},
 };
 
 OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginFor2ch, OutlinkPluginForDefault];
 
+
+/* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function ImageThumbnail(url){this.init(url);}
+ImageThumbnail.prototype = {
+	//thumbSizeを超えない範囲の大きさを持つ、DIV.ithumbcontainer>CANVASという形の要素を作る。
+	//canvasができるのは画像ロード完了後のみ。エラー時はできない。
+	thumbSize: 200,
+	container: null,	//nodeの子。
+	loading: true,
+	init: function(href)
+	{
+		this.container = document.createElement("DIV");
+		this.container.className = "ithumbcontainer";
+		this.container.dataset.state="loading";	//画像を表示させたいけどURLをここに入れたくないのでこれで頑張って設定
+		//this.container.style.width = this.container.style.height = this.thumbSize + "px";
+
+		var img = new Image();
+		img.addEventListener("load", this.loaded.bind(this), false);
+		img.addEventListener("error", this.error.bind(this), false);
+		img.src = href;
+		this.img = img;
+	},
+	
+	loaded: function(e)
+	{
+		this.loading = false;
+		var c = document.createElement("CANVAS");
+		var context=c.getContext("2d");
+		var i = this.img;
+		var ds = this.ds(i.naturalWidth,i.naturalHeight);
+		c.width = ds.width;
+		c.height= ds.height;
+		context.fillStyle="rgba(0,0,0,1)";
+		context.fillRect(0,0,c.width,c.height);
+		context.drawImage(i,0,0,i.naturalWidth,i.naturalHeight,0,0 ,ds.width,ds.height);
+		this.container.innerHTML = "";
+		this.container.appendChild(c);
+		this.container.dataset.state="ok";
+	},
+	error: function(e)
+	{
+		this.loading = false;
+		this.container.dataset.state="error";
+	},
+	ds: function(w, h)
+	{	//w, hをthmbSizeの矩形に押し込んだときの縦横のサイズを求める。戻り値は{width:?, height:? }
+		var r = 1;
+		var ms = this.thumbSize;
+		if((ms>w)&&(ms>h)){
+			r =  1;
+		}else{
+			r = (w>h)?(ms/w):(ms/h);
+		}
+		w = Math.floor(w*r);
+		h = Math.floor(h*r);
+		return {width: w, height: h, offsetX: Math.floor(ms-w)/2, offsetY: Math.floor(ms-h)/2 };
+	},
+};
 
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function Popup() { }
