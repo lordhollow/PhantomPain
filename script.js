@@ -1219,6 +1219,29 @@ var OutlinkPluginForMovie = {
 	},
 };
 
+var OutlinkPluginForNicoNico = {
+	type: OUTLINK_MOVIE,
+	posivility: function(href)
+	{	
+		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/sm\d+/i))
+		{
+			return 1;
+		}
+		return 0;
+	},
+	getPreview: function(href)
+	{
+		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/(sm\d+)/i))
+		{
+			var c = document.createElement("DIV");
+			var thurl = "http://ext.nicovideo.jp/thumb/" + RegExp.$1
+			c.innerHTML = '<iframe width="312" height="176" src="{0}" scrolling="no" style="border:solid 1px #CCC;margin-top:12px;" frameborder="0"></iframe>'.format(thurl);
+			return c;
+		}
+		return null;
+	},
+};
+
 var OutlinkPluginFor2ch = {
 	type: OUTLINK_2CH,
 	posivility: function(href)
@@ -1259,7 +1282,7 @@ var OutlinkPluginForDefault = {
 	},
 };
 
-OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginFor2ch, OutlinkPluginForDefault];
+OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginForNicoNico, OutlinkPluginFor2ch, OutlinkPluginForDefault];
 
 
 /* Å°âÊëúÉTÉÄÉlÉCÉãÅ°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å° */
