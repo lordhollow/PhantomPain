@@ -4,6 +4,7 @@ var ownerApp;
 
 var Preference =
 {
+	ResMenuAttachDelay: 500,	//レスメニューがアタッチされるまでのディレイ(ms)
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
@@ -76,8 +77,13 @@ var EventHandlers = {
 		}
 		var res = Util.getDecendantNode(t, "ARTICLE");
 		if (res != null)
-		{	//レスの上にポイント → レスメニューを持ってくる
-			MessageMenu.attach(res);
+		{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
+			var tid = setTimeout(MessageMenu.attach.bind(MessageMenu, res), Preference.ResMenuAttachDelay);
+			res.addEventListener("mouseout",
+				function(){
+					clearTimeout(tid);
+					res.removeEventListener("mouseout", arguments.callee, false);
+			}, false);
 		}
 		if (t.className=="resPointer")
 		{	//レスアンカーにポイント → レスポップアップ
@@ -89,9 +95,7 @@ var EventHandlers = {
 			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
 		}
 		//スレURLにポイント → スレタイのポップアップ
-		//その他URLにポイント → simpleapi
 		//名前が数字 → ポップアップ
-		//
 	},
 	mouseClick: function (aEvent)
 	{
