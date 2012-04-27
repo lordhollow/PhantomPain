@@ -854,6 +854,7 @@ var Tracker= {
 	init: function()
 	{	//保存されているトラック情報を元にトラッキングを開始
 		var obj = CommonPref.readGlobalObject("tracker");
+		if (!obj)return;
 		for (var i=0, j=obj.length; i<j; i++)
 		{
 			var tr = new TrackerEntry();
