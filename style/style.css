@@ -311,6 +311,9 @@ h2
 		article[data-track^="m"] > div > ul > li > .trackoff{ display: inline; }
 		article[data-track^="m"] > div > ul > li > ul > li .trackpop { display: inline; }
 		
+		/* レスメニューの画像展開 */
+		.imgon { display: none; }
+		article[data-has-image="y"] > div > ul > li.imgon { display: list-item; }
 
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
 		.menu .resto { display: none; }

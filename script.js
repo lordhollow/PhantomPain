@@ -541,6 +541,13 @@ var ThreadMessages = {
 					bro.data=n.substr(c.length);
 				}
 			}
+			else if (a.className=="outLink")
+			{	//‚ ‚Ü‚è‚æ‚ë‚µ‚­‚È‚¢‚¯‚Ç‚±‚±‚ªˆê”ÔŒø—¦“I‚©‚à
+				if (OutlinkPluginForImage.posivility(a.href))
+				{
+					e.parentNode.dataset.hasImage = "y";
+				}
+			}
 			//’·‚·‚¬‚éoutLink‚ð“K“–‚ÉŠ ‚èž‚Ý
 			//else if(a.textContent.length>ml){
 			//	var t=a.textContent;
