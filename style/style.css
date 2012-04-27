@@ -1,0 +1,417 @@
+/*
+	z-index:
+		#headBar	1000
+		.popup		500
+*/
+
+body
+{
+	margin: 0;
+	padding: 0;
+	border-right: solid 3px #F99;
+}
+
+/* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
+div, p, session, article, nav, aside, ul, li, h1, h2, iframe, canvas
+{
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+/* なんかのコンテナにspan.contentとspan.spaceを入れるとspaceを伸ばして余白を埋める */
+span.content
+{
+	display: table-cell;
+	white-space: nowrap;
+	padding-right: 1em;
+}
+span.space
+{
+	width: 100%;
+	display: table-cell;
+}
+
+/* ドロップダウンメニュー(16pxの画像ボタン入り) */
+.menu
+{
+	position: relative;
+	display: table-cell;
+}
+		.menu ul {
+			display:block;
+			list-style-type: none;
+			margin:0;
+			padding:0;
+		}
+		.menu ul ul{
+			display:none;
+			position:absolute;
+			top:100%;
+			left:0;
+		}
+		.menu li {
+			float:left;
+			line-height: 100%;
+		}
+		
+		.menu li li {
+			clear:both;
+		}
+		
+		.menu li:hover {
+			position:relative;
+		}
+		
+		.menu li:hover > ul {
+			display: block
+		}
+		.menu img
+		{
+			width: 16px;
+			height: 16px;
+			cmargin-right: 4px;
+			margin: 0px 1px;
+		}
+
+/* ヘッダのバー */
+#headBar
+{
+	top: 0;
+	left: 0;
+	right: 0;
+	position: fixed;
+	z-index: 1000;
+}
+
+
+	/* スレタイ表示部 */
+	#thtitle
+	{
+		color: #FFF;
+		margin: 0;
+		font-size: 16px;
+		text-shadow:0px 0px 2px #FFF;
+		line-height: 20px;
+		width: 100%;
+		border-bottom-left-radius: 5px;
+		background-color: #333;
+	}
+		
+		/* スレッドfavicon */
+		#boardfavicon
+		{
+			position: relative;
+			top: 2px;
+			left: 2px;
+			width: 16px;
+			height: 16px;
+		}
+
+		/* <a> */
+		/* #bpHandle */
+
+	/* 操作ボタンたち */
+	#ctrlbox
+	{
+		float: right;
+		height: 0px;
+		top: -19px;
+		padding: 0px 8px 0px 8px;
+	}
+		#ctrlbox li
+		{
+			background-color: #333;
+		}
+		.automoreon { display: none; }
+		.automoreoff{ display: list-item; }
+		body[data-autoload="y"] .automoreon { display: list-item; }
+		body[data-autoload="y"] .automoreoff{ display: none; }
+
+/* スレ一覧ペイン */
+#boardPane
+{
+	height: 0;
+	background-color: #333;
+}
+	#boardList
+	{
+		width:100%;
+		height:100%;
+		overflow:auto;
+		background-color: #CFF;
+	}
+
+#resContainer
+{
+	padding-top: 24px; /* 最低でも#thtitleのheight以上ないと絶対に見切れる */
+	padding-left: 1em;
+}
+/* レス */
+.res
+{
+	position: relative;
+}
+	article[data-delete="on"]
+	{
+	}
+	article[data-bookmarked="on"]
+	{
+	}
+	article[data-pickuped="on"]
+	{
+	}
+
+/* レスヘッダ */
+h2
+{
+	margin: 0;
+	padding: 0;
+	font-size: 80%;
+	margin-top: 6px;
+	white-space:nowrap;
+	font-weight: normal;
+}
+	article[data-focus="on"]
+	{
+		background-color: #CFC;
+	}
+
+	h2 > * 
+	{
+		display: table-cell;
+	}
+	h2.pre
+	{
+		border-top: solid 1px #99F;
+		border-left: solid 2px #99F;
+	}
+	h2.new
+	{
+		border-top: solid 1px #F99;
+		border-left: solid 2px #F99;
+	}
+	article[data-bm="y"] > h2
+	{
+		border-top: solid 1px #F9F;
+		border-left: solid 2px #F9F;
+	}
+	.no
+	{
+		width: 4em;
+	}
+	.dt
+	{
+		width: 12em;
+		font-family: monospace;
+	}
+	.id
+	{
+		width: 6em;
+		font-family: monospace;
+		font-weight: normal;
+		text-align: center;
+	}
+	.id:before
+	{
+		/* content: "ID:" */
+	}
+	.nm
+	{
+		padding-left: 1em;
+	}
+		.nm a:link{
+			color:red;
+		}
+		.nm a[href*="sage"]:link{
+			color:blue;
+		}
+		.nm a[href="mailto:sage"]:link{
+			color:purple;
+		}
+	.bi
+	{
+	}
+	.ml
+	{
+		color: #888;
+	}
+		.ml:before
+		{
+			content: " [";
+		}
+		.ml:after
+		{
+			content: "] ";
+		}
+		.ml[title="sage"]
+		{
+			--display: none;
+		}
+		.mis
+		{
+			width: 180px;
+		}
+
+	#resMenu	/* (h1の最後の要素になる) */
+	{
+		position: absolute;
+		right: 0px;
+		top: 1px;
+	}
+		/* レスメニュー上のブックマークボタン切り替え */
+		.bmon { display: none; }
+		.bmoff{ display: inline; }
+		.bmbefore { display: none; }
+		.bmafter { display: none; }
+		#ctrlbox li[data-bm="y"] > .bmon { display: inline;} 		/* メニューバー */
+		#ctrlbox li[data-bm="y"] > .bmoff{ display: none; }		/* メニューバー */
+		#ctrlbox li[data-bm="a"] > .bmafter { display: inline;} 	/* メニューバー */
+		#ctrlbox li[data-bm="a"] > .bmoff{ display: none; }		/* メニューバー */
+		#ctrlbox li[data-bm="b"] > .bmbefore { display: inline;}	/* メニューバー */
+		#ctrlbox li[data-bm="b"] > .bmoff{ display: none; }		/* メニューバー */
+
+		li[data-bm="y"] > ul > li > .bmon { display: inline; }
+		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
+		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
+		#ctrlbox li[data-bm="y"]:before,
+		#ctrlbox li[data-bm="a"]:before,
+		#ctrlbox li[data-bm="b"]:before
+		{
+			content: attr(data-bmn);
+			position: absolute;
+			font-size: 8px;
+			color: #FFF;
+			top: 6px;
+			font-family: monospace;
+			font-weight: bold;
+			width: 16px;
+			text-align: right;
+		}
+
+		/* レスメニュー上のピックアップボタン切り替え */
+		.pickon { display: none; }
+		.pickoff{ display: inline; }
+		#ctrlbox li[data-pk="y"] > .pickon { display: inline;} 		/* メニューバー */
+		#ctrlbox li[data-pk="y"] > .pickoff{ display: none; }		/* メニューバー */
+		article[data-pickuped="on"] > div> ul> li> .pickon { display: inline; }
+		article[data-pickuped="on"] > div> ul> li> .pickoff{ display: none; }
+
+		/* レスメニュー上のツリー */
+		.treeon { display: inline; }
+		.treeoff{ display: none; }
+		article[data-treed="y"] > div > ul > li > ul > li> .treeon { display: none; }
+		article[data-treed="y"] > div > ul > li > ul > li> .treeoff{ display: inline; }
+
+		/* トラッキング */
+		.trackon { display: inline; }
+		.trackoff{ display: none; }
+		.trackpop{ display: none; }
+		article[data-track^="m"] > div > ul > li > .trackon { display: none; }
+		article[data-track^="m"] > div > ul > li > .trackoff{ display: inline; }
+		article[data-track^="m"] > div > ul > li > ul > li .trackpop { display: inline; }
+		
+
+		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
+		.menu .resto { display: none; }
+
+		/* 新着インジケータ */
+		.nron { display: none; }
+		.nroff{ display: inline; }
+		body[data-hasNew="y"] .nron { display: inline; }
+		body[data-hasNew="y"] .nroff{ display: none; }
+
+article article
+{
+	margin-left: 2em;
+}
+/* レス本体 */
+.ct
+{
+	margin: 6px 1em;
+}
+	article[data-track^="m"] > .ct
+	{
+		border-radius: 6px;
+		margin: 3px .5em;
+		padding: 3px .5em;
+		margin-bottom: -3px;
+	}
+	article[data-track^="m"] > .ct { background-color: #DFF; } 
+	article[data-track="m0"] > .ct { background-color: #DDF; } 
+	article[data-track="m1"] > .ct { background-color: #DFD; } 
+	article[data-track="m2"] > .ct { background-color: #FDD; } 
+
+/* ポップアップ */
+.popup
+{
+	position: absolute;
+	border-left: 12px solid rgba(255,255,192,0.9);
+	border-top: 12px solid transparent;
+	z-index: 500;
+	left: -10000px;
+	top:  -10000px;
+}
+.popup > div
+{
+	float: left;
+	background: rgba(255,255,192,0.9);
+	padding: 0 12px 12px 12px;
+	border-radius: 8px;
+	box-shadow: 3px 5px 5px 0px #000;
+	overflow: auto;
+}
+.ithumbcontainer
+{
+}
+	.popup .ithumbcontainer
+	{
+		margin-top: 12px;
+	}
+	.ithumbcontainer[data-state="loading"]
+	{
+		background: url("loading.gif") center center no-repeat;
+		width: 32px;
+		height: 32px;
+	}
+	.ithumbcontainer[data-state="error"]
+	{
+		background: url("error.png") center center no-repeat;
+		width: 32px;
+		height: 32px;
+	}
+
+
+.popup article
+{
+	font-size: 80%;
+}
+/* ギアモーポップアップ */
+.popup[data-gearmode="y"]
+{
+	border: none;
+}
+.popup[data-gearmode="y"] > div
+{
+	background-color: #CFF;
+}
+
+/* フッタメニュー */
+#footmenu
+{
+	margin-top: 2em;
+	border-top: dotted 2px #CCC;
+	text-align: right;
+}
+
+/* フッタ */
+#footer
+{
+	color: #CCC;
+	font-size: 10px;
+	text-align: left;
+	margin-left: 8px;
+	padding-top: 15em;
+}
+
+/* */
