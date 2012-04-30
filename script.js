@@ -1381,8 +1381,9 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function()
 {
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
-	ov.innerHTML = '<div><img src="{0}"></div>'.format(this.src);
+	ov.innerHTML = '<div><img src="{0}" class="ovlImg" style="max-height:{1}px; max-width:{2}px;margin:{3}px"></div>'.format(this.src, window.innerHeight-4, window.innerWidth-2,2);
 	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
+	ov.addEventListener("DOMMouseScroll", function(e){ e.preventDefault(); } , false);
 	document.body.appendChild(ov);
 }
 
