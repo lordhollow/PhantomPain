@@ -151,6 +151,7 @@ span.space
 .res
 {
 	position: relative;
+	clear: both;
 }
 	article[data-delete="on"]
 	{
@@ -332,13 +333,13 @@ article article
 .ct
 {
 	margin: 6px 1em;
+	float: left;
 }
 	article[data-track^="m"] > .ct
 	{
 		border-radius: 6px;
 		margin: 3px .5em;
 		padding: 3px .5em;
-		margin-bottom: -3px;
 	}
 	article[data-track^="m"] > .ct { background-color: #DFF; } 
 	article[data-track="m0"] > .ct { background-color: #DDF; } 
@@ -376,12 +377,14 @@ article article
 		background: url("loading.gif") center center no-repeat;
 		width: 32px;
 		height: 32px;
+		display: block;
 	}
 	.ithumbcontainer[data-state="error"]
 	{
 		background: url("error.png") center center no-repeat;
 		width: 32px;
 		height: 32px;
+		display: block;
 	}
 
 
@@ -408,10 +411,11 @@ article article
 	border: solid 1px #888;
 	display: table;
 	margin-left: auto;
+	float: rigth;
 }
 .outLinkPreview > div
 {
-	display: table-cell;
+	display: inline;
 	padding: 2px;
 }
 
