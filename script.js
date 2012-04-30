@@ -404,6 +404,16 @@ var Menu = {
 	EndAutoMore: function()
 	{
 	},
+	PreviewOutlinks: function()
+	{
+		for(var i=1; i< ThreadInfo.Total; i++)
+		{
+			if (ThreadMessages.isDeployed(i))
+			{
+				OutlinkPlugins.preview(ThreadMessages.domobj[i]);
+			}
+		}
+	},
 };
 
 /* ¡ƒŒƒX‚Ìˆ—¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡ */
@@ -1252,7 +1262,7 @@ var OutlinkPlugins = {
 			{
 				var plugin = this.getOutlinkPlugin(outlinks[i]);
 				var c = plugin.getPreview(outlinks[i].href);
-				container.appendChild(c);
+				if (c) container.appendChild(c);
 			}
 		}
 		else
