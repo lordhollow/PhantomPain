@@ -588,6 +588,12 @@ var ThreadMessages = {
 				{
 					obj.removeChild(obj.childNodes[2]);
 				}
+				//outlink‚ÌpreviewShowing‚ð‚·‚×‚Än‚É‚·‚é
+				var outlinks = obj.getElementsByClassName("outLink");
+				for(var i=0, j=outlinks.length; i<j; i++)
+				{
+					outlinks[i].dataset.previewShowing = "n";
+				}
 			}
 			return obj;
 		}
