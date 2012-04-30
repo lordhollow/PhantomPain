@@ -406,6 +406,8 @@ article article
 	padding: 4px;
 	border-radius: 8px;
 	border: solid 1px #888;
+	display: table;
+	margin-left: auto;
 }
 .outLinkPreview > div
 {
