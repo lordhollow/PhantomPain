@@ -236,9 +236,10 @@ var MessageMenu = {
 		if (node == null) return;
 		node.dataset.treed = "n";
 		
-		while(node.childNodes.length > 3)
-		{	//3なのはレスメニューが居るときだけ。居ないときは2ですが、必ず居るので3にする。
-			node.removeChild(node.childNodes[3]);
+		var nodes = $A(node.childNodes).filter(function(x){ return x.tagName == "ARTICLE"; });
+		for(var i=0,j=nodes.length; i<j; i++)
+		{
+			node.removeChild(nodes[i]);
 		}
 	},
 	_createNodeTree: function(from, c)
