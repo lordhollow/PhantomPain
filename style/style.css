@@ -399,6 +399,20 @@ article article
 	background-color: #CFF;
 }
 
+/* Outlink展開 */
+.outLinkPreview
+{
+	margin: 0 16px;
+	padding: 4px;
+	border-radius: 8px;
+	border: solid 1px #888;
+}
+.outLinkPreview > div
+{
+	display: table-cell;
+	padding: 2px;
+}
+
 /* オーバーレイ */
 .overlay
 {

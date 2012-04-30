@@ -287,6 +287,7 @@ var MessageMenu = {
 	},
 	ExtractImages: function(event)
 	{
+		OutlinkPlugins.preview(this._menu.parentNode);
 	},
 	BeginGear: function(event)
 	{
@@ -1205,11 +1206,32 @@ var OutlinkPlugins = {
 				var innerCont = document.createElement("DIV");
 				innerCont.appendChild(c);
 				var pos = Util.getElementPagePos(anchor);
-				pos.pageX += anchor.offsetWidth;;
+				pos.pageX += anchor.offsetWidth;
 				p.offsetX = 0;
 				p.show(innerCont, pos, fixed);
 				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
 			}
+		}
+	},
+	preview: function(resNode)
+	{
+		var outlinks = resNode.getElementsByClassName("outLink");
+		var container = resNode.getElementsByClassName("outLinkPreview");
+		if ((outlinks.length > 0) && (container.length == 0))
+		{
+			container = document.createElement("DIV");
+			container.className = "outLinkPreview";
+			resNode.appendChild(container);
+			for(var i=0,j=outlinks.length; i<j; i++)
+			{
+				var plugin = this.getOutlinkPlugin(outlinks[i]);
+				var c = plugin.getPreview(outlinks[i].href);
+				container.appendChild(c);
+			}
+		}
+		else
+		{	//“WŠJÏ‚Ý or Outlink‚È‚µ
+			return;
 		}
 	},
 };
