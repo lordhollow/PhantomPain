@@ -635,6 +635,7 @@ var MessageLoader = {
 	
 	load: function(min, max)
 	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
+		//alert([min, max]);
 		var tmin = min;
 		var tmax = max;
 		if (tmax > ThreadInfo.Total) tmax = ThreadInfo.Total;	//絶対取れないところはとりに行かない。
@@ -663,6 +664,23 @@ var MessageLoader = {
 					return true;
 				}
 				return false;
+			}
+		}
+	},
+	
+	loadByAnchorStr: function(str)
+	{
+		str=str.replace(/>/g,"");
+		var e=str.split(",");
+		var r=new Array();
+		for(var i=0;i<e.length;i++)
+		{
+			if(e[i].match(/(\d+)(-(\d+))?/))
+			{
+				var min = parseInt(RegExp.$1);
+				var max = parseInt(RegExp.$3);
+				if (!max) max = min;
+				this.load(min, max);
 			}
 		}
 	},
@@ -1522,6 +1540,7 @@ ResPopup.prototype = new Popup();
 	ResPopup.prototype.popup =  function(target, pos, fixed)
 	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
 		this.used = true;
+		MessageLoader.loadByAnchorStr(target);
 		var ids = MessageUtil.splitResNumbers(target);
 		this.showPopup(ids, pos, fixed);
 	};
