@@ -1204,7 +1204,10 @@ var OutlinkPlugins = {
 				var p = new Popup();
 				var innerCont = document.createElement("DIV");
 				innerCont.appendChild(c);
-				p.show(innerCont, Util.getElementPagePos(anchor), fixed);
+				var pos = Util.getElementPagePos(anchor);
+				pos.pageX += anchor.offsetWidth;;
+				p.offsetX = 0;
+				p.show(innerCont, pos, fixed);
 				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
 			}
 		}
