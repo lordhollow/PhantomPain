@@ -321,8 +321,8 @@ h2
 		/* 新着インジケータ */
 		.nron { display: none; }
 		.nroff{ display: inline; }
-		body[data-hasNew="y"] .nron { display: inline; }
-		body[data-hasNew="y"] .nroff{ display: none; }
+		body[data-has-new="y"] .nron { display: inline; }
+		body[data-has-new="y"] .nroff{ display: none; }
 
 article article
 {

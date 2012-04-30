@@ -366,6 +366,8 @@ var Menu = {
 	
 	JumpToNewMark: function()
 	{
+		var nn = ThreadInfo.Fetched + 1;
+		MessageUtil.focus(nn);
 	},
 	
 	JumpToBookmark: function(autoDeploy)
@@ -461,6 +463,11 @@ var ThreadMessages = {
 			this.extendAnchor(msgNode);
 			this.replaceStr(msgNode);
 			this.domobj[no] = node;
+			//新着判定
+			if(node.childNodes[0].className=="new")
+			{
+				document.body.dataset.hasNew = "y";
+			}
 			
 			//アノテーション作成
 			var obj = new messageAnnotation();
