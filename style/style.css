@@ -346,11 +346,12 @@ article article
 	article[data-track="m2"] > .ct { background-color: #FDD; } 
 
 /* ポップアップ */
-.popup
+.popup	/* これは噴出しのポッチの部分 */
 {
 	position: absolute;
-	border-left: 12px solid rgba(255,255,192,0.9);
+	border-left: 12px solid rgba(0,0,32,0.9);
 	border-top: 12px solid transparent;
+	border-bottom: 200px solid transparent;
 	z-index: 500;
 	left: -10000px;
 	top:  -10000px;
@@ -358,11 +359,12 @@ article article
 .popup > div
 {
 	float: left;
-	background: rgba(255,255,192,0.9);
+	background: rgba(0,0,32,0.9);;
 	padding: 0 12px 12px 12px;
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
 	overflow: auto;
+	color: #FFF;
 }
 .ithumbcontainer
 {
@@ -396,7 +398,7 @@ article article
 }
 .popup[data-gearmode="y"] > div
 {
-	background-color: #CFF;
+	background-color: rgba(32,0,0,0.9);
 }
 
 /* オーバーレイ */
