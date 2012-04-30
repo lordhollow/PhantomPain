@@ -14,6 +14,7 @@ var Preference =
 	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
+	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1717,6 +1718,8 @@ function init()
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
+	if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
+	//TODO::なければブックマークへジャンプとかするかも
 };
 
 //簡易版string.format。置換しかできない。
