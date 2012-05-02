@@ -1240,15 +1240,15 @@ var OutlinkPlugins = {
 	{
 		if (anchor.dataset.previewShowing!="y")
 		{
-			var c = plugin.getPreview(anchor.href);
+			var p = new Popup();
+			pos = Util.getElementPagePos(anchor);
+			pos.pageX += anchor.offsetWidth;
+			var c = plugin.getPreview(anchor.href, p.adjust.bind(p, pos));
 			if (c)
 			{
 				anchor.dataset.previewShowing = "y";
-				var p = new Popup();
 				var innerCont = document.createElement("DIV");
 				innerCont.appendChild(c);
-				var pos = Util.getElementPagePos(anchor);
-				pos.pageX += anchor.offsetWidth;
 				p.offsetX = 0;
 				p.show(innerCont, pos, fixed);
 				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
@@ -1289,9 +1289,11 @@ var OutlinkPluginForImage = {
 		}
 		return 0;
 	},
-	getPreview: function(href)
+	getPreview: function(href, onload)
 	{
-		return (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false)).container;
+		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false));
+		p.onload = onload;
+		return p.container;
 	},
 };
 
@@ -1302,7 +1304,7 @@ var OutlinkPluginForMovie = {
 	{
 		return 0;
 	},
-	getPreview: function(href)
+	getPreview: function(href, onload)
 	{
 		return null;
 	},
@@ -1318,7 +1320,7 @@ var OutlinkPluginForNicoNico = {
 		}
 		return 0;
 	},
-	getPreview: function(href)
+	getPreview: function(href, onload)
 	{
 		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/(sm\d+)/i))
 		{
@@ -1337,7 +1339,7 @@ var OutlinkPluginFor2ch = {
 	{
 		return (this.is2ch(href)) ? 1 : 0;
 	},
-	getPreview: function(href)
+	getPreview: function(href, onload)
 	{
 		return null;
 	},
@@ -1365,7 +1367,7 @@ var OutlinkPluginForDefault = {
 	{
 		return 1;
 	},
-	getPreview: function(href)
+	getPreview: function(href, onload)
 	{
 		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false);
 		p.rel = href;
@@ -1427,11 +1429,13 @@ ImageThumbnail.prototype = {
 		this.container.innerHTML = "";
 		this.container.appendChild(c);
 		this.container.dataset.state="ok";
+		if (this.onload) this.onload();
 	},
 	error: function(e)
 	{
 		this.loading = false;
 		this.container.dataset.state="error";
+		if (this.onload) this.onload();
 	},
 	ds: function(w, h)
 	{	//w, hをthmbSizeの矩形に押し込んだときの縦横のサイズを求める。戻り値は{width:?, height:? }
@@ -1530,24 +1534,23 @@ Popup.prototype = {
 	adjust: function(pos)
 	{
 		var e = this.container.firstChild;
+		var px = pos.pageX;
+		var py = pos.pageY;
 		//指定アンカー位置からのオフセット
-		pos.pageX += this.offsetX;
-		pos.pageY += this.offsetY;
+		px+= this.offsetX;
+		py += this.offsetY;
 		
 		//そこに置いたとき、横方向にはみ出す量
 		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅 + 追加オフセット)
-		var x = (pos.pageX + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size + this.offsetXe) ; 
+		var x = (px + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size + this.offsetXe) ; 
 		if (x < 0) x = 0;	//動かす必要がないときは動かさない
 		
 		//ポインタ（ひげの先）を持ってくる
-		e.parentNode.style.left = pos.pageX + "px";
-		e.parentNode.style.top  = pos.pageY + "px";
+		e.parentNode.style.left = px + "px";
+		e.parentNode.style.top  = py + "px";
 		
 		//箱を持ってくる
 		e.style.marginLeft = -(x + 20) + "px";
-		
-		//どうもfix
-		//if (this.fixed) e.style.maxHeight = (window.innerHeight * 0.9) + "px";
 	},
 };
 
