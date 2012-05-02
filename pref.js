@@ -83,7 +83,10 @@ var CommonPref = {
 	readThreadObject: function(objName )
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-		return eval(this._storage.getItem(pn)+"");
+		var dt = this._storage.getItem(pn);
+		try{
+		return eval(dt+"");
+		}catch(e){ return dt; }
 	},
 	writeGlobalObject: function(objName, jsonStr)
 	{
@@ -93,6 +96,9 @@ var CommonPref = {
 	readGlobalObject: function(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName;
-		return eval(this._storage.getItem(pn)+"");
+		var dt = this._storage.getItem(pn)+ "";
+		try{
+		return eval(dt+"");
+		}catch(e){return dt;}
 	},
 };

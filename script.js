@@ -834,13 +834,18 @@ var Pickup = {
 	//TODO:中途追加品対応
 	init: function()
 	{
+		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
 		this.pickups = CommonPref.readThreadObject("pk");
+		if (!(this.pickups instanceof Array))
+		{
+			this.pickups = eval("[" + this.pickups + "]");
+		}
 		this.setMark(this.pickups);
 		this.adjustMenuStyle();
 	},
 	save: function()
 	{
-		var idss = "[" + this.pickups + "]";
+		var idss = this.pickups + "";
 		CommonPref.writeThreadObject("pk", idss);
 	},
 	setMark: function(ids)
