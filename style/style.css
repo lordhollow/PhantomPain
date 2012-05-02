@@ -175,7 +175,8 @@ h2
 }
 	article[data-focus="on"]
 	{
-		background-color: #CFC;
+		background-color: #FCC;
+		-moz-box-shadow: 0px 16px 16px 8px #FCC; 
 	}
 
 	h2 > * 
