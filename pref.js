@@ -1,13 +1,8 @@
 
-//どっちかをコメントアウトして使う
-var _strage_domain_ = "127.0.0.1";					//0.4.5以前はこっちをコメントアウト
-//var _strage_domain_ = "localhost.localdomain";	//0.4.5以降はこっちをコメントアウト
-
-
 var SkinPref = {
 
 	_skinName: "PhantomPain",
-	_storage: globalStorage[_strage_domain_],
+	_storage: localStorage,
 	
 	_resolvePrefName: function(aPrefName){
 		return this._skinName + "_" + aPrefName;
@@ -16,7 +11,7 @@ var SkinPref = {
 	getStr: function(aPrefName, aDefaultValue){
 		var item = this._storage.getItem(this._resolvePrefName(aPrefName));
 		if(item == null) return aDefaultValue || "";
-		return item.value;
+		return item;
 	},
 	setStr: function(aPrefName, aValue){
 		var value = String(aValue);
@@ -27,7 +22,7 @@ var SkinPref = {
 	getInt: function(aPrefName, aDefaultValue){
 		var item = this._storage.getItem(this._resolvePrefName(aPrefName));
 		if(item == null) return aDefaultValue || 0;
-		return parseInt(item.value);
+		return parseInt(item);
 	},
 	setInt: function(aPrefName, aValue){
 		var value = parseInt(aValue);
@@ -38,7 +33,7 @@ var SkinPref = {
 	getBool: function(aPrefName, aDefaultValue){
 		var item = this._storage.getItem(this._resolvePrefName(aPrefName));
 		if(item == null) return aDefaultValue || false;
-		return (item.value == "true");
+		return (item == "true");
 	},
 	setBool: function(aPrefName, aValue){
 		var value = (aValue) ? "true" : "false";
@@ -54,7 +49,7 @@ var CommonPref = {
 
 	_identifier: new String("UNKNOWN"),
 	
-	_storage: globalStorage[_strage_domain_],
+	_storage: localStorage,
 	
 	_resolvePrefName: function(aPrefName){
 		return "bbs2chSkin.common." + aPrefName + this._identifier;
