@@ -419,6 +419,17 @@ article article
 	display: inline;
 	padding: 2px;
 }
+/* 検索 */
+.popup[data-finder="y"] { opacity: 0.5; }
+.popup[data-finder="y"]:hover { opacity: 1;}
+#finder > form
+{
+	margin: 2em;
+}
+body[data-express-mode="y"] { background-color: #FEE; } 
+body[data-express-mode="y"] > #resContainer > article { display: none; }
+body[data-express-mode="y"] > #resContainer > article[data-express="y"] { display: block !important; }
+
 
 /* オーバーレイ */
 .overlay

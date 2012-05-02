@@ -415,6 +415,17 @@ var Menu = {
 			}
 		}
 	},
+	ToggleFinder: function()
+	{
+		if (Finder.showing())
+		{
+			Finder.closeFinderPopup();
+		}
+		else
+		{
+			Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+		}
+	},
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1492,6 +1503,7 @@ Popup.prototype = {
 	offsetX: Preference.PopupOffsetX,
 	offsetY: Preference.PopupOffsetY,
 	offsetXe: 0,
+	closeOnMouseLeave: true,
 	show: function(content, pos, fixed)
 	{
 		var container = document.createElement("DIV");
@@ -1499,7 +1511,7 @@ Popup.prototype = {
 		container.className = "popup";
 		if (fixed) container.style.position = "fixed";
 		this.fixed = fixed;
-		container.addEventListener("mouseleave", this.close.bind(this), false);
+		if (this.closeOnMouseLeave) container.addEventListener("mouseleave", this.close.bind(this), false);
 		$("popupContainer").appendChild(container);
 		this.container = container;
 		this.limitSize(pos);
@@ -1596,6 +1608,79 @@ ResPopup.prototype = new Popup();
 		this.show(innerContainer, pos, fixed);
 	};
 
+/* ■検索・抽出 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Finder = {
+	
+	init: function()
+	{
+		this.form = document.createElement("DIV");
+		this.form.id = "finder";
+		this.form.innerHTML =
+			'<form id="fform">' +
+			'<input type="text" width="20" name="q">' +
+			'<input type="button" onclick="Finder.express();" value="抽出">' +
+			'</form>' ;
+	},
+	
+	popupFinderForm: function(pos, fixed)
+	{
+		var content = this.form;
+		var p = new Popup();
+		p.offsetX = 8; p.offsetY = 16;
+		p.closeOnMouseLeave = false;
+		p.show(this.form, pos, fixed);
+		p.container.dataset.finder = "y";
+		this.popup = p;
+		this.enterExpressMode();
+	},
+	closeFinderPopup: function()
+	{
+		if (this.popup)
+		{
+			this.popup.close();
+			this.popup = null;
+			this.leaveExpressMode();
+		}
+	},
+	showing: function()
+	{
+		return (this.popup != null);
+	},
+	enterExpressMode: function()
+	{
+		document.body.dataset.expressMode="y";
+	},
+	leaveExpressMode: function()
+	{
+		document.body.dataset.expressMode="n";
+	},
+	express: function()
+	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
+		this.cond = $("fform").q.value;
+		console.log(this.cond);
+		for(var i=1; i< ThreadInfo.Total; i++)
+		{
+			if (ThreadMessages.isDeployed(i))
+			{
+				ThreadMessages.domobj[i].dataset.express = this.check(ThreadMessages.domobj[i]);
+			}
+		}
+	},
+	check: function(node)
+	{
+		var h = node.innerHTML;
+		var reg = new RegExp(this.cond);
+		if (reg.test(h))
+		{
+			return "y";
+		}
+		else
+		{
+			return "n";
+		}
+	},
+	
+};
 
 
 /* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1740,6 +1825,7 @@ function init()
 	Pickup.init();
 	Tracker.init();
 	EventHandlers.init();
+	Finder.init();
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
