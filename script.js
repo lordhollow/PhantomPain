@@ -1513,7 +1513,8 @@ Popup.prototype = {
 		//幅・・・画面幅の80%
 		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
 		var maxWidth = window.innerWidth *0.8;
-		var maxHeight = window.innerHeight - (pos.pageY + Preference.PopupOffsetY - window.pageYOffset) - 40;
+		var poy = (this.fixed) ? 0 : window.pageYOffset;	//固定の時はスクロール位置を気にしない
+		var maxHeight = window.innerHeight - (pos.pageY + Preference.PopupOffsetY - poy) - 40;
 		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
 		if(e.clientWidth > maxWidth)
 		{
@@ -1542,6 +1543,9 @@ Popup.prototype = {
 		
 		//箱を持ってくる
 		e.style.marginLeft = -(x + 20) + "px";
+		
+		//どうもfix
+		//if (this.fixed) e.style.maxHeight = (window.innerHeight * 0.9) + "px";
 	},
 };
 
