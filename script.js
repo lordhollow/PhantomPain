@@ -324,7 +324,7 @@ var MessageMenu = {
 			{
 				this.gearNode.innerHTML = "";
 				this.gearNode.appendChild(n);
-				this.gearPopup.adjust(this.gearNode, Util.getElementPagePos($("RMenu.Gear")));
+				this.gearPopup.adjust(Util.getElementPagePos($("RMenu.Gear")));
 			}
 		}
 		this._csGearWheel = false;
@@ -1497,9 +1497,9 @@ Popup.prototype = {
 		this.fixed = fixed;
 		container.addEventListener("mouseleave", this.close.bind(this), false);
 		$("popupContainer").appendChild(container);
-		this.limitSize(content, pos);
-		this.adjust(content, pos);
 		this.container = container;
+		this.limitSize(pos);
+		this.adjust(pos);
 	},
 	
 	close: function()
@@ -1508,8 +1508,9 @@ Popup.prototype = {
 		if (this.onClose) this.onClose(this);
 	},
 	//サイズ制限
-	limitSize: function(e, pos)
+	limitSize: function(pos)
 	{
+		var e = this.container.firstChild;
 		//幅・・・画面幅の80%
 		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
 		var maxWidth = window.innerWidth *0.8;
@@ -1526,8 +1527,9 @@ Popup.prototype = {
 		}
 	},
 	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
-	adjust: function(e , pos)
+	adjust: function(pos)
 	{
+		var e = this.container.firstChild;
 		//指定アンカー位置からのオフセット
 		pos.pageX += this.offsetX;
 		pos.pageY += this.offsetY;
