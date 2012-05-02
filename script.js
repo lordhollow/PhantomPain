@@ -834,13 +834,13 @@ var Pickup = {
 	//TODO:’†“r’Ç‰Á•i‘Î‰ž
 	init: function()
 	{
-		this.pickups = CommonPref.readThreadObject("pk", true);
+		this.pickups = CommonPref.readThreadObject("pk");
 		this.setMark(this.pickups);
 		this.adjustMenuStyle();
 	},
 	save: function()
 	{
-		var idss = this.pickups + "";
+		var idss = "[" + this.pickups + "]";
 		CommonPref.writeThreadObject("pk", idss);
 	},
 	setMark: function(ids)
