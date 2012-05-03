@@ -1633,6 +1633,7 @@ var Finder = {
 		p.offsetX = 8; p.offsetY = 16;
 		p.closeOnMouseLeave = false;
 		p.show(this.form, pos, fixed);
+		$("fform").q.value = document.getSelection()
 		p.container.dataset.finder = "y";
 		this.popup = p;
 		this.enterExpressMode();
