@@ -1616,9 +1616,13 @@ var Finder = {
 		this.form = document.createElement("DIV");
 		this.form.id = "finder";
 		this.form.innerHTML =
-			'<form id="fform">' +
-			'<input type="text" width="20" name="q">' +
-			'<input type="button" onclick="Finder.express();" value="抽出">' +
+			'<form id="fform" onsubmit="Finder.express();return false;">' +
+			'<input type="text" size="40" name="q">' +
+			'<input type="submit" value="抽出">' +
+			'<br>' +
+			'<regend><input type="checkbox" name="r">正規表現</regend>' +
+			'<regend><input type="checkbox" name="i">大小区別</regend>' +
+			'<span id="fformerr"></span>' +
 			'</form>' ;
 	},
 	
@@ -1656,30 +1660,48 @@ var Finder = {
 	},
 	express: function()
 	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
-		this.cond = $("fform").q.value;
-		console.log(this.cond);
+		var cond = $("fform").q.value;
+		var reg  = $("fform").r.checked;
+		var icase=!$("fform").i.checked;
+		
+		if (!reg) cond = this.escape(cond);
+		var flag = icase ? "i" : "";
+		var exp = null;
+		try
+		{
+			exp = new RegExp(cond, flag);
+		}
+		catch(e)
+		{
+			$("fformerr").innerHTML = "<br>" + e;
+			return;
+		}
 		for(var i=1; i< ThreadInfo.Total; i++)
 		{
 			if (ThreadMessages.isDeployed(i))
 			{
-				ThreadMessages.domobj[i].dataset.express = this.check(ThreadMessages.domobj[i]);
+				ThreadMessages.domobj[i].dataset.express = exp.test(ThreadMessages.domobj[i].textContent) ? "y" : "n";
 			}
 		}
 	},
-	check: function(node)
+	escape: function(str)
 	{
-		var h = node.innerHTML;
-		var reg = new RegExp(this.cond);
-		if (reg.test(h))
+		var escapechar = "\\{}()[]*-+?.,^$|";
+		var ret = "";
+		for(var i=0; i< str.length; i++)
 		{
-			return "y";
+			for(var j=0; j<escapechar.length; j++)
+			{
+				if (escapechar[j] == str[i])
+				{
+					ret += "\\";
+					break;
+				}
+			}
+			ret += str[i];
 		}
-		else
-		{
-			return "n";
-		}
+		return ret;
 	},
-	
 };
 
 

@@ -422,14 +422,18 @@ article article
 /* 検索 */
 .popup[data-finder="y"] { opacity: 0.5; }
 .popup[data-finder="y"]:hover { opacity: 1;}
-#finder > form
+#finder
 {
-	margin: 2em;
 }
+#fform
+{
+	margin-top: 0.5em;
+}
+#fform > regend { font-size: 75%; }
 body[data-express-mode="y"] { background-color: #FEE; } 
 body[data-express-mode="y"] > #resContainer > article { display: none; }
-body[data-express-mode="y"] > #resContainer > article[data-express="y"] { display: block !important; }
-
+body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display: block !important; }
+#fformerr { font-size: 70%; color: red }
 
 /* オーバーレイ */
 .overlay
