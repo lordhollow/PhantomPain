@@ -385,6 +385,7 @@ var Menu = {
 	{
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
+		MessageLoader.load(Pickup.pickups);
 		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
 	},
 	More: function()
@@ -666,6 +667,14 @@ var MessageLoader = {
 	load: function(min, max)
 	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
 		//alert([min, max]);
+		if (min instanceof Array)
+		{
+			for(var i=0; i<min.length; i++)
+			{
+				this.load(min[i],min[i]);
+			}
+			return;
+		}
 		var tmin = min;
 		var tmax = max;
 		if (tmax > ThreadInfo.Total) tmax = ThreadInfo.Total;	//絶対取れないところはとりに行かない。
@@ -847,6 +856,7 @@ var Pickup = {
 	{
 		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
 		this.pickups = CommonPref.readThreadObject("pk");
+		if (!this.pickups) this.pickups = new Array();
 		if (!(this.pickups instanceof Array))
 		{
 			this.pickups = eval("[" + this.pickups + "]");
