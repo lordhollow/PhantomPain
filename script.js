@@ -372,9 +372,9 @@ var Menu = {
 		MessageUtil.focus(nn);
 	},
 	
-	JumpToBookmark: function(autoDeploy)
+	JumpToBookmark: function()
 	{
-		MessageUtil.focus(Bookmark.no);
+		Bookmark.focus();
 	},
 	
 	ResetBookmark: function()
@@ -845,6 +845,21 @@ var Bookmark = {
 		this.no = 0;
 		$("Menu.Bookmark").dataset.bm = "n";
 		this.save();
+	},
+	focus: function()
+	{
+		if (!this.no) return;
+		if (this.no < ThreadMessages.deployedMin)
+		{
+			MessageLoader.load(this.no, ThreadMessages.deployedMin-1);
+			ThreadMessages.deploy(this.no, ThreadMessages.deployedMin-1)
+		}
+		else if (this.no > ThreadMessages.deployedMax)
+		{
+			MessageLoader.load(ThreadMessages.deployedMax+1, this.no);
+			ThreadMessages.deploy(ThreadMessages.deployedMax+1, this.no);
+		}
+		MessageUtil.focus(this.no);
 	},
 
 };
