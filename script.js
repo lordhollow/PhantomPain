@@ -1678,11 +1678,13 @@ var Finder = {
 	},
 	enterExpressMode: function()
 	{
+		this.pageY = window.scrollY;
 		document.body.dataset.expressMode="y";
 	},
 	leaveExpressMode: function()
 	{
 		document.body.dataset.expressMode="n";
+		window.scrollTo(0,this.pageY);
 	},
 	express: function()
 	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
