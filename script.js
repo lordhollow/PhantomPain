@@ -401,7 +401,8 @@ var Menu = {
 var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
 	jsobj: new Array(),		//DOMオブジェクトから抽出したコンテンツ。indexはレス番号
-
+	outLinks: new Array(),
+	
 	deployedMin: 0,
 	deployedMax: 0,
 	
@@ -455,6 +456,7 @@ var ThreadMessages = {
 			this.extendAnchor(msgNode);
 			this.replaceStr(msgNode);
 			this.domobj[no] = node;
+			this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
 			
 			//アノテーション作成
 			var obj = new messageAnnotation();
