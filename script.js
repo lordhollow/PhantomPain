@@ -392,13 +392,20 @@ var Menu = {
 	{
 		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
 		var min = ThreadMessages.deployedMax+1;
-		var max = ThreadMessages.deployedMax+10;
+		var max = ThreadMessages.deployedMax+30;
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
 	MoreBack: function()
 	{
+		var min = ThreadMessages.deployedMin-30;
+		var max = ThreadMessages.deployedMin-1;
+		if (min <=0) min = 1;
+		if (max <min) max=min;
+		MessageLoader.load(min, max);
+		ThreadMessages.deploy(min, max);
+		MessageUtil.focus(min);
 	},
 	BeginAutoMore: function()
 	{
@@ -504,7 +511,7 @@ var ThreadMessages = {
 	
 	findDeployedNextSibling: function(no)
 	{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
-		for(var i=no; i<99999; i++)
+		for(var i=no; i<=this.deployedMax; i++)
 		{
 			if(this.isDeployed(i))
 			{
