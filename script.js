@@ -419,11 +419,6 @@ var ThreadMessages = {
 		//Tracker.notifyNewMessage($A(e.childElementNodes), obj);
 	},
 	
-	contains: function(no)
-	{
-		return (this.jsobj[no] != null)
-	},
-	
 	deploy: function(min, max)
 	{	//minからmaxまでをdeployNodeする。
 		//ロードされていないものはロードしないのであらかじめload(min, maxしておくように!）
