@@ -325,19 +325,19 @@ var MessageMenu = {
 	BeginTracking: function(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
-		Tracker.BeginTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
+		Tracker.BeginTracking(this._menu.dataset.binding);
 	},
 	EndTracking: function(event)
 	{	//トラッキングの終了
-		Tracker.EndTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
+		Tracker.EndTracking(this._menu.dataset.binding);
 	},
 	PopupTracked: function(event)
 	{
 		if (this.popTrack)return;	//すでに表示されている
-		var obj =ThreadMessages.jsobj[this._menu.dataset.binding];
-		if (obj && obj.tracking)
+		var tracking = Tracker.getTracker(this._menu.dataset.binding);
+		if (tracking)
 		{
-			var ids = obj.tracking.getTrackingNumbers();
+			var ids = tracking.getTrackingNumbers();
 			var pp = new ResPopup(null);
 			pp.offsetX = 8; pp.offsetY = 16;
 			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , false);
@@ -400,7 +400,6 @@ var Menu = {
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
-	jsobj: new Array(),		//DOMオブジェクトから抽出したコンテンツ。indexはレス番号
 	outLinks: new Array(),
 	
 	deployedMin: 0,
@@ -453,32 +452,19 @@ var ThreadMessages = {
 			this.domobj[no] = node;
 			this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
 			
-			//アノテーション作成
-			var obj = new messageAnnotation();
-			obj.no = no;
-			obj.aid = node.dataset.aid;
-			obj.idcolor = node.dataset.idcolor;
-			obj.idbackcolor = node.dataset.idbackcolor;
-			obj.author = node.childNodes[0].childNodes[3].textContent;	//authorもトリップに対してaが付与されるようなので、こちらで。
-			obj.date = node.dataset.date;
-			obj.message = msgNode.textContent;
-			//mail, beidは要らんのじゃないかな？
-			this.jsobj[no] = obj;
-			
 			//名前とトリップの抽出
 			var name = node.childNodes[0].childNodes[3].textContent;
-			node.dataset.author = obj.author = name;
+			node.dataset.author = name;
 			if (name.match(/◆([^\s]+)/))
 			{
-				node.dataset.trip = obj.trip = RegExp.$1;
+				node.dataset.trip = RegExp.$1;
 			}
 			if (name.match(/^(\d+)(◆.+)?/))
 			{
 				node.dataset.numberdName = "y";
-				obj.numberdName = true;
 			}
 			//メッセージ構造解析
-			MessageStructure.push(node, obj);
+			MessageStructure.push(node);
 		}
 	},
 	
@@ -583,7 +569,7 @@ var ThreadMessages = {
 		var nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
 		for (var i=0, j=nodes.length; i<j; i++)
 		{
-			func(nodes[i]);
+			if (nodes[i]) func(nodes[i]);
 		}
 	},
 	getDeployMode: function(no)
@@ -856,27 +842,27 @@ var Tracker= {
 		CommonPref.writeGlobalObject("tracker", json);
 	},
 	
-	BeginTracking: function(jsobj)
+	BeginTracking: function(no)
 	{
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(jsobj)) 
+			if (this._trackers[i].check(no)) 
 			{
 				return; //already tracking
 			}
 		}
-		var tr = new TrackerEntry(jsobj);
+		var tr = new TrackerEntry(no);
 		tr.index = this.findBrankIndex();
 		this._trackers.push(tr);
 		tr.setMark();
 		this.save();
 	},
-	EndTracking: function(jsobj)
+	EndTracking: function(no)
 	{
 		var nt = new Array();
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(jsobj))
+			if (this._trackers[i].check(no))
 			{
 				this._trackers[i].resetMark();
 			}
@@ -887,6 +873,22 @@ var Tracker= {
 		}
 		this._trackers = nt;
 		this.save();
+	},
+	getTracker: function(no)
+	{
+		var tr = ThreadMessages.domobj[no].dataset.track + "";
+		if (tr.match(/^m(\d+)$/))
+		{
+			var index = RegExp.$1;
+			for(var i=0, j=this._trackers.length; i<j; i++)
+			{
+				if (this._trackers[i].index == index)
+				{
+					return this._trackers[i];
+				}
+			}
+		}
+		return null;
 	},
 	findBrankIndex: function()
 	{
@@ -911,25 +913,26 @@ var Tracker= {
 	},
 };
 
-function TrackerEntry(jsobj){ this.init(jsobj); };
+function TrackerEntry(no){ this.init(no); };
 TrackerEntry.prototype = {
 	aid: null,
 	trip: null,
 	index: 0,
 	
-	init: function(jsobj)
+	init: function(no)
 	{
-		if (jsobj)
+		if (ThreadMessages.isReady(no))
 		{
+			var node = ThreadMessages.domobj[no];
 			this.trip = [];
 			this.aid = [];
-			if (jsobj.trip)
+			if (node.dataset.trip)
 			{
-				this.trip.push(jsobj.trip);
+				this.trip.push(node.dataset.trip);
 			}
-			if (jsobj.aid.length > 5)
+			if (node.dataset.aid.length > 5)
 			{
-				this.aid.push(jsobj.aid);
+				this.aid.push(node.dataset.aid);
 			}
 		}
 	},
@@ -940,17 +943,18 @@ TrackerEntry.prototype = {
 		return str;
 	},
 	
-	check: function(obj)
+	check: function(no)
 	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
 		var m = 0;
-		if (!obj) return 0;
-		if (obj.trip)
+		if (!ThreadMessages.isReady(no)) return 0;
+		var node = ThreadMessages.domobj[no];
+		if (node.dataset.trip)
 		{
-			if (this.containsTrip(obj.trip)) m += 1;
+			if (this.containsTrip(node.dataset.trip)) m += 1;
 		}
-		if (!m && (obj.aid.length > 5))
+		if (!m && (node.dataset.aid.length > 5))
 		{
-			if (this.containsId(obj.aid)) m += 2;
+			if (this.containsId(node.dataset.aid)) m += 2;
 		}
 		return m;
 	},
@@ -966,62 +970,45 @@ TrackerEntry.prototype = {
 	setMark: function()
 	{
 		//alert("setMark {0} {1}".format(entry.aid, entry.trip));
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
-		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			var m = tr.check(node.dataset.no);
 			if (m > 0)
 			{
-				obj.tracking = this;
-				ThreadMessages.domobj[obj.no].dataset.track = "m" + this.index;
-				if ((m == 1) && (obj.aid.length > 5) && (!this.containsId(obj.aid)))
+				node.dataset.track = "m" + tr.index;
+				if ((m & 1) && (node.dataset.aid.length > 5) && (!tr.containsId(node.dataset.aid)))
 				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
-					this.aid.push(obj.aid);
-					this.setMark();
+					tr.aid.push(node.dataset.aid);
+					tr.setMark();
 				}
-				else if ((m==2) && (obj.trip) && (!this.containsTrip(obj.trip)))
+				else if ((m&2) && (node.dataset.trip) && (!tr.containsTrip(node.dataset.trip)))
 				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
-					this.trip.push(obj.trip);
-					this.setMark();
-				}
-				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
-				for(var l=0, ll=ps.length; l<ll; l++)
-				{
-					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "m" + this.index;
+					tr.trip.push(node.dataset.trip);
+					tr.setMark();
 				}
 			}
-		}
+		}, true);
 	},
 	resetMark: function()
 	{
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
-		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
-			if (m > 0)
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			if (tr.check(node.dataset.no) > 0)
 			{
-				obj.tracking = null;
-				ThreadMessages.domobj[obj.no].dataset.track = "";
-				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
-				for(var l=0, ll=ps.length; l<ll; l++)
-				{
-					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "";
-				}
+				node.dataset.track = "";
 			}
-		}
+		}, true);
 	},
 	getTrackingNumbers: function()
 	{
 		var res = new Array();
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
-		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
-			if (m > 0)
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			if (tr.check(node.dataset.no) > 0)
 			{
-				res.push(obj.no);
+				res.push(node.dataset.no);
 			}
-		}
+		}, false);
 		return res;
 	},
 
@@ -1032,8 +1019,9 @@ var MessageStructure = {
 	nodesById: new Array(),		//いわゆるID
 	nodesReplyFrom: new Array(),	//いわゆる逆参照情報
 	//ノードを構造に追加。
-	push: function(node, obj)
+	push: function(node)
 	{
+		var obj = node.dataset;
 		if (this._scriptedStyle == null)
 		{
 			this._scriptedStyle = $("scriptedStyle");
