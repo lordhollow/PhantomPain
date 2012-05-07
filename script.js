@@ -1536,6 +1536,7 @@ function init()
 	};
 	worker.postMessage({begins: 0});
 //*/
+	var dt1 = new Date();
 	ThreadMessages.init();
 	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
@@ -1547,6 +1548,9 @@ function init()
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
+	
+	var dt2 = new Date();
+	console.log("init() spend {0} ms.".format(dt2-dt1));
 };
 
 //簡易版string.format。置換しかできない。
