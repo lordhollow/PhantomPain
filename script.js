@@ -260,7 +260,7 @@ var MessageMenu = {
 	{
 		if (Bookmark.no == this._menu.dataset.binding)
 		{
-			Bookmark.reset();
+			Bookmark.set(0);
 		}
 	},
 	SetPickup: function(event)
@@ -369,7 +369,7 @@ var Menu = {
 	
 	ResetBookmark: function()
 	{
-		Bookmark.reset();
+		Bookmark.set(0);
 	},
 	PopupPickups: function()
 	{
@@ -586,6 +586,25 @@ var ThreadMessages = {
 			func(nodes[i]);
 		}
 	},
+	getDeployMode: function(no)
+	{	//ブックマークの位置によってn(変),b(表示範囲より前),y(表示範囲内),a(表示範囲より後ろ)のいずれかを返す
+		if (no <= 0)
+		{
+			return "n";
+		}
+		else if (no < ThreadMessages.deployedMin)
+		{
+			return "b";
+		}
+		else if (no > ThreadMessages.deployedMax)
+		{
+			return "a";
+		}
+		else
+		{
+			return "y";
+		}
+	},
 	isReady: function(id)
 	{	//読み込み済みか？
 		return (this.domobj[id]);
@@ -727,48 +746,16 @@ var Bookmark = {
 	
 	set: function(no)
 	{
-		if (this.no) this.reset();
-		if (ThreadMessages.isReady(no))
-		{
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == no) node.dataset.bm = "y";
-			}, true);
-		}
+		if(no<0)no=0;
+		ThreadMessages.foreach(function(node){
+			node.dataset.bm = (node.dataset.no == no) ? "y" : "";
+		}, true);
 		//メニューバー
-		if (no < ThreadMessages.deployedMin)
-		{
-			$("Menu.Bookmark").dataset.bm = "b";
-		}
-		else if (no > ThreadMessages.deployedMax)
-		{
-			$("Menu.Bookmark").dataset.bm = "a";
-		}
-		else
-		{
-			$("Menu.Bookmark").dataset.bm = "y";
-		}
+		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(no);
 		$("Menu.Bookmark").dataset.bmn= no;
 		this.no = no;
 		this.save();
 	},
-	reset: function()
-	{
-		if (this.no)
-		{
-			var no = this.no;
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == no)
-				{
-					console.log("clear");
-					node.dataset.bm = "";
-				}
-			}, true);
-		}
-		this.no = 0;
-		$("Menu.Bookmark").dataset.bm = "n";
-		this.save();
-	},
-
 };
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
