@@ -578,6 +578,14 @@ var ThreadMessages = {
 		}
 		return null;
 	},
+	foreach: function(func, includePopup)
+	{
+		var nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
+		for (var i=0, j=nodes.length; i<j; i++)
+		{
+			func(nodes[i]);
+		}
+	},
 	isReady: function(id)
 	{	//読み込み済みか？
 		return (this.domobj[id]);
@@ -722,14 +730,9 @@ var Bookmark = {
 		if (this.no) this.reset();
 		if (ThreadMessages.isReady(no))
 		{
-			var domobj = document.body.getElementsByTagName("ARTICLE");
-			for (var i=0, j=domobj.length; i<j; i++)
-			{
-				if (domobj[i].dataset.no == no)
-				{
-					domobj[i].dataset.bm = "y";
-				}
-			}
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == no) node.dataset.bm = "y";
+			}, true);
 		}
 		//メニューバー
 		if (no < ThreadMessages.deployedMin)
@@ -752,14 +755,14 @@ var Bookmark = {
 	{
 		if (this.no)
 		{
-			var domobj = document.body.getElementsByTagName("ARTICLE");
-			for (var i=0, j=domobj.length; i<j; i++)
-			{
-				if (domobj[i].dataset.no == this.no)
+			var no = this.no;
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == no)
 				{
-					domobj[i].dataset.bm = "";
+					console.log("clear");
+					node.dataset.bm = "";
 				}
-			}
+			}, true);
 		}
 		this.no = 0;
 		$("Menu.Bookmark").dataset.bm = "n";
@@ -786,26 +789,18 @@ var Pickup = {
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
-			var id = ids[i];
-			var rs = document.body.getElementsByTagName("ARTICLE");
-			for (var k=0, km=rs.length; k<km; k++)
-			{
-				if (rs[k].dataset.no == id)
-					rs[k].dataset.pickuped = "on";
-			}
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == ids[i]) node.dataset.pickuped = "on";
+			}, true);
 		}
 	},
 	resetMark: function(ids)
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
-			var id = ids[i];
-			var rs = document.body.getElementsByTagName("ARTICLE");
-			for (var k=0, km=rs.length; k<km; k++)
-			{
-				if (rs[k].dataset.no == id)
-					rs[k].dataset.pickuped = "";
-			}
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == ids[i]) node.dataset.pickuped = "";
+			}, true);
 		}
 	},
 	pickup: function(id)
