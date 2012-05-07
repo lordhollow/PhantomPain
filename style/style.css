@@ -9,6 +9,11 @@ body
 	margin: 0;
 	padding: 0;
 	border-right: solid 3px #F99;
+	overflow-y: scroll;
+}
+body[data-mediaview="y"]
+{
+	overflow-y: auto;
 }
 
 /* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
