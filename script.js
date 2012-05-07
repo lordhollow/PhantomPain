@@ -720,9 +720,8 @@ var Bookmark = {
 	set: function(no)
 	{
 		if (this.no) this.reset();
-		if (ThreadMessages.jsobj[no])
+		if (ThreadMessages.isReady(no))
 		{
-			ThreadMessages.jsobj[no].marked = true;
 			var domobj = document.body.getElementsByTagName("ARTICLE");
 			for (var i=0, j=domobj.length; i<j; i++)
 			{
@@ -761,7 +760,6 @@ var Bookmark = {
 					domobj[i].dataset.bm = "";
 				}
 			}
-			ThreadMessages.jsobj[this.no].marked = false;
 		}
 		this.no = 0;
 		$("Menu.Bookmark").dataset.bm = "n";
