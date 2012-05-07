@@ -637,7 +637,7 @@ var MessageLoader = {
 		{	//tmaxˆÊ’u‚ª“Ç‚İ‚İÏ‚İ‚È‚çtmax‚ğ-1
 			if (!ThreadMessages.isReady(tmax))	break;	
 		}
-		if (tmin <= tmax)
+		if ((tmin <= tmax) && (tmin != 0))
 		{	//min-max‚Ì”ÍˆÍ‚É­‚È‚­‚Æ‚à‚PŒÂ‚Íæ“¾‚·‚×‚«ƒŒƒX‚ ‚è
 			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
 			var req = new XMLHttpRequest();
