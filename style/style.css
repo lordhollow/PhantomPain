@@ -301,8 +301,8 @@ h2
 		.pickoff{ display: inline; }
 		#ctrlbox li[data-pk="y"] > .pickon { display: inline;} 		/* メニューバー */
 		#ctrlbox li[data-pk="y"] > .pickoff{ display: none; }		/* メニューバー */
-		article[data-pickuped="on"] > div> ul> li> .pickon { display: inline; }
-		article[data-pickuped="on"] > div> ul> li> .pickoff{ display: none; }
+		article[data-pickuped="y"] > div> ul> li> .pickon { display: inline; }
+		article[data-pickuped="y"] > div> ul> li> .pickoff{ display: none; }
 
 		/* レスメニュー上のツリー */
 		.treeon { display: inline; }

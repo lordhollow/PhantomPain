@@ -880,7 +880,7 @@ var Pickup = {
 		for(var i=0, j=ids.length; i<j; i++)
 		{
 			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == ids[i]) node.dataset.pickuped = "on";
+				if (node.dataset.no == ids[i]) node.dataset.pickuped = "y";
 			}, true);
 			}
 	},
@@ -1632,6 +1632,7 @@ var Finder = {
 			'<br>' +
 			'<regend><input type="checkbox" name="r">³‹K•\Œ»</regend>' +
 			'<regend><input type="checkbox" name="i">‘å¬‹æ•Ê</regend>' +
+			'<regend><input type="checkbox" name="p">pickup‚Ì‚İ</regend>' +
 			'<span id="fformerr"></span>' +
 			'</form>' ;
 	},
@@ -1676,6 +1677,7 @@ var Finder = {
 		var cond = $("fform").q.value;
 		var reg  = $("fform").r.checked;
 		var icase=!$("fform").i.checked;
+		var pick = $("fform").p.checked;
 		
 		if (!reg) cond = this.escape(cond);
 		var flag = icase ? "i" : "";
@@ -1690,7 +1692,7 @@ var Finder = {
 			return;
 		}
 		ThreadMessages.foreach(function(node){
-			node.dataset.express = exp.test(node.textContent) ? "y" : "n";
+			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
 		}, false);
 	},
 	escape: function(str)
