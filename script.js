@@ -1706,7 +1706,7 @@ var Finder = {
 /* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ScrollBar=
 {
-	size: 26,	//残低地
+	size: 26,	//暫定値
 	VScroll: function ScrollBar_VScroll(){
 		if(window.innerWidth!=document.body.clientWidth){
 			this.size=window.innerWidth-document.body.clientWidth;
