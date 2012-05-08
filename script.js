@@ -458,9 +458,9 @@ var ThreadMessages = {
 	init: function ThreadMessages_init()
 	{
 		var e = $("resContainer");
-		for(var i=0; i<e.childNodes.length; i++)
+		for(var i=0; i<e.children.length; i++)
 		{	//‚±‚êAƒLƒ…[‚É“o˜^‚µ‚Ä”ñ“¯Šú‚Æ‚©‚É‚µ‚½‚Ù‚¤‚ª‚¢‚¢‚Ì‚©‚àB
-			this.processMessage(e.childNodes[i]);
+			this.processMessage(e.children[i]);
 		}
 		this.deployedMin = parseInt(e.firstElementChild.dataset.no);
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
