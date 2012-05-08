@@ -1857,13 +1857,14 @@ function init()
 	Bookmark.init();
 	Pickup.init();
 	Tracker.init();
-	EventHandlers.init();
 	Finder.init();
 	ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(ownerApp, skinName, skinVer);	//フッタ構築
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
 	if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
 	//TODO::なければブックマークへジャンプとかするかも
+
+	EventHandlers.init();
 	
 	var dt2 = new Date();
 	console.log("init() spend {0} ms.".format(dt2-dt1));
