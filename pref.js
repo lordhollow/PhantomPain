@@ -75,30 +75,24 @@ var CommonPref = {
 		}
 	},
 	//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
-	writeThreadObject: function(objName, jsonStr)
+	writeThreadObject: function(objName, str)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-		this._storage.setItem(pn, jsonStr);
+		this._storage.setItem(pn, str);
 	},
-	readThreadObject: function(objName )
+	readThreadObject: function(objName,eval)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-		var dt = this._storage.getItem(pn);
-		try{
-		return eval(dt+"");
-		}catch(e){ return dt; }
+		return this._storage.getItem(pn);
 	},
-	writeGlobalObject: function(objName, jsonStr)
+	writeGlobalObject: function(objName, str)
 	{
 		var pn = "bbs2chSkin.common." + objName;
-		this._storage.setItem(pn, jsonStr);
+		this._storage.setItem(pn, str);
 	},
 	readGlobalObject: function(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName;
-		var dt = this._storage.getItem(pn)+ "";
-		try{
-		return eval(dt+"");
-		}catch(e){return dt;}
+		return this._storage.getItem(pn)+ "";
 	},
 };

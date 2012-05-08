@@ -808,12 +808,9 @@ var MessageLoader = {
 var Bookmark = {
 	init: function()
 	{
-		var no = CommonPref.readThreadObject("bm");
-		if (!no)
-		{
-			no = 0;
-		}
-		else
+		var no = parseInt(CommonPref.readThreadObject("bm"));
+		no = !no ? 0 : no;
+		if (no)
 		{
 			this.set(no);
 		}
@@ -861,12 +858,10 @@ var Pickup = {
 	init: function()
 	{
 		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
-		this.pickups = CommonPref.readThreadObject("pk");
-		if (!this.pickups) this.pickups = new Array();
-		if (!(this.pickups instanceof Array))
-		{
-			this.pickups = eval("[" + this.pickups + "]");
-		}
+		var pickups = CommonPref.readThreadObject("pk");
+		if (!pickups) pickups = "";
+		pickups = eval("[" + pickups + "]");
+		this.pickups = pickups;
 		this.setMark(this.pickups);
 		this.adjustMenuStyle();
 	},
@@ -934,6 +929,10 @@ var Tracker= {
 	init: function()
 	{	//保存されているトラック情報を元にトラッキングを開始
 		var obj = CommonPref.readGlobalObject("tracker");
+		try
+		{
+			obj = eval(obj);
+		}catch(e){ obj = null; }
 		if (!obj)return;
 		for (var i=0, j=obj.length; i<j; i++)
 		{
