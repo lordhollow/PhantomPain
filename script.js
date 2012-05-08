@@ -211,9 +211,20 @@ var MessageMenu = {
 	},
 	PopupRef: function(event)
 	{
+		var node = this._menu.parentNode;
+		if (node.dataset.popupRefShowing != "y")
+		{
+			node.dataset.popupRefShowing = "y";
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
+			pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
 		pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , false);
+			node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
+		}
+		else
+		{
+			if (node.refPopup) node.refPopup.close();
+		}
 	},
 	ExtractRef: function(event)
 	{
@@ -267,7 +278,7 @@ var MessageMenu = {
 	{
 		if (Bookmark.no == this._menu.dataset.binding)
 		{
-			Bookmark.reset();
+			Bookmark.set(0);
 		}
 	},
 	SetPickup: function(event)
@@ -333,19 +344,19 @@ var MessageMenu = {
 	BeginTracking: function(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
-		Tracker.BeginTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
+		Tracker.BeginTracking(this._menu.dataset.binding);
 	},
 	EndTracking: function(event)
 	{	//トラッキングの終了
-		Tracker.EndTracking(ThreadMessages.jsobj[this._menu.dataset.binding]);
+		Tracker.EndTracking(this._menu.dataset.binding);
 	},
 	PopupTracked: function(event)
 	{
 		if (this.popTrack)return;	//すでに表示されている
-		var obj =ThreadMessages.jsobj[this._menu.dataset.binding];
-		if (obj && obj.tracking)
+		var tracking = Tracker.getTracker(this._menu.dataset.binding);
+		if (tracking)
 		{
-			var ids = obj.tracking.getTrackingNumbers();
+			var ids = tracking.getTrackingNumbers();
 			var pp = new ResPopup(null);
 			pp.offsetX = 8; pp.offsetY = 16;
 			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , false);
@@ -379,7 +390,7 @@ var Menu = {
 	
 	ResetBookmark: function()
 	{
-		Bookmark.reset();
+		Bookmark.set(0);
 	},
 	PopupPickups: function()
 	{
@@ -392,13 +403,20 @@ var Menu = {
 	{
 		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
 		var min = ThreadMessages.deployedMax+1;
-		var max = ThreadMessages.deployedMax+10;
+		var max = ThreadMessages.deployedMax+30;
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
 	MoreBack: function()
 	{
+		var min = ThreadMessages.deployedMin-30;
+		var max = ThreadMessages.deployedMin-1;
+		if (min <=0) min = 1;
+		if (max <min) max=min;
+		MessageLoader.load(min, max);
+		ThreadMessages.deploy(min, max);
+		MessageUtil.focus(min);
 	},
 	BeginAutoMore: function()
 	{
@@ -432,8 +450,8 @@ var Menu = {
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
-	jsobj: new Array(),		//DOMオブジェクトから抽出したコンテンツ。indexはレス番号
-
+	outLinks: new Array(),
+	
 	deployedMin: 0,
 	deployedMax: 0,
 	
@@ -448,11 +466,6 @@ var ThreadMessages = {
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
 		//↓はTracker.initの中で実施されるので、やらない
 		//Tracker.notifyNewMessage($A(e.childElementNodes), obj);
-	},
-	
-	contains: function(no)
-	{
-		return (this.jsobj[no] != null)
 	},
 	
 	deploy: function(min, max)
@@ -487,38 +500,26 @@ var ThreadMessages = {
 			this.extendAnchor(msgNode);
 			this.replaceStr(msgNode);
 			this.domobj[no] = node;
+			this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
 			//新着判定
 			if(node.childNodes[0].className=="new")
 			{
 				document.body.dataset.hasNew = "y";
 			}
 			
-			//アノテーション作成
-			var obj = new messageAnnotation();
-			obj.no = no;
-			obj.aid = node.dataset.aid;
-			obj.idcolor = node.dataset.idcolor;
-			obj.idbackcolor = node.dataset.idbackcolor;
-			obj.author = node.childNodes[0].childNodes[3].textContent;	//authorもトリップに対してaが付与されるようなので、こちらで。
-			obj.date = node.dataset.date;
-			obj.message = msgNode.textContent;
-			//mail, beidは要らんのじゃないかな？
-			this.jsobj[no] = obj;
-			
 			//名前とトリップの抽出
 			var name = node.childNodes[0].childNodes[3].textContent;
-			node.dataset.author = obj.author = name;
+			node.dataset.author = name;
 			if (name.match(/◆([^\s]+)/))
 			{
-				node.dataset.trip = obj.trip = RegExp.$1;
+				node.dataset.trip = RegExp.$1;
 			}
 			if (name.match(/^(\d+)(◆.+)?/))
 			{
 				node.dataset.numberdName = "y";
-				obj.numberdName = true;
 			}
 			//メッセージ構造解析
-			MessageStructure.push(node, obj);
+			MessageStructure.push(node);
 		}
 	},
 	
@@ -547,7 +548,7 @@ var ThreadMessages = {
 	
 	findDeployedNextSibling: function(no)
 	{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
-		for(var i=no; i<99999; i++)
+		for(var i=no; i<=this.deployedMax; i++)
 		{
 			if(this.isDeployed(i))
 			{
@@ -631,6 +632,33 @@ var ThreadMessages = {
 		}
 		return null;
 	},
+	foreach: function(func, includePopup)
+	{
+		var nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
+		for (var i=0, j=nodes.length; i<j; i++)
+		{
+			if (nodes[i]) func(nodes[i]);
+		}
+	},
+	getDeployMode: function(no)
+	{	//ブックマークの位置によってn(変),b(表示範囲より前),y(表示範囲内),a(表示範囲より後ろ)のいずれかを返す
+		if (no <= 0)
+		{
+			return "n";
+		}
+		else if (no < ThreadMessages.deployedMin)
+		{
+			return "b";
+		}
+		else if (no > ThreadMessages.deployedMax)
+		{
+			return "a";
+		}
+		else
+		{
+			return "y";
+		}
+	},
 	isReady: function(id)
 	{	//読み込み済みか？
 		return (this.domobj[id]);
@@ -686,7 +714,7 @@ var MessageLoader = {
 		{	//tmax位置が読み込み済みならtmaxを-1
 			if (!ThreadMessages.isReady(tmax))	break;	
 		}
-		if (tmin <= tmax)
+		if ((tmin <= tmax) && (tmin != 0))
 		{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
 			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
 			var req = new XMLHttpRequest();
@@ -798,54 +826,17 @@ var Bookmark = {
 	
 	set: function(no)
 	{
-		if (this.no) this.reset();
-		if (ThreadMessages.jsobj[no])
-		{
-			ThreadMessages.jsobj[no].marked = true;
-			var domobj = document.body.getElementsByTagName("ARTICLE");
-			for (var i=0, j=domobj.length; i<j; i++)
-			{
-				if (domobj[i].dataset.no == no)
-				{
-					domobj[i].dataset.bm = "y";
-				}
-			}
-		}
+		if(no<0)no=0;
+		ThreadMessages.foreach(function(node){
+			node.dataset.bm = (node.dataset.no == no) ? "y" : "";
+		}, true);
 		//メニューバー
-		if (no < ThreadMessages.deployedMin)
-		{
-			$("Menu.Bookmark").dataset.bm = "b";
-		}
-		else if (no > ThreadMessages.deployedMax)
-		{
-			$("Menu.Bookmark").dataset.bm = "a";
-		}
-		else
-		{
-			$("Menu.Bookmark").dataset.bm = "y";
-		}
+		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(no);
 		$("Menu.Bookmark").dataset.bmn= no;
 		this.no = no;
 		this.save();
 	},
-	reset: function()
-	{
-		if (this.no)
-		{
-			var domobj = document.body.getElementsByTagName("ARTICLE");
-			for (var i=0, j=domobj.length; i<j; i++)
-			{
-				if (domobj[i].dataset.no == this.no)
-				{
-					domobj[i].dataset.bm = "";
-				}
-			}
-			ThreadMessages.jsobj[this.no].marked = false;
-		}
-		this.no = 0;
-		$("Menu.Bookmark").dataset.bm = "n";
-		this.save();
-	},
+
 	focus: function()
 	{
 		if (!this.no) return;
@@ -888,27 +879,19 @@ var Pickup = {
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
-			var id = ids[i];
-			var rs = document.body.getElementsByTagName("ARTICLE");
-			for (var k=0, km=rs.length; k<km; k++)
-			{
-				if (rs[k].dataset.no == id)
-					rs[k].dataset.pickuped = "on";
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == ids[i]) node.dataset.pickuped = "on";
+			}, true);
 			}
-		}
 	},
 	resetMark: function(ids)
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
-			var id = ids[i];
-			var rs = document.body.getElementsByTagName("ARTICLE");
-			for (var k=0, km=rs.length; k<km; k++)
-			{
-				if (rs[k].dataset.no == id)
-					rs[k].dataset.pickuped = "";
+			ThreadMessages.foreach(function(node){
+				if (node.dataset.no == ids[i]) node.dataset.pickuped = "";
+			}, true);
 			}
-		}
 	},
 	pickup: function(id)
 	{
@@ -977,27 +960,27 @@ var Tracker= {
 		CommonPref.writeGlobalObject("tracker", json);
 	},
 	
-	BeginTracking: function(jsobj)
+	BeginTracking: function(no)
 	{
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(jsobj)) 
+			if (this._trackers[i].check(no)) 
 			{
 				return; //already tracking
 			}
 		}
-		var tr = new TrackerEntry(jsobj);
+		var tr = new TrackerEntry(no);
 		tr.index = this.findBrankIndex();
 		this._trackers.push(tr);
 		tr.setMark();
 		this.save();
 	},
-	EndTracking: function(jsobj)
+	EndTracking: function(no)
 	{
 		var nt = new Array();
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(jsobj))
+			if (this._trackers[i].check(no))
 			{
 				this._trackers[i].resetMark();
 			}
@@ -1008,6 +991,22 @@ var Tracker= {
 		}
 		this._trackers = nt;
 		this.save();
+	},
+	getTracker: function(no)
+	{
+		var tr = ThreadMessages.domobj[no].dataset.track + "";
+		if (tr.match(/^m(\d+)$/))
+		{
+			var index = RegExp.$1;
+			for(var i=0, j=this._trackers.length; i<j; i++)
+			{
+				if (this._trackers[i].index == index)
+				{
+					return this._trackers[i];
+				}
+			}
+		}
+		return null;
 	},
 	findBrankIndex: function()
 	{
@@ -1032,25 +1031,26 @@ var Tracker= {
 	},
 };
 
-function TrackerEntry(jsobj){ this.init(jsobj); };
+function TrackerEntry(no){ this.init(no); };
 TrackerEntry.prototype = {
 	aid: null,
 	trip: null,
 	index: 0,
 	
-	init: function(jsobj)
+	init: function(no)
 	{
-		if (jsobj)
+		if (ThreadMessages.isReady(no))
 		{
+			var node = ThreadMessages.domobj[no];
 			this.trip = [];
 			this.aid = [];
-			if (jsobj.trip)
+			if (node.dataset.trip)
 			{
-				this.trip.push(jsobj.trip);
+				this.trip.push(node.dataset.trip);
 			}
-			if (jsobj.aid.length > 5)
+			if (node.dataset.aid.length > 5)
 			{
-				this.aid.push(jsobj.aid);
+				this.aid.push(node.dataset.aid);
 			}
 		}
 	},
@@ -1061,17 +1061,18 @@ TrackerEntry.prototype = {
 		return str;
 	},
 	
-	check: function(obj)
+	check: function(no)
 	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
 		var m = 0;
-		if (!obj) return 0;
-		if (obj.trip)
+		if (!ThreadMessages.isReady(no)) return 0;
+		var node = ThreadMessages.domobj[no];
+		if (node.dataset.trip)
 		{
-			if (this.containsTrip(obj.trip)) m += 1;
+			if (this.containsTrip(node.dataset.trip)) m += 1;
 		}
-		if (!m && (obj.aid.length > 5))
+		if (!m && (node.dataset.aid.length > 5))
 		{
-			if (this.containsId(obj.aid)) m += 2;
+			if (this.containsId(node.dataset.aid)) m += 2;
 		}
 		return m;
 	},
@@ -1087,62 +1088,45 @@ TrackerEntry.prototype = {
 	setMark: function()
 	{
 		//alert("setMark {0} {1}".format(entry.aid, entry.trip));
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
-		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			var m = tr.check(node.dataset.no);
 			if (m > 0)
 			{
-				obj.tracking = this;
-				ThreadMessages.domobj[obj.no].dataset.track = "m" + this.index;
-				if ((m == 1) && (obj.aid.length > 5) && (!this.containsId(obj.aid)))
+				node.dataset.track = "m" + tr.index;
+				if ((m & 1) && (node.dataset.aid.length > 5) && (!tr.containsId(node.dataset.aid)))
 				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
-					this.aid.push(obj.aid);
-					this.setMark();
+					tr.aid.push(node.dataset.aid);
+					tr.setMark();
 				}
-				else if ((m==2) && (obj.trip) && (!this.containsTrip(obj.trip)))
+				else if ((m&2) && (node.dataset.trip) && (!tr.containsTrip(node.dataset.trip)))
 				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
-					this.trip.push(obj.trip);
-					this.setMark();
+					tr.trip.push(node.dataset.trip);
+					tr.setMark();
 				}
-				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
-				for(var l=0, ll=ps.length; l<ll; l++)
-				{
-					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "m" + this.index;
 				}
-			}
-		}
+		}, true);
 	},
 	resetMark: function()
 	{
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			if (tr.check(node.dataset.no) > 0)
 		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
-			if (m > 0)
-			{
-				obj.tracking = null;
-				ThreadMessages.domobj[obj.no].dataset.track = "";
-				var ps = $("popupContainer").getElementsByTagName("ARTICLE");
-				for(var l=0, ll=ps.length; l<ll; l++)
-				{
-					if (ps[l].dataset.no == obj.no) ps[l].dataset.track = "";
+				node.dataset.track = "";
 				}
-			}
-		}
+		}, true);
 	},
 	getTrackingNumbers: function()
 	{
 		var res = new Array();
-		for (var i=0, j=ThreadMessages.jsobj.length; i<j;i++)
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			if (tr.check(node.dataset.no) > 0)
 		{
-			var obj = ThreadMessages.jsobj[i];
-			var m = this.check(obj);	//0:Tracking対象外, 1:Tripによる追跡, 2: Idによる追跡
-			if (m > 0)
-			{
-				res.push(obj.no);
+				res.push(node.dataset.no);
 			}
-		}
+		}, false);
 		return res;
 	},
 
@@ -1153,8 +1137,9 @@ var MessageStructure = {
 	nodesById: new Array(),		//いわゆるID
 	nodesReplyFrom: new Array(),	//いわゆる逆参照情報
 	//ノードを構造に追加。
-	push: function(node, obj)
+	push: function(node)
 	{
+		var obj = node.dataset;
 		if (this._scriptedStyle == null)
 		{
 			this._scriptedStyle = $("scriptedStyle");
@@ -1867,6 +1852,7 @@ function init()
 	};
 	worker.postMessage({begins: 0});
 //*/
+	var dt1 = new Date();
 	ThreadMessages.init();
 	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
@@ -1881,6 +1867,9 @@ function init()
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
 	if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
 	//TODO::なければブックマークへジャンプとかするかも
+	
+	var dt2 = new Date();
+	console.log("init() spend {0} ms.".format(dt2-dt1));
 };
 
 //簡易版string.format。置換しかできない。
