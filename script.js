@@ -18,13 +18,13 @@ var Preference =
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-Function.prototype.bind = function() {
+Function.prototype.bind = function prototype_bind() {
 	var __method = this, args = $A(arguments), object = args.shift();
 	return function() {
 		return __method.apply(object, args.concat($A(arguments)));
 	}
 }
-var $A = Array.from = function(iterable) {
+var $A = Array.from = function prototype_arrayFrom(iterable) {
 	if (!iterable) return [];
 	if (iterable.toArray) {
 		return iterable.toArray();
@@ -36,7 +36,7 @@ var $A = Array.from = function(iterable) {
 	}
 }
 
-var $qA = function(iterable)
+var $qA = function prototype_quoteArrayFrom(iterable)
 {	//$Aなんだけどクオートで囲む。クオートが入っていればエスケープ。
 	if (!iterable) return [];
 	var results = [];
@@ -49,26 +49,26 @@ var $qA = function(iterable)
 	 return results;
 }
 
-Array.prototype.include = function(val) {
+Array.prototype.include = function prototype_include(val) {
 	for(var i=0;i<this.length;i++){
 		if (this[i]==val) return true;
 	}
 	return false;
 }
-var $=function(id){return document.getElementById(id);}
+var $=function prototype_getElementById(id){return document.getElementById(id);}
 
 
 /* ■イベントハンドラ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var EventHandlers = {
 	//インスタンスが複数あるものについては、ここでハンドラを登録。
 	//ひとつしかないものは、HTMLやらにnodeに直接登録してしまえばOK。
-	init: function()
+	init: function EventHandlers_init()
 	{
 		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
 	},
-	mouseOver: function(aEvent)
+	mouseOver: function EventHandlers_mouseOver(aEvent)
 	{
 		var t = aEvent.target;
 		if (Util.isDecendantOf(t, "resMenu"))
@@ -98,7 +98,7 @@ var EventHandlers = {
 		//スレURLにポイント → スレタイのポップアップ
 		//名前が数字 → ポップアップ
 	},
-	mouseClick: function (aEvent)
+	mouseClick: function EventHandlers_mouseClick(aEvent)
 	{
 		var t = aEvent.target;
 		var cancel = false;
@@ -137,7 +137,7 @@ var EventHandlers = {
 			aEvent.stopPropagation();
 		}
 	},
-	aboneImmidiate: function (aEvent)
+	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
 	{
 	},
 };
@@ -145,7 +145,7 @@ var EventHandlers = {
 
 /* ■板一覧ペイン■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var BoardPane = {
-	init: function()
+	init: function BoardPane_init()
 	{
 		this.container = $("boardPane");
 		this.container.innerHTML = "";	//全子供殺す
@@ -157,12 +157,12 @@ var BoardPane = {
 		
 		$("bpHandle").addEventListener("dblclick", this.toggle.bind(this), false);
 	},
-	toggle: function()
+	toggle: function BoardPane_toggle()
 	{
 		this._size = this._size ? 0 : window.innerHeight /2;
 		this.update();
 	},
-	update: function()
+	update: function BoardPane_update()
 	{
 		this.container.style.height = this._size + "px";
 		if (this._size)
@@ -175,7 +175,7 @@ var BoardPane = {
 
 /* ■レスメニューの処理■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageMenu = {
-	init: function()
+	init: function MessageMenu_init()
 	{
 		this._menu = $("resMenu");
 		$("RMenu.Gear").addEventListener("DOMMouseScroll",this.GearWheel.bind(this),false);
@@ -183,7 +183,7 @@ var MessageMenu = {
 		this._menu.parentNode.removeChild(this._menu);	//これあったほうが安心感がある
 	},
 
-	attach: function(node)
+	attach: function MessageMenu_attach(node)
 	{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
 		var m = this._menu;		//参照コピ～
 		if (m == null) return;	//レスメニューなし
@@ -202,14 +202,14 @@ var MessageMenu = {
 			m.dataset.binding = 0;
 		}
 	},
-	ResTo: function(event)
+	ResTo: function MessageMenu_ResTo(event)
 	{	//これにレス
 		var resTo = this._menu.dataset.binding;
 		var url = Preference.PostScheme + ThreadInfo.Url;
 		if(resTo) url += resTo;
 		window.location.href = url;
 	},
-	PopupRef: function(event)
+	PopupRef: function MessageMenu_PopupRef(event)
 	{
 		var node = this._menu.parentNode;
 		if (node.dataset.popupRefShowing != "y")
@@ -226,10 +226,10 @@ var MessageMenu = {
 			if (node.refPopup) node.refPopup.close();
 		}
 	},
-	ExtractRef: function(event)
+	ExtractRef: function MessageMenu_ExtractRef(event)
 	{
 	},
-	CreateRefTree: function(event)
+	CreateRefTree: function MessageMenu_CreateRefTree(event)
 	{	//参照ツリーを構築する
 		this.DeleteRefTree(event);	//一回削除
 		
@@ -241,7 +241,7 @@ var MessageMenu = {
 		this._createNodeTree(current, node);
 	},
 	
-	DeleteRefTree: function(event)
+	DeleteRefTree: function MessageMenu_DeleteRefTree(event)
 	{	//既存のツリーを削除
 		var node = this._menu.parentNode;
 		if (node == null) return;
@@ -253,7 +253,7 @@ var MessageMenu = {
 			node.removeChild(nodes[i]);
 		}
 	},
-	_createNodeTree: function(from, c)
+	_createNodeTree: function MessageMenu__createNodeTree(from, c)
 	{	//使ったノードを削除するかどうかは、議論が分かれるところ。とりあえず残しておく。
 		if (MessageStructure.nodesReplyFrom[from])
 		{	//fromにレスしているコメントがある・・・
@@ -270,39 +270,39 @@ var MessageMenu = {
 		}
 	},
 	
-	SetBookmark: function(event)
+	SetBookmark: function MessageMenu_SetBookmark(event)
 	{
 		Bookmark.set(this._menu.dataset.binding);
 	},
-	ResetBookmark: function(event)
+	ResetBookmark: function MessageMenu_ResetBookmark(event)
 	{
 		if (Bookmark.no == this._menu.dataset.binding)
 		{
 			Bookmark.set(0);
 		}
 	},
-	SetPickup: function(event)
+	SetPickup: function MessageMenu_SetPickup(event)
 	{
 		if (this._menu.dataset.binding != 0)
 		{
 			Pickup.pickup(this._menu.dataset.binding);
 		}
 	},
-	ResetPickup: function(event)
+	ResetPickup: function MessageMenu_ResetPickup(event)
 	{
 		if (this._menu.dataset.binding != 0)
 		{
 			Pickup.release(this._menu.dataset.binding);
 		}
 	},
-	ToggleHiding: function(event)
+	ToggleHiding: function MessageMenu_ToggleHiding(event)
 	{
 	},
-	ExtractImages: function(event)
+	ExtractImages: function MessageMenu_ExtractImages(event)
 	{
 		OutlinkPlugins.preview(this._menu.parentNode);
 	},
-	BeginGear: function(event)
+	BeginGear: function MessageMenu_BeginGear(event)
 	{
 		if (this.gearNode)
 		{	//今のところ表示に戻す？
@@ -318,7 +318,7 @@ var MessageMenu = {
 		this.gearPopup = pp;
 	},
 	_csGearWheel: false,
-	GearWheel: function(event)
+	GearWheel: function MessageMenu_GearWheel(event)
 	{
 		if (this._csGearWheel) return;
 		this._csGearWheel = true;	//超簡易クリティカルセクション。javascriptはシングルスレッドなのでこれでOK。このオブジェクトはworkerに突っ込めないしね！
@@ -341,16 +341,16 @@ var MessageMenu = {
 		this._csGearWheel = false;
 		event.preventDefault();
 	},
-	BeginTracking: function(event)
+	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
 		Tracker.BeginTracking(this._menu.dataset.binding);
 	},
-	EndTracking: function(event)
+	EndTracking: function MessageMenu_EndTracking(event)
 	{	//トラッキングの終了
 		Tracker.EndTracking(this._menu.dataset.binding);
 	},
-	PopupTracked: function(event)
+	PopupTracked: function MessageMenu_PopupTracked(event)
 	{
 		if (this.popTrack)return;	//すでに表示されている
 		var tracking = Tracker.getTracker(this._menu.dataset.binding);
@@ -367,7 +367,7 @@ var MessageMenu = {
 
 var Menu = {
 
-	PopupTemplate: function()
+	PopupTemplate: function Menu_PopupTemplate()
 	{
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
@@ -377,29 +377,29 @@ var Menu = {
 		pp.popupNumbers(tids, Util.getElementPagePos($("Menu.Template")), true);
 	},
 	
-	JumpToNewMark: function()
+	JumpToNewMark: function Menu_JumpToNewMark()
 	{
 		var nn = ThreadInfo.Fetched + 1;
 		MessageUtil.focus(nn);
 	},
 	
-	JumpToBookmark: function()
+	JumpToBookmark: function Menu_JumpToBookmark()
 	{
 		Bookmark.focus();
 	},
 	
-	ResetBookmark: function()
+	ResetBookmark: function Menu_ResetBookmark()
 	{
 		Bookmark.set(0);
 	},
-	PopupPickups: function()
+	PopupPickups: function Menu_PopupPickups()
 	{
 		var pp = new ResPopup(null);
 		pp.offsetX = 8; pp.offsetY = 16;
 		MessageLoader.load(Pickup.pickups);
 		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
 	},
-	More: function()
+	More: function Menu_More()
 	{
 		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
 		var min = ThreadMessages.deployedMax+1;
@@ -408,7 +408,7 @@ var Menu = {
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
-	MoreBack: function()
+	MoreBack: function Menu_MoreBack()
 	{
 		var min = ThreadMessages.deployedMin-30;
 		var max = ThreadMessages.deployedMin-1;
@@ -418,13 +418,13 @@ var Menu = {
 		ThreadMessages.deploy(min, max);
 		MessageUtil.focus(min);
 	},
-	BeginAutoMore: function()
+	BeginAutoMore: function Menu_BeginAutoMore()
 	{
 	},
-	EndAutoMore: function()
+	EndAutoMore: function Menu_EndAutoMore()
 	{
 	},
-	PreviewOutlinks: function()
+	PreviewOutlinks: function Menu_PreviewOutlinks()
 	{
 		for(var i=1; i< ThreadInfo.Total; i++)
 		{
@@ -434,7 +434,7 @@ var Menu = {
 			}
 		}
 	},
-	ToggleFinder: function()
+	ToggleFinder: function Menu_ToggleFinder()
 	{
 		if (Finder.showing())
 		{
@@ -455,7 +455,7 @@ var ThreadMessages = {
 	deployedMin: 0,
 	deployedMax: 0,
 	
-	init: function()
+	init: function ThreadMessages_init()
 	{
 		var e = $("resContainer");
 		for(var i=0; i<e.childNodes.length; i++)
@@ -468,7 +468,7 @@ var ThreadMessages = {
 		//Tracker.notifyNewMessage($A(e.childElementNodes), obj);
 	},
 	
-	deploy: function(min, max)
+	deploy: function ThreadMessages_deploy(min, max)
 	{	//minからmaxまでをdeployNodeする。
 		//ロードされていないものはロードしないのであらかじめload(min, maxしておくように!）
 		for(var i=min; i<=max; i++)
@@ -477,7 +477,7 @@ var ThreadMessages = {
 		}
 	},
 	
-	push: function(nodes)
+	push: function ThreadMessages_push(nodes)
 	{
 		for (var i=0, j=nodes.length; i<j; i++)
 		{
@@ -491,7 +491,7 @@ var ThreadMessages = {
 		Tracker.notifyNewMessage(nodes);
 	},
 
-	processMessage: function (node)
+	processMessage: function ThreadMessages_processMessage(node)
 	{
 		if (node.tagName == "ARTICLE")
 		{
@@ -523,7 +523,7 @@ var ThreadMessages = {
 		}
 	},
 	
-	deployNode: function(node)
+	deployNode: function ThreadMessages_deployNode(node)
 	{
 		if(!node)return;	//ほぎゃ！
 		if(node.tagName != "ARTICLE") return;	//ほぎゃ！
@@ -546,7 +546,7 @@ var ThreadMessages = {
 		if (nn > this.deployedMax) this.deployedMax = nn;
 	},
 	
-	findDeployedNextSibling: function(no)
+	findDeployedNextSibling: function ThreadMessages_findDeployedNextSibing(no)
 	{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
 		for(var i=no; i<=this.deployedMax; i++)
 		{
@@ -558,7 +558,7 @@ var ThreadMessages = {
 		return null;
 	},
 	
-	extendAnchor: function(e)
+	extendAnchor: function ThreadMessages_extendAnchor(e)
 	{	//全角アンカー等拡張
 		var as=e.getElementsByTagName("A");
 		//var ml=Profiles.maxLinkContent.value;
@@ -600,10 +600,10 @@ var ThreadMessages = {
 			e.innerHTML=res;
 		}
 	},
-	replaceStr: function(e)
+	replaceStr: function ThreadMessages_replaceStr(e)
 	{	//replaceStr.txtによる置換
 	},
-	getNode: function(id, clone)
+	getNode: function ThreadMessages_getNode(id, clone)
 	{
 		if (this.domobj[id] != null)
 		{
@@ -632,7 +632,7 @@ var ThreadMessages = {
 		}
 		return null;
 	},
-	foreach: function(func, includePopup)
+	foreach: function ThreadMessages_foreach(func, includePopup)
 	{
 		var nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
 		for (var i=0, j=nodes.length; i<j; i++)
@@ -640,7 +640,7 @@ var ThreadMessages = {
 			if (nodes[i]) func(nodes[i]);
 		}
 	},
-	getDeployMode: function(no)
+	getDeployMode: function ThreadMessages_getDeployMode(no)
 	{	//ブックマークの位置によってn(変),b(表示範囲より前),y(表示範囲内),a(表示範囲より後ろ)のいずれかを返す
 		if (no <= 0)
 		{
@@ -659,11 +659,11 @@ var ThreadMessages = {
 			return "y";
 		}
 	},
-	isReady: function(id)
+	isReady: function ThreadMessages_isReady(id)
 	{	//読み込み済みか？
 		return (this.domobj[id]);
 	},
-	isDeployed: function(id)
+	isDeployed: function ThreadMessages_isDeployed(id)
 	{	//普通に表示されているか？
 		if ( this.domobj[id])
 			if (this.domobj[id].parentNode)
@@ -677,22 +677,22 @@ var ThreadMessages = {
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageLoader = {
-	loadPrev: function()
+	loadPrev: function MessageLoader_loadPrev()
 	{
 		var w = Preference.MoreWidth;
 	},
-	loadNext: function()
+	loadNext: function MessageLoader_loadNext()
 	{
 		var w = Preference.MoreWidth;
 	},
-	beginAutoLoad: function()
+	beginAutoLoad: function MessageLoader_beginAutoLoad()
 	{
 	},
-	endAutoLoad: function()
+	endAutoLoad: function MessageLoader_endAutoLoad()
 	{
 	},
 	
-	load: function(min, max)
+	load: function MessageLoader_load(min, max)
 	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
 		//alert([min, max]);
 		if (min instanceof Array)
@@ -735,7 +735,7 @@ var MessageLoader = {
 		}
 	},
 	
-	loadByAnchorStr: function(str)
+	loadByAnchorStr: function MessageLoader_loadByAnchorStr(str)
 	{
 		str=str.replace(/>/g,"");
 		var e=str.split(",");
@@ -755,7 +755,7 @@ var MessageLoader = {
 	_checkingNewMessage: false,
 	_checkNewMessageCallback: new Array(),
 	_checkNewMessageRequest: null,
-	checkNewMessage: function(callback)
+	checkNewMessage: function MessageLoader_checkNewMessage(callback)
 	{
 		this._checkNewMessageCallback.push(callback);
 		if(!this._checkingNewMessage)
@@ -770,7 +770,7 @@ var MessageLoader = {
 		}
 	},
 	
-	_loadCheck: function()
+	_loadCheck: function MessageLoader__loadCheck()
 	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
 		var req = this._checkNewMessageRequest;
 		if (!req) return;
@@ -806,7 +806,7 @@ var MessageLoader = {
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = {
-	init: function()
+	init: function Bookmark_init()
 	{
 		var no = parseInt(CommonPref.readThreadObject("bm"));
 		no = !no ? 0 : no;
@@ -816,12 +816,12 @@ var Bookmark = {
 		}
 	},
 	
-	save: function()
+	save: function Bookmark_save()
 	{
 		CommonPref.writeThreadObject("bm", this.no);
 	},
 	
-	set: function(no)
+	set: function Bookmark_set(no)
 	{
 		if(no<0)no=0;
 		ThreadMessages.foreach(function(node){
@@ -834,7 +834,7 @@ var Bookmark = {
 		this.save();
 	},
 
-	focus: function()
+	focus: function Bookmark_focus()
 	{
 		if (!this.no) return;
 		if (this.no < ThreadMessages.deployedMin)
@@ -855,7 +855,7 @@ var Bookmark = {
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Pickup = {
 	//TODO:中途追加品対応
-	init: function()
+	init: function Pickup_init()
 	{
 		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
 		var pickups = CommonPref.readThreadObject("pk");
@@ -865,12 +865,12 @@ var Pickup = {
 		this.setMark(this.pickups);
 		this.adjustMenuStyle();
 	},
-	save: function()
+	save: function Pickup_save()
 	{
 		var idss = this.pickups + "";
 		CommonPref.writeThreadObject("pk", idss);
 	},
-	setMark: function(ids)
+	setMark: function Pickup_setMark(ids)
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
@@ -879,7 +879,7 @@ var Pickup = {
 			}, true);
 			}
 	},
-	resetMark: function(ids)
+	resetMark: function Pickup_resetMark(ids)
 	{
 		for(var i=0, j=ids.length; i<j; i++)
 		{
@@ -888,7 +888,7 @@ var Pickup = {
 			}, true);
 			}
 	},
-	pickup: function(id)
+	pickup: function Pickup_pickup(id)
 	{
 		if (!this.pickups.include(id))
 		{
@@ -898,7 +898,7 @@ var Pickup = {
 		}
 		this.adjustMenuStyle();
 	},
-	release: function(id)
+	release: function Pickup_release(id)
 	{
 		if (this.pickups.include(id))
 		{
@@ -908,7 +908,7 @@ var Pickup = {
 		}
 		this.adjustMenuStyle();
 	},
-	adjustMenuStyle: function()
+	adjustMenuStyle: function Pickup_adjustMenuStyle()
 	{
 		if (this.pickups.length)
 		{
@@ -926,7 +926,7 @@ var Pickup = {
 var Tracker= {
 	_trackers: [],
 	
-	init: function()
+	init: function Tracker_init()
 	{	//保存されているトラック情報を元にトラッキングを開始
 		var obj = CommonPref.readGlobalObject("tracker");
 		try
@@ -945,7 +945,7 @@ var Tracker= {
 		}
 		this.save();
 	},
-	save: function()
+	save: function Tracker_save()
 	{
 		var tss = [];
 		for(var i=0,j=this._trackers.length; i<j; i++)
@@ -959,7 +959,7 @@ var Tracker= {
 		CommonPref.writeGlobalObject("tracker", json);
 	},
 	
-	BeginTracking: function(no)
+	BeginTracking: function Tracker_BeginTracking(no)
 	{
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
@@ -974,7 +974,7 @@ var Tracker= {
 		tr.setMark();
 		this.save();
 	},
-	EndTracking: function(no)
+	EndTracking: function Tracker_EndTracking(no)
 	{
 		var nt = new Array();
 		for(var i=0, j=this._trackers.length; i<j; i++)
@@ -991,7 +991,7 @@ var Tracker= {
 		this._trackers = nt;
 		this.save();
 	},
-	getTracker: function(no)
+	getTracker: function Tracker_getTracker(no)
 	{
 		var tr = ThreadMessages.domobj[no].dataset.track + "";
 		if (tr.match(/^m(\d+)$/))
@@ -1007,7 +1007,7 @@ var Tracker= {
 		}
 		return null;
 	},
-	findBrankIndex: function()
+	findBrankIndex: function Tracker_findBrankIndex()
 	{
 		//空いてる番号を探す
 		for(var ni=0; ni<1001; ni++)
@@ -1025,7 +1025,7 @@ var Tracker= {
 		}
 		return 0;
 	},
-	notifyNewMessage: function(nodes)
+	notifyNewMessage: function Tracker_notifyNewMessage(nodes)
 	{	//新しいレスが来た。希望のレスだ。
 	},
 };
@@ -1036,7 +1036,7 @@ TrackerEntry.prototype = {
 	trip: null,
 	index: 0,
 	
-	init: function(no)
+	init: function TrackerEntry_init(no)
 	{
 		if (ThreadMessages.isReady(no))
 		{
@@ -1054,13 +1054,13 @@ TrackerEntry.prototype = {
 		}
 	},
 	
-	toString: function()
+	toString: function TrackerEntry_toString()
 	{
 		var str = "{index: {0}, aid: [{1}], trip: [{2}]}".format(this.index, $qA(this.aid), $qA(this.trip));
 		return str;
 	},
 	
-	check: function(no)
+	check: function TrackerEntry_check(no)
 	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
 		var m = 0;
 		if (!ThreadMessages.isReady(no)) return 0;
@@ -1075,16 +1075,16 @@ TrackerEntry.prototype = {
 		}
 		return m;
 	},
-	containsId: function(id)
+	containsId: function TrackerEntry_containsId(id)
 	{
 		return this.aid.include(id);
 	},
-	containsTrip: function(trip)
+	containsTrip: function TrackerEntry_containsTrip(trip)
 	{
 		return this.trip.include(trip);
 	},
 
-	setMark: function()
+	setMark: function TrackerEntry_setMark()
 	{
 		//alert("setMark {0} {1}".format(entry.aid, entry.trip));
 		var tr = this;
@@ -1106,7 +1106,7 @@ TrackerEntry.prototype = {
 				}
 		}, true);
 	},
-	resetMark: function()
+	resetMark: function TrackerEntry_resetMark()
 	{
 		var tr = this;
 		ThreadMessages.foreach(function(node){
@@ -1116,7 +1116,7 @@ TrackerEntry.prototype = {
 				}
 		}, true);
 	},
-	getTrackingNumbers: function()
+	getTrackingNumbers: function TrackerEntry_getTrackingNumbers()
 	{
 		var res = new Array();
 		var tr = this;
@@ -1136,7 +1136,7 @@ var MessageStructure = {
 	nodesById: new Array(),		//いわゆるID
 	nodesReplyFrom: new Array(),	//いわゆる逆参照情報
 	//ノードを構造に追加。
-	push: function(node)
+	push: function MessageStructure_push(node)
 	{
 		var obj = node.dataset;
 		if (this._scriptedStyle == null)
@@ -1173,7 +1173,7 @@ var MessageStructure = {
 			this.nodesReplyFrom[t].push(obj.no);
 		}
 	},
-	getReplyTo: function(node)
+	getReplyTo: function MessageStructure_getReplyTo(node)
 	{	//あるノードがレスしている番号の配列を取得する
 		var anchors = node.getElementsByClassName("resPointer");
 		var replyTo = new Array();
@@ -1198,18 +1198,6 @@ var MessageStructure = {
 	},
 };
 
-//レスのアノテーション情報。検索処理などにはこれを使う。
-function messageAnnotation(){ };
-messageAnnotation.prototype = {
-	no: 0,
-	aid: "",
-	idcolor: "black",
-	idbackcolor: "transparent",
-	author: "",
-	date: "",
-	message: "",
-};
-
 /* ■外部リンク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 const OUTLINK_NON   = 0;	//outlinkじゃない
 const OUTLINK_IMAGE = 1;	//画像
@@ -1219,7 +1207,7 @@ const OUTLINK_ETC   = 4;	//その他
 
 var OutlinkPlugins = {
 
-	getOutlinkPlugin: function(node)
+	getOutlinkPlugin: function OutlinkPlugins_getOutlinkPlugin(node)
 	{	//適合するアウトリンクプラグインを求める。
 		//適合率1ならそれに決定。
 		//そうでなければ、より適合率の高そうなものが出るまで繰り返す。
@@ -1244,7 +1232,7 @@ var OutlinkPlugins = {
 		}
 		return mpt;
 	},
-	popupPreview: function(plugin, anchor, ev)
+	popupPreview: function OutlinkPlugins_popupPreview(plugin, anchor, ev)
 	{	//Outlinkのプレビューをポップアップする
 		if (anchor != null)
 		{
@@ -1256,7 +1244,7 @@ var OutlinkPlugins = {
 				},false);
 		}
 	},
-	popup: function(plugin, anchor, fixed)
+	popup: function OutlinkPlugins_popup(plugin, anchor, fixed)
 	{
 		if (anchor.dataset.previewShowing!="y")
 		{
@@ -1275,7 +1263,7 @@ var OutlinkPlugins = {
 			}
 		}
 	},
-	preview: function(resNode)
+	preview: function OutlinkPlugins_preview(resNode)
 	{
 		var outlinks = resNode.getElementsByClassName("outLink");
 		var container = resNode.getElementsByClassName("outLinkPreview");
@@ -1301,7 +1289,7 @@ var OutlinkPlugins = {
 //画像URL用
 var OutlinkPluginForImage = {
 	type: OUTLINK_IMAGE,
-	posivility: function(href)
+	posivility: function OutlinkPluginForImage_posivility(href)
 	{
 		if (href.match(/\.jpg$|jpeg$|bmp$|png$|gif$/i))
 		{
@@ -1309,7 +1297,7 @@ var OutlinkPluginForImage = {
 		}
 		return 0;
 	},
-	getPreview: function(href, onload)
+	getPreview: function OutlinkPluginForImage_getPreview(href, onload)
 	{
 		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false));
 		p.onload = onload;
@@ -1320,11 +1308,11 @@ var OutlinkPluginForImage = {
 //動画URL用
 var OutlinkPluginForMovie = {
 	type: OUTLINK_MOVIE,
-	posivility: function(href)
+	posivility: function OutlinkPluginForMovie_posivility(href)
 	{
 		return 0;
 	},
-	getPreview: function(href, onload)
+	getPreview: function OutlinkPluginForMovie_getPreview(href, onload)
 	{
 		return null;
 	},
@@ -1332,7 +1320,7 @@ var OutlinkPluginForMovie = {
 
 var OutlinkPluginForNicoNico = {
 	type: OUTLINK_MOVIE,
-	posivility: function(href)
+	posivility: function OutlinkPluginForNicoNico_posivility(href)
 	{	
 		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/sm\d+/i))
 		{
@@ -1340,7 +1328,7 @@ var OutlinkPluginForNicoNico = {
 		}
 		return 0;
 	},
-	getPreview: function(href, onload)
+	getPreview: function OutlinkPluginForNicoNico_getPreview(href, onload)
 	{
 		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/(sm\d+)/i))
 		{
@@ -1355,27 +1343,27 @@ var OutlinkPluginForNicoNico = {
 
 var OutlinkPluginFor2ch = {
 	type: OUTLINK_2CH,
-	posivility: function(href)
+	posivility: function OutlinkPluginFor2ch_posivility(href)
 	{
 		return (this.is2ch(href)) ? 1 : 0;
 	},
-	getPreview: function(href, onload)
+	getPreview: function OutlinkPluginFor2ch_getPreview(href, onload)
 	{
 		return null;
 	},
 	//b2rで読めそうなアドレスだとtrueを返す
-	is2ch: function(url)
+	is2ch: function OutlinkPluginFor2ch_is2ch(url)
 	{
 		return (url.match(/\/test\/read.cgi\//));
 	},
 	//2ch.net, bbspinkならtrue
-	isPure2ch: function(url)
+	isPure2ch: function OutlinkPluginFor2ch_isPure2ch(url)
 	{
 		return (url.match(/(2ch.net|bbspink.com|machi.to)\//));
 	},
 	
 	//b2rで表示中？
-	isb2r: function(url)
+	isb2r: function OutlinkPluginFor2ch_isb2r(url)
 	{
 		return (url.match(/\/\/127.0.0.1:\d+\/thread\//));
 	},
@@ -1383,11 +1371,11 @@ var OutlinkPluginFor2ch = {
 
 var OutlinkPluginForDefault = {
 	type: OUTLINK_ETC,
-	posivility: function(href)
+	posivility: function OutlinkPluginForDefault_posivility(href)
 	{
 		return 1;
 	},
-	getPreview: function(href, onload)
+	getPreview: function OutlinkPluginForDefault_getPreview(href, onload)
 	{
 		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false);
 		p.rel = href;
@@ -1407,7 +1395,7 @@ ImageThumbnail.prototype = {
 	container: null,	//nodeの子。
 	loading: true,
 	useCanvas: false,
-	init: function(href)
+	init: function ImageThumbnail_init(href)
 	{
 		this.container = document.createElement("DIV");
 		this.container.className = "ithumbcontainer";
@@ -1421,7 +1409,7 @@ ImageThumbnail.prototype = {
 		this.img = img;
 	},
 	
-	loaded: function(e)
+	loaded: function ImageThumbnail_loaded(e)
 	{
 		this.loading = false;
 		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
@@ -1451,13 +1439,13 @@ ImageThumbnail.prototype = {
 		this.container.dataset.state="ok";
 		if (this.onload) this.onload();
 	},
-	error: function(e)
+	error: function ImageThumbnail_error(e)
 	{
 		this.loading = false;
 		this.container.dataset.state="error";
 		if (this.onload) this.onload();
 	},
-	ds: function(w, h)
+	ds: function ImageThumbnail_ds(w, h)
 	{	//w, hをthmbSizeの矩形に押し込んだときの縦横のサイズを求める。戻り値は{width:?, height:? }
 		var r = 1;
 		var ms = this.thumbSize;
@@ -1474,12 +1462,12 @@ ImageThumbnail.prototype = {
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
 function ImageThumbnailOnClickOverlay(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
 ImageThumbnailOnClickOverlay.prototype = new ImageThumbnail();
-ImageThumbnailOnClickOverlay.prototype.loaded = function(e)
+ImageThumbnailOnClickOverlay.prototype.loaded = function ImageThumbnailOnClickOverlay_loaded(e)
 {
 	ImageThumbnail.prototype.loaded.call(this, e);
 	this.container.addEventListener("click", this.showOverlay.bind(this), false);
 }
-ImageThumbnailOnClickOverlay.prototype.showOverlay = function()
+ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnClickOverlay_showOverlay()
 {
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
@@ -1492,12 +1480,12 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function()
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
 function ImageThumbnailOnClickOverlayFrame(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
 ImageThumbnailOnClickOverlayFrame.prototype = new ImageThumbnail();
-ImageThumbnailOnClickOverlayFrame.prototype.loaded = function(e)
+ImageThumbnailOnClickOverlayFrame.prototype.loaded = function ImageThumbnailOnClickOverlayFrame_loaded(e)
 {
 	ImageThumbnail.prototype.loaded.call(this, e);
 	this.container.addEventListener("click", this.showOverlay.bind(this), false);
 }
-ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function()
+ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnailOnClickOverlayFrame_showOverlay()
 {
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
@@ -1513,7 +1501,7 @@ Popup.prototype = {
 	offsetY: Preference.PopupOffsetY,
 	offsetXe: 0,
 	closeOnMouseLeave: true,
-	show: function(content, pos, fixed)
+	show: function Popup_show(content, pos, fixed)
 	{
 		var container = document.createElement("DIV");
 		container.appendChild(content);
@@ -1527,13 +1515,13 @@ Popup.prototype = {
 		this.adjust(pos);
 	},
 	
-	close: function()
+	close: function Popup_close()
 	{
 		this.container.parentNode.removeChild(this.container);
 		if (this.onClose) this.onClose(this);
 	},
 	//サイズ制限
-	limitSize: function(pos)
+	limitSize: function Popup_limitSize(pos)
 	{
 		var e = this.container.firstChild;
 		//幅・・・画面幅の80%
@@ -1552,7 +1540,7 @@ Popup.prototype = {
 		}
 	},
 	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
-	adjust: function(pos)
+	adjust: function Popup_adjust(pos)
 	{
 		var e = this.container.firstChild;
 		var px = pos.pageX;
@@ -1578,7 +1566,7 @@ Popup.prototype = {
 function ResPopup(anchor){ this.init(anchor); }
 ResPopup.prototype = new Popup();
 
-	ResPopup.prototype.init = function(anchor)
+	ResPopup.prototype.init = function ResPopup_init(anchor)
 	{
 		//Delayを仕掛ける
 		if (anchor != null)
@@ -1591,19 +1579,19 @@ ResPopup.prototype = new Popup();
 				},false);
 		}
 	};
-	ResPopup.prototype.popup =  function(target, pos, fixed)
+	ResPopup.prototype.popup =  function ResPopup_popup(target, pos, fixed)
 	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
 		this.used = true;
 		MessageLoader.loadByAnchorStr(target);
 		var ids = MessageUtil.splitResNumbers(target);
 		this.showPopup(ids, pos, fixed);
 	};
-	ResPopup.prototype.popupNumbers =  function(ids, pos, fixed)
+	ResPopup.prototype.popupNumbers =  function ResPopup_popupNumbers(ids, pos, fixed)
 	{	//ポップアップを表示, idsはレス番号の配列。
 		this.used = true;
 		this.showPopup(ids, pos, fixed);
 	};
-	ResPopup.prototype.showPopup =  function(ids, pos, fixed)
+	ResPopup.prototype.showPopup =  function ResPopup_showPopup(ids, pos, fixed)
 	{
 		var innerContainer = document.createElement("DIV");
 		for(var i=0, len=ids.length; i < len ; i++)
@@ -1620,7 +1608,7 @@ ResPopup.prototype = new Popup();
 /* ■検索・抽出 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Finder = {
 	
-	init: function()
+	init: function Finder_init()
 	{
 		this.form = document.createElement("DIV");
 		this.form.id = "finder";
@@ -1636,7 +1624,7 @@ var Finder = {
 			'</form>' ;
 	},
 	
-	popupFinderForm: function(pos, fixed)
+	popupFinderForm: function Finder_popupFinderForm(pos, fixed)
 	{
 		var content = this.form;
 		var p = new Popup();
@@ -1648,7 +1636,7 @@ var Finder = {
 		this.popup = p;
 		this.enterExpressMode();
 	},
-	closeFinderPopup: function()
+	closeFinderPopup: function Finder_closeFinderPopup()
 	{
 		if (this.popup)
 		{
@@ -1657,21 +1645,21 @@ var Finder = {
 			this.leaveExpressMode();
 		}
 	},
-	showing: function()
+	showing: function Finder_showing()
 	{
 		return (this.popup != null);
 	},
-	enterExpressMode: function()
+	enterExpressMode: function Finder_enterExpressMode()
 	{
 		this.pageY = window.scrollY;
 		document.body.dataset.expressMode="y";
 	},
-	leaveExpressMode: function()
+	leaveExpressMode: function Finder_leaveExpressMode()
 	{
 		document.body.dataset.expressMode="n";
 		window.scrollTo(0,this.pageY);
 	},
-	express: function()
+	express: function Finder_express()
 	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
 		var cond = $("fform").q.value;
 		var reg  = $("fform").r.checked;
@@ -1694,7 +1682,7 @@ var Finder = {
 			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
 		}, false);
 	},
-	escape: function(str)
+	escape: function Finder_escape(str)
 	{
 		var escapechar = "\\{}()[]*-+?.,^$|";
 		var ret = "";
@@ -1719,7 +1707,7 @@ var Finder = {
 var ScrollBar=
 {
 	size: 26,	//残低地
-	VScroll: function(){
+	VScroll: function ScrollBar_VScroll(){
 		if(window.innerWidth!=document.body.clientWidth){
 			this.size=window.innerWidth-document.body.clientWidth;
 			return true;
@@ -1727,7 +1715,7 @@ var ScrollBar=
 			return false;
 		}
 	},
-	HScroll: function(){
+	HScroll: function ScrollBar_HScroll(){
 		if(window.innerHeight!=document.body.clientHeight){
 			this.size=window.innerWidth-document.body.clientHeight;
 			return true;
@@ -1741,7 +1729,7 @@ var ScrollBar=
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Util = {
 	//数字をﾊﾝｶｸにする
-	toNarrowString: function(src)
+	toNarrowString: function Util_toNarrowString(src)
 	{
 		var str=new String;
 		var len=src.length;
@@ -1756,19 +1744,19 @@ var Util = {
 		return str;
 	},
 	
-	isDecendantOf: function(e, id)
+	isDecendantOf: function Util_isDecendantOf(e, id)
 	{
 		if (e.id == id) return e;
 		if (e.parentNode  == null) return null;
 		return this.isDecendantOf(e.parentNode, id);
 	},
-	getDecendantNode: function(e, tagName)
+	getDecendantNode: function Util_getDecendantNode(e, tagName)
 	{
 		if (e.tagName == tagName) return e;
 		if (e.parentNode  == null) return null;
 		return this.getDecendantNode(e.parentNode, tagName);
 	},
-	getElementPagePos: function(e)
+	getElementPagePos: function Util_getElementPagePos(e)
 	{	//要素の絶対座標を求める
 		var pos = {pageX: 0, pageY: 0};
 		while(e != null)
@@ -1782,7 +1770,7 @@ var Util = {
 };
 
 var MessageUtil = {
-	splitResNumbers: function (str)
+	splitResNumbers: function MessageUtil_splitResNumbers(str)
 	{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
 		str=str.replace(/>/g,"");
 		var e=str.split(",");
@@ -1797,7 +1785,7 @@ var MessageUtil = {
 		return r;
 	},
 	
-	focus: function(no)
+	focus: function MessageUtil_focus(no)
 	{
 		if (ThreadMessages.isDeployed(no))
 		{
@@ -1872,7 +1860,7 @@ function init()
 
 //簡易版string.format。置換しかできない。
 // http://www.geekdaily.net/2007/06/21/cs-stringformat-for-javascript/
-String.format = function(p_txt){
+String.format = function String_format(p_txt){
 	if ( arguments.length <= 1 ) {
 		return p_txt;
 	}
@@ -1883,7 +1871,7 @@ String.format = function(p_txt){
 	return p_txt;
 };
 
-String.prototype.format = function(){
+String.prototype.format = function StringPrototype_format(){
 Array.prototype.unshift.apply(arguments, [this]);
 return String.format.apply(String, arguments);
 };

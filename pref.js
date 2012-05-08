@@ -51,11 +51,11 @@ var CommonPref = {
 	
 	_storage: localStorage,
 	
-	_resolvePrefName: function(aPrefName){
+	_resolvePrefName: function CommonPref__resolvePrefName(aPrefName){
 		return "bbs2chSkin.common." + aPrefName + this._identifier;
 	},
 	
-	setIdentifier: function(aThreadURL) {
+	setIdentifier: function CommonPref_setIdentifier(aThreadURL) {
 		if (aThreadURL.match(/machi\.to/)) {
 			//まちBBS
 			var _bbskey ="";
@@ -75,22 +75,22 @@ var CommonPref = {
 		}
 	},
 	//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
-	writeThreadObject: function(objName, str)
+	writeThreadObject: function CommonPref_wroteThreadObject(objName, str)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
 		this._storage.setItem(pn, str);
 	},
-	readThreadObject: function(objName,eval)
+	readThreadObject: function CommonPref_readThreadObject(objName,eval)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
 		return this._storage.getItem(pn);
 	},
-	writeGlobalObject: function(objName, str)
+	writeGlobalObject: function CommonPref_writeGlobalObject(objName, str)
 	{
 		var pn = "bbs2chSkin.common." + objName;
 		this._storage.setItem(pn, str);
 	},
-	readGlobalObject: function(objName)
+	readGlobalObject: function CommonPref_readGlobalObject(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName;
 		return this._storage.getItem(pn)+ "";
