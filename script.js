@@ -1689,13 +1689,9 @@ var Finder = {
 			$("fformerr").innerHTML = "<br>" + e;
 			return;
 		}
-		for(var i=1; i< ThreadInfo.Total; i++)
-		{
-			if (ThreadMessages.isDeployed(i))
-			{
-				ThreadMessages.domobj[i].dataset.express = exp.test(ThreadMessages.domobj[i].textContent) ? "y" : "n";
-			}
-		}
+		ThreadMessages.foreach(function(node){
+			node.dataset.express = exp.test(node.textContent) ? "y" : "n";
+		}, false);
 	},
 	escape: function(str)
 	{
