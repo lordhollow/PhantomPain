@@ -182,7 +182,7 @@ h2
 	article[data-focus="on"]
 	{
 		background-color: #FCC;
-		-moz-box-shadow: 0px 16px 16px 8px #FCC; 
+		-moz-box-shadow: 0px 12px 16px 8px #FCC; 
 	}
 
 	h2 > * 
@@ -357,7 +357,7 @@ article article
 .popup
 {
 	position: absolute;
-	border-left: 12px solid rgba(255,255,192,0.9);
+	border-left: 12px solid rgba(255,255,192,0.95);
 	border-top: 12px solid transparent;
 	z-index: 500;
 	left: -10000px;
@@ -366,7 +366,7 @@ article article
 .popup > div
 {
 	float: left;
-	background: rgba(255,255,192,0.9);
+	background: rgba(255,255,192,0.95);
 	padding: 0 12px 12px 12px;
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
