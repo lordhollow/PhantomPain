@@ -9,6 +9,7 @@ body
 	margin: 0;
 	padding: 0;
 	border-right: solid 3px #F99;
+	background-color:#F8F8F8;
 	overflow-y: scroll;
 }
 body[data-mediaview="y"]
