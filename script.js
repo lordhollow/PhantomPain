@@ -272,14 +272,11 @@ var MessageMenu = {
 	
 	SetBookmark: function MessageMenu_SetBookmark(event)
 	{
-		Bookmark.set(this._menu.dataset.binding);
+		Bookmark.add(this._menu.dataset.binding);
 	},
 	ResetBookmark: function MessageMenu_ResetBookmark(event)
 	{
-		if (Bookmark.no == this._menu.dataset.binding)
-		{
-			Bookmark.set(0);
-		}
+		Bookmark.del(this._menu.dataset.binding);
 	},
 	SetPickup: function MessageMenu_SetPickup(event)
 	{
@@ -390,7 +387,7 @@ var Menu = {
 	
 	ResetBookmark: function Menu_ResetBookmark()
 	{
-		Bookmark.set(0);
+		Bookmark.add(0);
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
@@ -675,7 +672,8 @@ var ThreadMessages = {
 	
 };
 
-/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+
+/* ■ローダー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageLoader = {
 	loadPrev: function MessageLoader_loadPrev()
 	{
@@ -804,53 +802,128 @@ var MessageLoader = {
 
 };
 
-/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var Bookmark = {
-	init: function Bookmark_init()
-	{
-		var no = parseInt(CommonPref.readThreadObject("bm"));
-		no = !no ? 0 : no;
-		if (no)
+/* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function MarkerService(){}
+MarkerService.prototype = {
+	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
+	storageKey: "_markerservice",	//ストレージのキー
+	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(または="")となる。大文字入れちゃだめ。
+	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalse.
+
+	onStorageChanged: function MarkerService_onStorageChanged(e)
+	{	//ストレージ内容が変化したときよびだされる。
+		if (this.isMineStorageDataChanged(e.key))
 		{
-			this.set(no);
+			this.refresh();
 		}
 	},
-	
-	save: function Bookmark_save()
+	isMineStorageDataChanged: function MarkerService_isMineStorageDataChanged(key)
 	{
-		CommonPref.writeThreadObject("bm", this.no);
+		if(this.global)
+		{
+			return (CommonPref.getGlobalObjectKey(this.storageKey) == key);
+		}
+		else
+		{
+			return (CommonPref.getThreadObjectKey(this.storageKey) == key);
+		}
 	},
-	
-	set: function Bookmark_set(no)
+	save: function MarkserService_save()
 	{
-		if(no<0)no=0;
-		ThreadMessages.foreach(function(node){
-			node.dataset.bm = (node.dataset.no == no) ? "y" : "";
-		}, true);
-		//メニューバー
-		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(no);
-		$("Menu.Bookmark").dataset.bmn= no;
-		this.no = no;
+		var str = this.getSaveStr();
+		if (this.global)
+		{
+			CommonPref.writeGlobalObject(this.storageKey, str);
+		}
+		else
+		{
+			CommonPref.writeThreadObject(this.storageKey, str);
+		}
+	},
+	refresh: function MarkerService_refresh()
+	{	//マーキングしたりされたりするごとにちゃんと保存しておけば、自分が書いたものとの差分によって処理できると見た！
+		
+	},
+	add: function MarkerService_set(no)
+	{	//こいつをマーキングしろ！という指示
+		this._add(no);
+		this.setMark();
 		this.save();
 	},
-
-	focus: function Bookmark_focus()
+	del: function MarkerService_del(no)
+	{	//こいつのマーキングを解除しろ！という指示
+		this._del(no);
+		this.setMark();
+		this.save();
+	},
+	isMarked: function MarkerService_isMarked(no)
+	{	//こいつはマーキングされていますか？
+		//逐次マーキングが反映されていれば、これでいいはず。
+		//検索はポップアップとかに及ばないけど、domobjには及ぶので。
+		//var node = ThreadMessages.domobj[no];
+		//return (node && (node.getAttribute("data-" + this.mark)=="y");
+		return false;
+	},
+	setMark: function MarkerService_mark()
 	{
-		if (!this.no) return;
-		if (this.no < ThreadMessages.deployedMin)
-		{
-			MessageLoader.load(this.no, ThreadMessages.deployedMin-1);
-			ThreadMessages.deploy(this.no, ThreadMessages.deployedMin-1)
-		}
-		else if (this.no > ThreadMessages.deployedMax)
-		{
-			MessageLoader.load(ThreadMessages.deployedMax+1, this.no);
-			ThreadMessages.deploy(ThreadMessages.deployedMax+1, this.no);
-		}
-		MessageUtil.focus(this.no);
+		var mark = this.mark;
+		var T = this;
+		ThreadMessages.foreach(function(node){
+			node.setAttribute("data-" + mark, T.getMarkerClass(node));
+		}, this.markAllNode);
+		if(this.marked) this.marked();	//マーク後処理
+	},
+	getMarkerClass: function getMarkerClass(node)
+	{
+		return "";
 	},
 
 };
+
+/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function _Bookmark(){}
+_Bookmark.prototype = new MarkerService();
+	_Bookmark.prototype.init = function Bookmark_init()
+	{
+		this.global=false;
+		this.storageKey="bm";
+		this.mark = "bm";
+		this.markAllNode = true;
+		this.no = 0;
+		this.refresh();
+	}
+	_Bookmark.prototype.getSaveStr = function Bookmark_getSaveStr()
+	{
+		return this.no;
+	}
+	_Bookmark.prototype._add = function Bookmark_add(no)
+	{
+		this.no = no;
+	}
+	_Bookmark.prototype._del = function Bookmark_del(no)
+	{
+		if (this.no == no) this.add(0);
+	}
+	_Bookmark.prototype.refresh = function Bookmark_refresh(no)
+	{
+		var no = parseInt(CommonPref.readThreadObject("bm"));
+		no = !no ? 0 : no;
+		if (no && this.no != no)
+		{
+			this.add(no);
+		}
+	}
+	_Bookmark.prototype.getMarkerClass = function Bookmark_getMarkerClass(node)
+	{
+		return (node.dataset.no == this.no) ? "y" : "";
+	}
+	_Bookmark.prototype.marked = function Bookmark_marked()
+	{
+		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
+		$("Menu.Bookmark").dataset.bmn= this.no;
+	}
+var Bookmark = new _Bookmark();
+window.addEventListener("storage", Bookmark.onStorageChanged.bind(Bookmark), false);
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Pickup = {
