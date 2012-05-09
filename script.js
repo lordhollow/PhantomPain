@@ -517,6 +517,8 @@ var ThreadMessages = {
 			}
 			//メッセージ構造解析
 			MessageStructure.push(node);
+			
+			MarkerServices.nodeLoaded(node);
 		}
 	},
 	
@@ -541,6 +543,7 @@ var ThreadMessages = {
 		}
 		if (nn < this.deployedMin) this.deployedMin = nn;
 		if (nn > this.deployedMax) this.deployedMax = nn;
+		MarkerServices.nodeDeployed(node);
 	},
 	
 	findDeployedNextSibling: function ThreadMessages_findDeployedNextSibing(no)
@@ -873,12 +876,54 @@ MarkerService.prototype = {
 		}, this.markAllNode);
 		if(this.marked) this.marked();	//マーク後処理
 	},
-	getMarkerClass: function getMarkerClass(node)
+	getMarkerClass: function MarkerService_getMarkerClass(node)
 	{
 		return "";
 	},
-
+	nodeLoaded: function MarkerService_nodeLoaded(node)
+	{	//markAllNodeがtrueのときは、ロードされたときにこれが発動する。
+		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
+		if(this.marked) this.marked();	//マーク後処理
+	},
+	nodeDeployed: function MarkerService_nodeDeployed(node)
+	{	//markAllNodeがfalseのときは、ノードがDeployされたときにこれが実行される。
+		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
+		if(this.marked) this.marked();	//マーク後処理
+	},
 };
+
+var MarkerServices = {
+	service: new Array(),
+	
+	push: function MarkerServices_push(service)
+	{
+		if(service) this.service.push(service);
+	},
+	nodeLoaded: function MarkerServices_nodeLoaded(node)
+	{
+		for(var i=0, j=this.service.length; i<j;i++)
+		{
+			var s = this.service[i];
+			if (s.markAllNode)
+			{
+				s.nodeLoaded(node);
+			}
+		}
+	},
+	nodeDeployed: function MarkerServices_nodeLoaded(node)
+	{
+		console.log("node_Deployed");
+		for(var i=0, j=this.service.length; i<j;i++)
+		{
+			var s = this.service[i];
+			if (!s.markAllNode)
+			{
+				s.nodeDeployed(node);
+			}
+		}
+	},
+};
+
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function _Bookmark(){}
@@ -924,6 +969,7 @@ _Bookmark.prototype = new MarkerService();
 	}
 var Bookmark = new _Bookmark();
 window.addEventListener("storage", Bookmark.onStorageChanged.bind(Bookmark), false);
+MarkerServices.push(Bookmark);
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Pickup = {
