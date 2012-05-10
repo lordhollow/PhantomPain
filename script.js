@@ -272,27 +272,24 @@ var MessageMenu = {
 	
 	SetBookmark: function MessageMenu_SetBookmark(event)
 	{
-		Bookmark.set(this._menu.dataset.binding);
+		Bookmark.add(this._menu.dataset.binding);
 	},
 	ResetBookmark: function MessageMenu_ResetBookmark(event)
 	{
-		if (Bookmark.no == this._menu.dataset.binding)
-		{
-			Bookmark.set(0);
-		}
+		Bookmark.del(this._menu.dataset.binding);
 	},
 	SetPickup: function MessageMenu_SetPickup(event)
 	{
 		if (this._menu.dataset.binding != 0)
 		{
-			Pickup.pickup(this._menu.dataset.binding);
+			Pickup.add(this._menu.dataset.binding);
 		}
 	},
 	ResetPickup: function MessageMenu_ResetPickup(event)
 	{
 		if (this._menu.dataset.binding != 0)
 		{
-			Pickup.release(this._menu.dataset.binding);
+			Pickup.del(this._menu.dataset.binding);
 		}
 	},
 	ToggleHiding: function MessageMenu_ToggleHiding(event)
@@ -344,11 +341,11 @@ var MessageMenu = {
 	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
-		Tracker.BeginTracking(this._menu.dataset.binding);
+		Tracker.add(this._menu.dataset.binding);
 	},
 	EndTracking: function MessageMenu_EndTracking(event)
 	{	//トラッキングの終了
-		Tracker.EndTracking(this._menu.dataset.binding);
+		Tracker.del(this._menu.dataset.binding);
 	},
 	PopupTracked: function MessageMenu_PopupTracked(event)
 	{
@@ -390,7 +387,7 @@ var Menu = {
 	
 	ResetBookmark: function Menu_ResetBookmark()
 	{
-		Bookmark.set(0);
+		Bookmark.add(0);
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
@@ -464,8 +461,6 @@ var ThreadMessages = {
 		}
 		this.deployedMin = parseInt(e.firstElementChild.dataset.no);
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
-		//↓はTracker.initの中で実施されるので、やらない
-		//Tracker.notifyNewMessage($A(e.childElementNodes), obj);
 	},
 	
 	deploy: function ThreadMessages_deploy(min, max)
@@ -520,6 +515,8 @@ var ThreadMessages = {
 			}
 			//メッセージ構造解析
 			MessageStructure.push(node);
+			
+			MarkerServices.nodeLoaded(node);
 		}
 	},
 	
@@ -675,7 +672,8 @@ var ThreadMessages = {
 	
 };
 
-/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+
+/* ■ローダー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageLoader = {
 	loadPrev: function MessageLoader_loadPrev()
 	{
@@ -804,148 +802,235 @@ var MessageLoader = {
 
 };
 
-/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var Bookmark = {
-	init: function Bookmark_init()
-	{
-		var no = parseInt(CommonPref.readThreadObject("bm"));
-		no = !no ? 0 : no;
-		if (no)
-		{
-			this.set(no);
-		}
-	},
-	
-	save: function Bookmark_save()
-	{
-		CommonPref.writeThreadObject("bm", this.no);
-	},
-	
-	set: function Bookmark_set(no)
-	{
-		if(no<0)no=0;
-		ThreadMessages.foreach(function(node){
-			node.dataset.bm = (node.dataset.no == no) ? "y" : "";
-		}, true);
-		//メニューバー
-		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(no);
-		$("Menu.Bookmark").dataset.bmn= no;
-		this.no = no;
-		this.save();
-	},
+/* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function MarkerService(g,k,m,ma){this.init(g,k,m,ma);}
+MarkerService.prototype = {
+	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
+	storageKey: "_markerservice",	//ストレージのキー
+	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(または="")となる。大文字入れちゃだめ。
+	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalse.
 
-	focus: function Bookmark_focus()
+	init: function MarkerService_init(g,k,m,ma)
 	{
-		if (!this.no) return;
-		if (this.no < ThreadMessages.deployedMin)
+		this.global = g;
+		this.storageKey = k;
+		this.mark = m;
+		this.markAllNode = ma;
+	},
+	onStorageChanged: function MarkerService_onStorageChanged(e)
+	{	//ストレージ内容が変化したときよびだされる。
+		//console.log("{0}:{1} => {2}".format(e.key, e.oldValue, e.newValue));
+		if (this.isMineStorageDataChanged(e.key))
 		{
-			MessageLoader.load(this.no, ThreadMessages.deployedMin-1);
-			ThreadMessages.deploy(this.no, ThreadMessages.deployedMin-1)
+			this.refresh(e.newValue, e.oldValue);
 		}
-		else if (this.no > ThreadMessages.deployedMax)
+	},
+	isMineStorageDataChanged: function MarkerService_isMineStorageDataChanged(key)
+	{
+		if(this.global)
 		{
-			MessageLoader.load(ThreadMessages.deployedMax+1, this.no);
-			ThreadMessages.deploy(ThreadMessages.deployedMax+1, this.no);
-		}
-		MessageUtil.focus(this.no);
-	},
-
-};
-
-/* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var Pickup = {
-	//TODO:中途追加品対応
-	init: function Pickup_init()
-	{
-		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
-		var pickups = CommonPref.readThreadObject("pk");
-		if (!pickups) pickups = "";
-		pickups = eval("[" + pickups + "]");
-		this.pickups = pickups;
-		this.setMark(this.pickups);
-		this.adjustMenuStyle();
-	},
-	save: function Pickup_save()
-	{
-		var idss = this.pickups + "";
-		CommonPref.writeThreadObject("pk", idss);
-	},
-	setMark: function Pickup_setMark(ids)
-	{
-		for(var i=0, j=ids.length; i<j; i++)
-		{
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == ids[i]) node.dataset.pickuped = "y";
-			}, true);
-			}
-	},
-	resetMark: function Pickup_resetMark(ids)
-	{
-		for(var i=0, j=ids.length; i<j; i++)
-		{
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == ids[i]) node.dataset.pickuped = "";
-			}, true);
-			}
-	},
-	pickup: function Pickup_pickup(id)
-	{
-		if (!this.pickups.include(id))
-		{
-			this.pickups.push(id);
-			this.setMark([id]);
-			this.save();
-		}
-		this.adjustMenuStyle();
-	},
-	release: function Pickup_release(id)
-	{
-		if (this.pickups.include(id))
-		{
-			this.pickups = this.pickups.filter(function(item, index, array){ return item != id });
-			this.resetMark([id]);
-			this.save();
-		}
-		this.adjustMenuStyle();
-	},
-	adjustMenuStyle: function Pickup_adjustMenuStyle()
-	{
-		if (this.pickups.length)
-		{
-			$("Menu.Pickup").dataset.pk = "y";
+			return (CommonPref.getGlobalObjectKey(this.storageKey) == key);
 		}
 		else
 		{
-			$("Menu.Pickup").dataset.pk = "n";
+			return (CommonPref.getThreadObjectKey(this.storageKey) == key);
 		}
-		$("Menu.Pickup").dataset.pkc= this.pickups.length;
+	},
+	save: function MarkserService_save()
+	{
+		var str = this.getSaveStr();
+		if (this.global)
+		{
+			CommonPref.writeGlobalObject(this.storageKey, str);
+		}
+		else
+		{
+			CommonPref.writeThreadObject(this.storageKey, str);
+		}
+	},
+	refresh: function MarkerService_refresh(newValue, oldValue)
+	{	//マーキングしたりされたりするごとにちゃんと保存しておけば、自分が書いたものとの差分によって処理できると見た！
+		
+	},
+	add: function MarkerService_set(no)
+	{	//こいつをマーキングしろ！という指示
+		if (this._add(no))
+		{
+			this.setMark();
+			this.save();
+		}
+	},
+	del: function MarkerService_del(no)
+	{	//こいつのマーキングを解除しろ！という指示
+		if (this._del(no))
+		{
+			this.setMark();
+			this.save();
+		}
+	},
+	isMarked: function MarkerService_isMarked(no)
+	{	//こいつはマーキングされていますか？
+		//逐次マーキングが反映されていれば、これでいいはず。
+		//検索はポップアップとかに及ばないけど、domobjには及ぶので。
+		//var node = ThreadMessages.domobj[no];
+		//return (node && (node.getAttribute("data-" + this.mark)=="y");
+		return false;
+	},
+	setMark: function MarkerService_mark()
+	{
+		var mark = this.mark;
+		var T = this;
+		ThreadMessages.foreach(function(node){
+			node.setAttribute("data-" + mark, T.getMarkerClass(node));
+		}, this.markAllNode);
+		if(this.marked) this.marked();	//マーク後処理
+	},
+	getMarkerClass: function MarkerService_getMarkerClass(node)
+	{
+		return "";
+	},
+	nodeLoaded: function MarkerService_nodeLoaded(node)
+	{	//markAllNodeがtrueのときは、ロードされたときにこれが発動する。
+		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
+		if(this.marked) this.marked();	//マーク後処理
 	},
 };
 
-/* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var Tracker= {
-	_trackers: [],
+var MarkerServices = {
+	service: new Array(),
 	
-	init: function Tracker_init()
-	{	//保存されているトラック情報を元にトラッキングを開始
-		var obj = CommonPref.readGlobalObject("tracker");
-		try
+	push: function MarkerServices_push(service)
+	{
+		if(service)
 		{
-			obj = eval(obj);
-		}catch(e){ obj = null; }
-		if (!obj)return;
-		for (var i=0, j=obj.length; i<j; i++)
-		{
-			var tr = new TrackerEntry();
-			tr.index = obj[i].index;
-			tr.trip = obj[i].trip;
-			tr.aid = obj[i].aid;
-			this._trackers.push(tr);
-			tr.setMark();
+			this.service.push(service);
+			if(this.service.length==1)
+			{	//最初の一個登録時→ストレージイベントを追加
+				window.addEventListener("storage", this.onStorageChanged.bind(this), false);
+			}
 		}
-		this.save();
 	},
-	save: function Tracker_save()
+	nodeLoaded: function MarkerServices_nodeLoaded(node)
+	{
+		for(var i=0, j=this.service.length; i<j;i++)
+		{
+			var s = this.service[i].nodeLoaded(node);
+		}
+	},
+	onStorageChanged: function MarkerServices_onStorageChanged(ev)
+	{
+		for(var i=0, j=this.service.length; i<j;i++)
+		{
+			var s = this.service[i].onStorageChanged(ev);
+		}
+	},
+};
+
+
+/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Bookmark = new MarkerService(false, "bm", "bm", true);
+	Bookmark.init = function Bookmark_init()
+	{
+		this.no = 0;
+		var no = parseInt(CommonPref.readThreadObject("bm"));
+		no = !no ? 0 : no;
+		this.refresh(no, no);
+		MarkerServices.push(this);
+	}
+	Bookmark.getSaveStr = function Bookmark_getSaveStr()
+	{
+		return this.no;
+	}
+	Bookmark._add = function Bookmark_add(no)
+	{
+		this.no = no;
+		return true;
+	}
+	Bookmark._del = function Bookmark_del(no)
+	{
+		if (this.no == no)
+		{
+			this.add(0);
+			return true;
+		}
+		return false;
+	}
+	Bookmark.refresh = function Bookmark_refresh(newValue, oldValue)
+	{
+		this.add(newValue);
+	}
+	Bookmark.getMarkerClass = function Bookmark_getMarkerClass(node)
+	{
+		return (node.dataset.no == this.no) ? "y" : "";
+	}
+	Bookmark.marked = function Bookmark_marked()
+	{
+		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
+		$("Menu.Bookmark").dataset.bmn= this.no;
+	}
+	Bookmark.focus = function Bookmark_focus()
+	{
+		MessageUtil.focus(this.no)
+	}
+
+/* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Pickup = new MarkerService(false, "pk", "pickuped", true);
+	Pickup.init = function Pickup_init()
+	{
+		var pickups = CommonPref.readThreadObject("pk");
+		if (!pickups) pickups = "";
+		this.refresh(pickups, pickups);
+		MarkerServices.push(this);
+	}
+	Pickup.getSaveStr = function Pickup_getSaveStr()
+	{
+		return this.pickups + "";
+	}
+	Pickup._add = function Pickup_add(no)
+	{
+		if (!this.pickups.include(no))
+		{
+			this.pickups.push(no);
+			this.pickups.sort(function(a,b){return a-b;});
+			return true;
+		}
+		return false;
+	}
+	Pickup._del = function Pickup_del(no)
+	{
+		if (this.pickups.include(no))
+		{
+			this.pickups = this.pickups.filter(function(item, index, array){ return item != no });
+			return true;
+		}
+		return false;
+	}
+	Pickup.refresh = function Pickup_refresh(nV, oV)
+	{
+		this.pickups = eval("[" + nV + "]");
+		this.setMark();
+	}
+	Pickup.getMarkerClass = function Pickup_getMarkerClass(node)
+	{
+		return (this.pickups.include(node.dataset.no)) ? "y" : "";
+	}
+	Pickup.marked = function Pickup_marked()
+	{
+		$("Menu.Pickup").dataset.pk = this.pickups.length ? "y" : "n";
+		$("Menu.Pickup").dataset.pkc= this.pickups.length;
+	}
+
+/* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Tracker =  new MarkerService(true, "tracker", "track", true);
+	Tracker.init = function Tracker_init()
+	{
+		this._trackers = new Array();
+		var trackers = CommonPref.readGlobalObject("tracker");
+		if (!trackers) trackers = "";
+		this.refresh(trackers, "");
+		MarkerServices.push(this);
+	}
+	Tracker.getSaveStr = function Tracker_getSaveStr()
 	{
 		var tss = [];
 		for(var i=0,j=this._trackers.length; i<j; i++)
@@ -955,43 +1040,79 @@ var Tracker= {
 				tss.push(this._trackers[i].toString());
 			}
 		}
-		var json =  "[{0}]".format(tss);
-		CommonPref.writeGlobalObject("tracker", json);
-	},
-	
-	BeginTracking: function Tracker_BeginTracking(no)
+		return "[{0}]".format(tss);
+	}
+	Tracker._add = function Tracker_add(no)
 	{
+		var node = ThreadMessages.domobj[no];
+		if(!node) return false;
+		//トラック済みならトラッキングしない
+			//if (ThreadMessages.domobj[no].dataset.tracker != "") return false;	//←でいいのかも
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(no)) 
-			{
-				return; //already tracking
-			}
+			if (this._trackers[i].check(no)) return false;
 		}
-		var tr = new TrackerEntry(no);
-		tr.index = this.findBrankIndex();
+		//新規でトラック
+		var trip = new Array();
+		var aid = new Array();
+		if (node.dataset.aid.length > 5) aid.push(node.dataset.aid);
+		if (node.dataset.trip) trip.push(node.dataset.trip);
+		var tr = new TrackerEntry(this.findBlankIndex(), trip, aid);
+		tr.update();
 		this._trackers.push(tr);
-		tr.setMark();
-		this.save();
-	},
-	EndTracking: function Tracker_EndTracking(no)
+		return true;
+	}
+	Tracker._del = function Tracker_del(no)
 	{
 		var nt = new Array();
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (this._trackers[i].check(no))
+			var tracker = this._trackers[i];
+			if(tracker.check(no) == 0)
 			{
-				this._trackers[i].resetMark();
-			}
-			else
-			{
-				nt.push(this._trackers[i]);
+				nt.push(tracker);
 			}
 		}
-		this._trackers = nt;
+		if (nt.length != this._trackers.length)
+		{
+			this._trackers = nt;
+			return true;
+		}
+		return false;
+	}
+	Tracker.refresh = function Tracker_refresh(nV, oV)
+	{
+		if (nV == oV) return;
+		var obj;
+		try
+		{
+			obj = eval(nV);
+		} catch(e){ obj = new Array(); }
+		var trackers = new Array();
+		for (var i=0, j=obj.length; i<j; i++)
+		{
+			var o = obj[i];
+			var tr = new TrackerEntry(o.index, o.trip, o.aid);
+			tr.update();	//他のスレからの分もあるので、今のスレで引っかかるものがないか更新かける
+			trackers.push(tr);
+		}
+		this._trackers = trackers;
 		this.save();
-	},
-	getTracker: function Tracker_getTracker(no)
+		this.setMark();
+	}
+	Tracker.getMarkerClass = function Tracker_getMarkerClass(node)
+	{
+		var a = this._trackers;
+		for(var i=0, j=a.length; i<j; i++)
+		{
+			if (a[i].check(node.dataset.no))
+			{
+				return "m" + a[i].index;
+			}
+		}
+		return "";
+	}
+	Tracker.getTracker = function Tracker_getTracker(no)
 	{
 		var tr = ThreadMessages.domobj[no].dataset.track + "";
 		if (tr.match(/^m(\d+)$/))
@@ -1005,9 +1126,8 @@ var Tracker= {
 				}
 			}
 		}
-		return null;
-	},
-	findBrankIndex: function Tracker_findBrankIndex()
+	}
+	Tracker.findBlankIndex = function Tracker_findBlankIndex()
 	{
 		//空いてる番号を探す
 		for(var ni=0; ni<1001; ni++)
@@ -1024,42 +1144,45 @@ var Tracker= {
 			if (!used) return ni;
 		}
 		return 0;
-	},
-	notifyNewMessage: function Tracker_notifyNewMessage(nodes)
-	{	//新しいレスが来た。希望のレスだ。
-	},
-};
+	}
 
-function TrackerEntry(no){ this.init(no); };
+function TrackerEntry(index, trip, aid){ this.init(index, trip, aid); };
 TrackerEntry.prototype = {
 	aid: null,
 	trip: null,
 	index: 0,
 	
-	init: function TrackerEntry_init(no)
+	init: function TrackerEntry_init(index, trip, aid)
 	{
-		if (ThreadMessages.isReady(no))
-		{
-			var node = ThreadMessages.domobj[no];
-			this.trip = [];
-			this.aid = [];
-			if (node.dataset.trip)
-			{
-				this.trip.push(node.dataset.trip);
-			}
-			if (node.dataset.aid.length > 5)
-			{
-				this.aid.push(node.dataset.aid);
-			}
-		}
+		this.aid = aid;
+		this.trip = trip;
+		this.index = index;
 	},
 	
 	toString: function TrackerEntry_toString()
 	{
-		var str = "{index: {0}, aid: [{1}], trip: [{2}]}".format(this.index, $qA(this.aid), $qA(this.trip));
-		return str;
+		return "{index: {0}, aid: [{1}], trip: [{2}]}".format(this.index, $qA(this.aid), $qA(this.trip));
 	},
-	
+	update: function TrackerEntry_update()
+	{	//既存データがマッチしていれば再帰的に追加していく
+		var tr = this;
+		ThreadMessages.foreach(function(node){
+			var m = tr.check(node.dataset.no);
+			if (m > 0)
+			{
+				if ((m & 1) && (node.dataset.aid.length > 5) && (!tr.containsId(node.dataset.aid)))
+				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
+					tr.aid.push(node.dataset.aid);
+					tr.update();
+				}
+				else if ((m&2) && (node.dataset.trip) && (!tr.containsTrip(node.dataset.trip)))
+				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
+					tr.trip.push(node.dataset.trip);
+					tr.update();
+				}
+			}
+		},false);
+	},
 	check: function TrackerEntry_check(no)
 	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
 		var m = 0;
@@ -1082,39 +1205,6 @@ TrackerEntry.prototype = {
 	containsTrip: function TrackerEntry_containsTrip(trip)
 	{
 		return this.trip.include(trip);
-	},
-
-	setMark: function TrackerEntry_setMark()
-	{
-		//alert("setMark {0} {1}".format(entry.aid, entry.trip));
-		var tr = this;
-		ThreadMessages.foreach(function(node){
-			var m = tr.check(node.dataset.no);
-			if (m > 0)
-			{
-				node.dataset.track = "m" + tr.index;
-				if ((m & 1) && (node.dataset.aid.length > 5) && (!tr.containsId(node.dataset.aid)))
-				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
-					tr.aid.push(node.dataset.aid);
-					tr.setMark();
-				}
-				else if ((m&2) && (node.dataset.trip) && (!tr.containsTrip(node.dataset.trip)))
-				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
-					tr.trip.push(node.dataset.trip);
-					tr.setMark();
-				}
-				}
-		}, true);
-	},
-	resetMark: function TrackerEntry_resetMark()
-	{
-		var tr = this;
-		ThreadMessages.foreach(function(node){
-			if (tr.check(node.dataset.no) > 0)
-		{
-				node.dataset.track = "";
-				}
-		}, true);
 	},
 	getTrackingNumbers: function TrackerEntry_getTrackingNumbers()
 	{

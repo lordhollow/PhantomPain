@@ -74,6 +74,16 @@ var CommonPref = {
 			}
 		}
 	},
+	
+	getThreadObjectKey: function(objName)
+	{
+		return "bbs2chSkin.common." + objName + "." + this._identifier;
+	},
+	getGlobalObjectKey: function(objName)
+	{
+		return "bbs2chSkin.common." + objName;
+	},
+	
 	//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
 	writeThreadObject: function CommonPref_wroteThreadObject(objName, str)
 	{
@@ -93,6 +103,6 @@ var CommonPref = {
 	readGlobalObject: function CommonPref_readGlobalObject(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName;
-		return this._storage.getItem(pn)+ "";
+		return this._storage.getItem(pn);
 	},
 };
