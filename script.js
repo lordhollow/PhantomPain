@@ -805,13 +805,20 @@ var MessageLoader = {
 };
 
 /* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function MarkerService(){}
+function MarkerService(g,k,m,ma){this.init(g,k,m,ma);}
 MarkerService.prototype = {
 	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
 	storageKey: "_markerservice",	//ストレージのキー
 	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(または="")となる。大文字入れちゃだめ。
 	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalse.
 
+	init: function MarkerService_init(g,k,m,ma)
+	{
+		this.global=false;
+		this.storageKey="bm";
+		this.mark = "bm";
+		this.markAllNode = true;
+	},
 	onStorageChanged: function MarkerService_onStorageChanged(e)
 	{	//ストレージ内容が変化したときよびだされる。
 		//console.log("{0}:{1} => {2}".format(e.key, e.oldValue, e.newValue));
@@ -905,45 +912,39 @@ var MarkerServices = {
 
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function _Bookmark(){}
-_Bookmark.prototype = new MarkerService();
-	_Bookmark.prototype.init = function Bookmark_init()
+var Bookmark = new MarkerService(false, "bm", "bm", true);
+	Bookmark.init = function Bookmark_init()
 	{
-		this.global=false;
-		this.storageKey="bm";
-		this.mark = "bm";
-		this.markAllNode = true;
 		this.no = 0;
 		var no = parseInt(CommonPref.readThreadObject("bm"));
 		no = !no ? 0 : no;
 		this.refresh(no, no);
 	}
-	_Bookmark.prototype.getSaveStr = function Bookmark_getSaveStr()
+	Bookmark.getSaveStr = function Bookmark_getSaveStr()
 	{
 		return this.no;
 	}
-	_Bookmark.prototype._add = function Bookmark_add(no)
+	Bookmark._add = function Bookmark_add(no)
 	{
 		this.no = no;
 	}
-	_Bookmark.prototype._del = function Bookmark_del(no)
+	Bookmark._del = function Bookmark_del(no)
 	{
 		if (this.no == no) this.add(0);
 	}
-	_Bookmark.prototype.refresh = function Bookmark_refresh(newValue, oldValue)
+	Bookmark.refresh = function Bookmark_refresh(newValue, oldValue)
 	{
 		this.add(newValue);
 	}
-	_Bookmark.prototype.getMarkerClass = function Bookmark_getMarkerClass(node)
+	Bookmark.getMarkerClass = function Bookmark_getMarkerClass(node)
 	{
 		return (node.dataset.no == this.no) ? "y" : "";
 	}
-	_Bookmark.prototype.marked = function Bookmark_marked()
+	Bookmark.marked = function Bookmark_marked()
 	{
 		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
 		$("Menu.Bookmark").dataset.bmn= this.no;
 	}
-var Bookmark = new _Bookmark();
 window.addEventListener("storage", Bookmark.onStorageChanged.bind(Bookmark), false);
 MarkerServices.push(Bookmark);
 
