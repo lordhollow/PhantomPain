@@ -1047,10 +1047,11 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 		var node = ThreadMessages.domobj[no];
 		if(!node) return false;
 		var m = 0;
-		this.foreach(function(tracker)
+		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
+			var tracker = this._trackers[i];
 			if (m==0) m = tracker.check(no);
-		});
+		}
 		if (m==0)
 		{	//’Ç‰Á‚·‚é
 			var trip = new Array();
@@ -1066,19 +1067,18 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 	}
 	Tracker._del = function Tracker_del(no)
 	{
-		var m = 0;
-		var tr = null;
-		this.foreach(function(tracker)
+		var nt = new Array();
+		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			if (m==0)
+			var tracker = this._trackers[i];
+			if(tracker.check(no) == 0)
 			{
-				m = tracker.check(no);
-				tr = tracker;
+				nt.push(tracker);
 			}
-		});
-		if (m!=0)
-		{	//íœ‚·‚é
-			this._trackers = this._trackers.filter(function(item , a, i){ return item != tr; });
+		}
+		if (nt.length != this._trackers.length)
+		{
+			this._trackers = nt;
 			return true;
 		}
 		return false;
@@ -1114,14 +1114,6 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 			}
 		}
 		return "";
-	}
-	Tracker.foreach = function Tracker_foreach(callback)
-	{
-		var a = this._trackers;
-		for(var i=0, j=a.length; i<j; i++)
-		{
-			callback(a[i]);
-		}
 	}
 	Tracker.getTracker = function Tracker_getTracker(no)
 	{
