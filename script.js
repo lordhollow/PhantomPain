@@ -933,6 +933,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 		var no = parseInt(CommonPref.readThreadObject("bm"));
 		no = !no ? 0 : no;
 		this.refresh(no, no);
+		MarkerServices.push(this);
 	}
 	Bookmark.getSaveStr = function Bookmark_getSaveStr()
 	{
@@ -959,7 +960,6 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
 		$("Menu.Bookmark").dataset.bmn= this.no;
 	}
-MarkerServices.push(Bookmark);
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Pickup = {
