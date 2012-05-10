@@ -1024,6 +1024,7 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 var Tracker =  new MarkerService(true, "tracker", "track", true);
 	Tracker.init = function Tracker_init()
 	{
+		this._trackers = new Array();
 		var trackers = CommonPref.readGlobalObject("tracker");
 		if (!trackers) trackers = "";
 		this.refresh(trackers, "");
