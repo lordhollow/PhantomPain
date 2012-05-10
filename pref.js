@@ -103,6 +103,6 @@ var CommonPref = {
 	readGlobalObject: function CommonPref_readGlobalObject(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName;
-		return this._storage.getItem(pn)+ "";
+		return this._storage.getItem(pn);
 	},
 };
