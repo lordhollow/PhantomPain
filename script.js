@@ -483,7 +483,6 @@ var ThreadMessages = {
 				this.processMessage(node);
 			}
 		}
-		Tracker.notifyNewMessage(nodes);
 	},
 
 	processMessage: function ThreadMessages_processMessage(node)
