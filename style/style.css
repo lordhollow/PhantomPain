@@ -265,6 +265,7 @@ h2
 		position: absolute;
 		right: 0px;
 		top: 1px;
+		padding-right:6px;
 	}
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
