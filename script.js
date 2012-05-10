@@ -215,10 +215,10 @@ var MessageMenu = {
 		if (node.dataset.popupRefShowing != "y")
 		{
 			node.dataset.popupRefShowing = "y";
-		var pp = new ResPopup(null);
-		pp.offsetX = 8; pp.offsetY = 16;
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
 			pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
-		pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , false);
+			pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , false);
 			node.refPopup = pp;	//Ç‚Ç‚Ç±ÇµÇ≠Ç»ÇÈÇ©ÇÁdomÇ…objÇéùÇΩÇπÇΩÇ≠Ç»Ç¢ÇØÇ«Ç»ÇüÅEÅEÅE
 		}
 		else
