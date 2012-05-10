@@ -1795,18 +1795,18 @@ var Finder = {
 /* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ScrollBar=
 {
-	size: 26,	//暫定値
+	size: 16,	//暫定値
 	VScroll: function ScrollBar_VScroll(){
-		if(window.innerWidth!=document.body.clientWidth){
-			this.size=window.innerWidth-document.body.clientWidth;
+		if(window.innerWidth!=document.body.offsetWidth){
+			this.size=window.innerWidth-document.body.offsetWidth;
 			return true;
 		}else{
 			return false;
 		}
 	},
 	HScroll: function ScrollBar_HScroll(){
-		if(window.innerHeight!=document.body.clientHeight){
-			this.size=window.innerWidth-document.body.clientHeight;
+		if(window.innerHeight!=document.body.offsetHeight){
+			this.size=window.innerWidth-document.body.offsetHeight;
 			return true;
 		}else{
 			return false;
