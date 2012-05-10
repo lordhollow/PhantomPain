@@ -1640,7 +1640,7 @@ Popup.prototype = {
 		
 		//そこに置いたとき、横方向にはみ出す量
 		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅 + 追加オフセット)
-		var x = (px + e.clientWidth +  Preference.PopupMargin) - (window.innerWidth - ScrollBar.size + this.offsetXe) ; 
+		var x = (px + e.offsetWidth +  Preference.PopupMargin) - (document.body.offsetWidth + this.offsetXe) ; 
 		if (x < 0) x = 0;	//動かす必要がないときは動かさない
 		
 		//ポインタ（ひげの先）を持ってくる
@@ -1648,7 +1648,7 @@ Popup.prototype = {
 		e.parentNode.style.top  = py + "px";
 		
 		//箱を持ってくる
-		e.style.marginLeft = -(x + 20) + "px";
+		e.style.marginLeft = -(x + 24) + "px";	//20ってのは、ヒゲの幅と本体の曲がってる部分のサイズの和より大きく、かつ大きすぎない丁度いい数字を設定
 	},
 };
 
@@ -1791,30 +1791,6 @@ var Finder = {
 	},
 };
 
-
-/* ■スクロールバーユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var ScrollBar=
-{
-	size: 16,	//暫定値
-	VScroll: function ScrollBar_VScroll(){
-		if(window.innerWidth!=document.body.offsetWidth){
-			this.size=window.innerWidth-document.body.offsetWidth;
-			return true;
-		}else{
-			return false;
-		}
-	},
-	HScroll: function ScrollBar_HScroll(){
-		if(window.innerHeight!=document.body.offsetHeight){
-			this.size=window.innerWidth-document.body.offsetHeight;
-			return true;
-		}else{
-			return false;
-		}
-	}
-};
-
-
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Util = {
 	//数字をﾊﾝｶｸにする
@@ -1928,7 +1904,6 @@ function init()
 //*/
 	var dt1 = new Date();
 	ThreadMessages.init();
-	ScrollBar.VScroll();	//縦のスクロールバーを基準にサイズを求める。
 	MessageMenu.init();
 	BoardPane.init();
 	Bookmark.init();
