@@ -899,13 +899,27 @@ var MarkerServices = {
 	
 	push: function MarkerServices_push(service)
 	{
-		if(service) this.service.push(service);
+		if(service)
+		{
+			this.service.push(service);
+			if(this.service.length==1)
+			{	//最初の一個登録時→ストレージイベントを追加
+				window.addEventListener("storage", this.onStorageChanged.bind(this), false);
+			}
+		}
 	},
 	nodeLoaded: function MarkerServices_nodeLoaded(node)
 	{
 		for(var i=0, j=this.service.length; i<j;i++)
 		{
 			var s = this.service[i].nodeLoaded(node);
+		}
+	},
+	onStorageChanged: function MarkerServices_onStorageChanged(ev)
+	{
+		for(var i=0, j=this.service.length; i<j;i++)
+		{
+			var s = this.service[i].onStorageChanged(ev);
 		}
 	},
 };
@@ -945,7 +959,6 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
 		$("Menu.Bookmark").dataset.bmn= this.no;
 	}
-window.addEventListener("storage", Bookmark.onStorageChanged.bind(Bookmark), false);
 MarkerServices.push(Bookmark);
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
