@@ -543,7 +543,6 @@ var ThreadMessages = {
 		}
 		if (nn < this.deployedMin) this.deployedMin = nn;
 		if (nn > this.deployedMax) this.deployedMax = nn;
-		MarkerServices.nodeDeployed(node);
 	},
 	
 	findDeployedNextSibling: function ThreadMessages_findDeployedNextSibing(no)
@@ -815,9 +814,10 @@ MarkerService.prototype = {
 
 	onStorageChanged: function MarkerService_onStorageChanged(e)
 	{	//ストレージ内容が変化したときよびだされる。
+		//console.log("{0}:{1} => {2}".format(e.key, e.oldValue, e.newValue));
 		if (this.isMineStorageDataChanged(e.key))
 		{
-			this.refresh();
+			this.refresh(e.newValue, e.oldValue);
 		}
 	},
 	isMineStorageDataChanged: function MarkerService_isMineStorageDataChanged(key)
@@ -843,7 +843,7 @@ MarkerService.prototype = {
 			CommonPref.writeThreadObject(this.storageKey, str);
 		}
 	},
-	refresh: function MarkerService_refresh()
+	refresh: function MarkerService_refresh(newValue, oldValue)
 	{	//マーキングしたりされたりするごとにちゃんと保存しておけば、自分が書いたものとの差分によって処理できると見た！
 		
 	},
@@ -885,11 +885,6 @@ MarkerService.prototype = {
 		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
 		if(this.marked) this.marked();	//マーク後処理
 	},
-	nodeDeployed: function MarkerService_nodeDeployed(node)
-	{	//markAllNodeがfalseのときは、ノードがDeployされたときにこれが実行される。
-		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
-		if(this.marked) this.marked();	//マーク後処理
-	},
 };
 
 var MarkerServices = {
@@ -903,23 +898,7 @@ var MarkerServices = {
 	{
 		for(var i=0, j=this.service.length; i<j;i++)
 		{
-			var s = this.service[i];
-			if (s.markAllNode)
-			{
-				s.nodeLoaded(node);
-			}
-		}
-	},
-	nodeDeployed: function MarkerServices_nodeLoaded(node)
-	{
-		console.log("node_Deployed");
-		for(var i=0, j=this.service.length; i<j;i++)
-		{
-			var s = this.service[i];
-			if (!s.markAllNode)
-			{
-				s.nodeDeployed(node);
-			}
+			var s = this.service[i].nodeLoaded(node);
 		}
 	},
 };
@@ -935,7 +914,9 @@ _Bookmark.prototype = new MarkerService();
 		this.mark = "bm";
 		this.markAllNode = true;
 		this.no = 0;
-		this.refresh();
+		var no = parseInt(CommonPref.readThreadObject("bm"));
+		no = !no ? 0 : no;
+		this.refresh(no, no);
 	}
 	_Bookmark.prototype.getSaveStr = function Bookmark_getSaveStr()
 	{
@@ -949,14 +930,9 @@ _Bookmark.prototype = new MarkerService();
 	{
 		if (this.no == no) this.add(0);
 	}
-	_Bookmark.prototype.refresh = function Bookmark_refresh(no)
+	_Bookmark.prototype.refresh = function Bookmark_refresh(newValue, oldValue)
 	{
-		var no = parseInt(CommonPref.readThreadObject("bm"));
-		no = !no ? 0 : no;
-		if (no && this.no != no)
-		{
-			this.add(no);
-		}
+		this.add(newValue);
 	}
 	_Bookmark.prototype.getMarkerClass = function Bookmark_getMarkerClass(node)
 	{
