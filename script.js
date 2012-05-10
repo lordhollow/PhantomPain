@@ -282,14 +282,14 @@ var MessageMenu = {
 	{
 		if (this._menu.dataset.binding != 0)
 		{
-			Pickup.pickup(this._menu.dataset.binding);
+			Pickup.add(this._menu.dataset.binding);
 		}
 	},
 	ResetPickup: function MessageMenu_ResetPickup(event)
 	{
 		if (this._menu.dataset.binding != 0)
 		{
-			Pickup.release(this._menu.dataset.binding);
+			Pickup.del(this._menu.dataset.binding);
 		}
 	},
 	ToggleHiding: function MessageMenu_ToggleHiding(event)
@@ -814,10 +814,10 @@ MarkerService.prototype = {
 
 	init: function MarkerService_init(g,k,m,ma)
 	{
-		this.global=false;
-		this.storageKey="bm";
-		this.mark = "bm";
-		this.markAllNode = true;
+		this.global = g;
+		this.storageKey = k;
+		this.mark = m;
+		this.markAllNode = ma;
 	},
 	onStorageChanged: function MarkerService_onStorageChanged(e)
 	{	//ストレージ内容が変化したときよびだされる。
@@ -856,15 +856,19 @@ MarkerService.prototype = {
 	},
 	add: function MarkerService_set(no)
 	{	//こいつをマーキングしろ！という指示
-		this._add(no);
-		this.setMark();
-		this.save();
+		if (this._add(no))
+		{
+			this.setMark();
+			this.save();
+		}
 	},
 	del: function MarkerService_del(no)
 	{	//こいつのマーキングを解除しろ！という指示
-		this._del(no);
-		this.setMark();
-		this.save();
+		if (this._del(no))
+		{
+			this.setMark();
+			this.save();
+		}
 	},
 	isMarked: function MarkerService_isMarked(no)
 	{	//こいつはマーキングされていますか？
@@ -942,10 +946,16 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	Bookmark._add = function Bookmark_add(no)
 	{
 		this.no = no;
+		return true;
 	}
 	Bookmark._del = function Bookmark_del(no)
 	{
-		if (this.no == no) this.add(0);
+		if (this.no == no)
+		{
+			this.add(0);
+			return true;
+		}
+		return false;
 	}
 	Bookmark.refresh = function Bookmark_refresh(newValue, oldValue)
 	{
@@ -960,76 +970,57 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
 		$("Menu.Bookmark").dataset.bmn= this.no;
 	}
+	Bookmark.focus = function Bookmark_focus()
+	{
+		MessageUtil.focus(this.no)
+	}
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var Pickup = {
-	//TODO:中途追加品対応
-	init: function Pickup_init()
+var Pickup = new MarkerService(false, "pk", "pickuped", true);
+	Pickup.init = function Pickup_init()
 	{
-		//PP2とのデータの互換性を確保するために、戻りが配列でなければ配列として再評価する
 		var pickups = CommonPref.readThreadObject("pk");
 		if (!pickups) pickups = "";
-		pickups = eval("[" + pickups + "]");
-		this.pickups = pickups;
-		this.setMark(this.pickups);
-		this.adjustMenuStyle();
-	},
-	save: function Pickup_save()
+		this.refresh(pickups, pickups);
+		MarkerServices.push(this);
+	}
+	Pickup.getSaveStr = function Pickup_getSaveStr()
 	{
-		var idss = this.pickups + "";
-		CommonPref.writeThreadObject("pk", idss);
-	},
-	setMark: function Pickup_setMark(ids)
+		return this.pickups + "";
+	}
+	Pickup._add = function Pickup_add(no)
 	{
-		for(var i=0, j=ids.length; i<j; i++)
+		if (!this.pickups.include(no))
 		{
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == ids[i]) node.dataset.pickuped = "y";
-			}, true);
-			}
-	},
-	resetMark: function Pickup_resetMark(ids)
-	{
-		for(var i=0, j=ids.length; i<j; i++)
-		{
-			ThreadMessages.foreach(function(node){
-				if (node.dataset.no == ids[i]) node.dataset.pickuped = "";
-			}, true);
-			}
-	},
-	pickup: function Pickup_pickup(id)
-	{
-		if (!this.pickups.include(id))
-		{
-			this.pickups.push(id);
-			this.setMark([id]);
-			this.save();
+			this.pickups.push(no);
+			this.pickups.sort(function(a,b){return a-b;});
+			return true;
 		}
-		this.adjustMenuStyle();
-	},
-	release: function Pickup_release(id)
+		return false;
+	}
+	Pickup._del = function Pickup_del(no)
 	{
-		if (this.pickups.include(id))
+		if (this.pickups.include(no))
 		{
-			this.pickups = this.pickups.filter(function(item, index, array){ return item != id });
-			this.resetMark([id]);
-			this.save();
+			this.pickups = this.pickups.filter(function(item, index, array){ return item != no });
+			return true;
 		}
-		this.adjustMenuStyle();
-	},
-	adjustMenuStyle: function Pickup_adjustMenuStyle()
+		return false;
+	}
+	Pickup.refresh = function Pickup_refresh(nV, oV)
 	{
-		if (this.pickups.length)
-		{
-			$("Menu.Pickup").dataset.pk = "y";
-		}
-		else
-		{
-			$("Menu.Pickup").dataset.pk = "n";
-		}
+		this.pickups = eval("[" + nV + "]");
+		this.setMark();
+	}
+	Pickup.getMarkerClass = function Pickup_getMarkerClass(node)
+	{
+		return (this.pickups.include(node.dataset.no)) ? "y" : "";
+	}
+	Pickup.marked = function Pickup_marked()
+	{
+		$("Menu.Pickup").dataset.pk = this.pickups.length ? "y" : "n";
 		$("Menu.Pickup").dataset.pkc= this.pickups.length;
-	},
-};
+	}
 
 /* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Tracker= {
