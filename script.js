@@ -1046,24 +1046,21 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 	{
 		var node = ThreadMessages.domobj[no];
 		if(!node) return false;
-		var m = 0;
+		//トラック済みならトラッキングしない
+			//if (ThreadMessages.domobj[no].dataset.tracker != "") return false;	//←でいいのかも
 		for(var i=0, j=this._trackers.length; i<j; i++)
 		{
-			var tracker = this._trackers[i];
-			if (m==0) m = tracker.check(no);
+			if (this._trackers[i].check(no)) return false;
 		}
-		if (m==0)
-		{	//追加する
-			var trip = new Array();
-			var aid = new Array();
-			if (node.dataset.aid.length > 5) aid.push(node.dataset.aid);
-			if (node.dataset.trip) trip.push(node.dataset.trip);
-			var tr = new TrackerEntry(this.findBlankIndex(), trip, aid);
-			tr.update();
-			this._trackers.push(tr);
-			return true;
-		}
-		return false;
+		//新規でトラック
+		var trip = new Array();
+		var aid = new Array();
+		if (node.dataset.aid.length > 5) aid.push(node.dataset.aid);
+		if (node.dataset.trip) trip.push(node.dataset.trip);
+		var tr = new TrackerEntry(this.findBlankIndex(), trip, aid);
+		tr.update();
+		this._trackers.push(tr);
+		return true;
 	}
 	Tracker._del = function Tracker_del(no)
 	{
