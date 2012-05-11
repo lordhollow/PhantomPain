@@ -1398,7 +1398,7 @@ var OutlinkPluginForImage = {
 	},
 	getPreview: function OutlinkPluginForImage_getPreview(href, onload)
 	{
-		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false));
+		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize));
 		p.onload = onload;
 		return p.container;
 	},
@@ -1476,7 +1476,7 @@ var OutlinkPluginForDefault = {
 	},
 	getPreview: function OutlinkPluginForDefault_getPreview(href, onload)
 	{
-		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false);
+		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize);
 		p.rel = href;
 		return p.container;
 	},
@@ -1490,7 +1490,6 @@ loadManager.prototype = {
 	queue: new Array(),
 	loadWidth: 5,		//同時ロード要求数。キューがあるときに変えても意味ない
 	b: false,
-	_c: [],
 	push: function loadManager_push(href, callback)
 	{	//ロード要求突っ込む。有効期限(expired)あったほうがいいかも？
 		var qs = this.queue.length;
@@ -1514,7 +1513,7 @@ loadManager.prototype = {
 	},
 	response: function loadmanager_response(obj, status)
 	{
-		console.log("response "+ status + " " + obj.href);
+		//console.log("response "+ status + " " + obj.href);
 		obj.status = status;
 		if(obj.callback)obj.callback(obj);
 		this.checkNext();
@@ -1534,18 +1533,17 @@ var ImageLoadManager = new loadManager();
 		obj.img.addEventListener("load", this.response.bind(this, obj, "OK"), false);
 		obj.img.addEventListener("error", this.response.bind(this, obj, "NG"), false);
 		obj.img.src = obj.href;
-		console.log("request "+obj.href);
+		//console.log("request "+obj.href);
 	}
 
 /* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function ImageThumbnail(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; if(url) {this.init(url);}}
+function ImageThumbnail(url, sz){this.thumbSize = sz; if(url) {this.init(url);}}
 ImageThumbnail.prototype = {
 	//thumbSizeを超えない範囲の大きさを持つ、DIV.ithumbcontainer>CANVASという形の要素を作る。
 	//canvasができるのは画像ロード完了後のみ。エラー時はできない。
 	thumbSize: 200,
 	container: null,	//nodeの子。
 	loading: true,
-	useCanvas: false,
 	init: function ImageThumbnail_init(href)
 	{
 		this.container = document.createElement("DIV");
@@ -1571,28 +1569,11 @@ ImageThumbnail.prototype = {
 	loaded: function ImageThumbnail_loaded(obj)
 	{
 		this.loading = false;
-		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
-		//現状、直接URL叩いたほうがマシかも？
-		var i = obj.img;
-		var ds = this.ds(i.naturalWidth,i.naturalHeight);
-		var c;
-		if (this.useCanvas)
-		{	//canvasに置換すると軽い・・・か？
-			c = document.createElement("CANVAS");
-			c.width = ds.width;
-			c.height= ds.height;
-			context=c.getContext("2d");
-			context.fillStyle="rgba(0,0,0,1)";
-			context.fillRect(0,0,c.width,c.height);
-			context.drawImage(i,0,0,i.naturalWidth,i.naturalHeight,0,0 ,ds.width,ds.height);
-		}
-		else
-		{
-			c = document.createElement("IMG");
-			c.width = ds.width;
-			c.height= ds.height;
-			c.src=obj.href;
-		}
+		var ds = this.ds(obj.img.naturalWidth, obj.img.naturalHeight);
+		var c = document.createElement("IMG");
+		c.width = ds.width;
+		c.height= ds.height;
+		c.src   = obj.href;
 		this.container.innerHTML = "";
 		this.container.appendChild(c);
 		this.container.dataset.state="ok";
@@ -1619,7 +1600,7 @@ ImageThumbnail.prototype = {
 	},
 };
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
-function ImageThumbnailOnClickOverlay(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+function ImageThumbnailOnClickOverlay(url, sz){this.thumbSize = sz; this.init(url);}
 ImageThumbnailOnClickOverlay.prototype = new ImageThumbnail();
 ImageThumbnailOnClickOverlay.prototype.loaded = function ImageThumbnailOnClickOverlay_loaded(e)
 {
@@ -1637,7 +1618,7 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnCl
 }
 
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
-function ImageThumbnailOnClickOverlayFrame(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+function ImageThumbnailOnClickOverlayFrame(url, sz){this.thumbSize = sz; this.init(url);}
 ImageThumbnailOnClickOverlayFrame.prototype = new ImageThumbnail();
 ImageThumbnailOnClickOverlayFrame.prototype.loaded = function ImageThumbnailOnClickOverlayFrame_loaded(e)
 {
