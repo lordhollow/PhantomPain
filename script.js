@@ -442,6 +442,10 @@ var Menu = {
 			Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
 		}
 	},
+	ShowViewer: function Menu_ShowViewer()
+	{
+		Viewer.show();
+	},
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1794,6 +1798,85 @@ var Finder = {
 			ret += str[i];
 		}
 		return ret;
+	},
+};
+
+/* ■Viewer■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Viewer = {
+	_entries: new Array(),
+	show: function Viewer_show()
+	{
+		//表示範囲だけが対象なので・・・
+		var anchors = $("resContainer").getElementsByClassName("outLink");
+		for(var i=0, j = anchors.length; i<j; i++)
+		{
+			var a = anchors[i];
+			var op = OutlinkPlugins.getOutlinkPlugin(a);
+			if (op && op.type == OUTLINK_IMAGE)
+			{
+				var href = a.href;
+				if (!this._entries[href])
+				{
+					this._entries[href] = new ViewerEntry(href)
+				}
+				this._entries[href].addRelation(parseInt(Util.getDecendantNode(a, "ARTICLE").dataset.no));
+			}
+		}
+		this.beginLoad();
+	},
+	close: function Viewer_close()
+	{
+	},
+	beginLoad: function Viewer_beginLoad()
+	{
+		this.pe = new Array(); //Preloadなエントリ
+		this.loading = 0;
+		this.loaded = 0;
+		this.error = 0;
+		for(var i=0,j=this._entries.length; i<j; i++)
+		{
+			var e = this._entries[i];
+			var s = e.state;
+			if (s == ViewerEntryState.Preload)
+			{	//読み込み前
+				pe.push(e);
+			}
+			else if (s == ViewerEntryState.Loading)
+			{	//読み込み中
+				loading++;
+			}
+			else if (s == ViewerEntryState.Loaded)
+			{	//読み込み完了
+				loaded++;
+			}
+			else
+			{	//ERR
+				error++;
+			}
+		}
+		setTimeout(this.loadNext.bind(this), 1);
+	},
+	loadNext: function Viewer_loadNext()
+	{
+	},
+};
+const ViewerEntryState = { PreLoad: 0, Loading: 1, Loaded: 2, Error: -1}
+
+function ViewerEntry(href){ this.init(href); }
+ViewerEntry.prototype = {
+	init: function ViewerEntry_init(href)
+	{
+		this.href = href;
+		this.state = ViewerEntryState.PreLoad;
+		this.relations = new Array();
+	},
+	addRelation: function ViewerEntry_addRelation(no)
+	{
+		if (!this.relations.include(no))
+		{
+			this.relations.push(no);
+			this.relations.sort(function(a,b){return a-b;});
+		}
 	},
 };
 
