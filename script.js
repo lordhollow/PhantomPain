@@ -806,7 +806,7 @@ function MarkerService(g,k,m,ma){this.init(g,k,m,ma);}
 MarkerService.prototype = {
 	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
 	storageKey: "_markerservice",	//ストレージのキー
-	mark: "mk",	//レスにマーキングする時のデータセットの名前。大文字入れちゃだめ。mkならnode.dataset.mk="y"(yの部分はMarkerService_getMarkerClassで取得)となる。
+	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(yの部分はMarkerService_getMarkerClassで取得)となる。
 	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalseにしておくと若干速度アップするかも
 
 	init: function MarkerService_init(g,k,m,ma)
@@ -885,7 +885,7 @@ MarkerService.prototype = {
 		var mark = this.mark;
 		var T = this;
 		ThreadMessages.foreach(function(node){
-			node.setAttribute("data-" + mark, T.getMarkerClass(node));
+			node.dataset[mark] = T.getMarkerClass(node);
 		}, this.markAllNode);
 		if(this.marked) this.marked();	//マーク後処理
 	},
@@ -895,7 +895,7 @@ MarkerService.prototype = {
 	},
 	nodeLoaded: function MarkerService_nodeLoaded(node)
 	{	//markAllNodeがtrueのときは、ロードされたときにこれが発動する。
-		node.setAttribute("data-" + this.mark, this.getMarkerClass(node));
+		node.dataset[this.mark] = this.getMarkerClass(node);
 		if(this.marked) this.marked();	//マーク後処理
 	},
 };
