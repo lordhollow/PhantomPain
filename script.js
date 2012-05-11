@@ -1870,35 +1870,34 @@ var Viewer = {
 	},
 	beginLoad: function Viewer_beginLoad()
 	{
-		this.pe = new Array(); //Preloadなエントリ
 		this.loading = 0;
 		this.loaded = 0;
 		this.error = 0;
-		for(var i=0,j=this._entries.length; i<j; i++)
+		for (var k in this._entries)
 		{
-			var e = this._entries[i];
-			var s = e.state;
-			if (s == ViewerEntryState.Preload)
-			{	//読み込み前
-				pe.push(e);
-			}
-			else if (s == ViewerEntryState.Loading)
-			{	//読み込み中
-				loading++;
-			}
-			else if (s == ViewerEntryState.Loaded)
-			{	//読み込み完了
-				loaded++;
-			}
-			else
-			{	//ERR
-				error++;
+			var e = this._entries[k];
+			if (e.relations)
+			{
+				//var e = this._entries[this._entries.keys[i]];
+				var s = e.state;
+				if (s == ViewerEntryState.PreLoad)
+				{	//読み込み前
+					e.load();
+				}
+				else if (s == ViewerEntryState.Loading)
+				{	//読み込み中
+					this.loading++;
+				}
+				else if (s == ViewerEntryState.Loaded)
+				{	//読み込み完了
+					this.loaded++;
+				}
+				else
+				{	//ERR
+					this.error++;
+				}
 			}
 		}
-		setTimeout(this.loadNext.bind(this), 1);
-	},
-	loadNext: function Viewer_loadNext()
-	{
 	},
 };
 const ViewerEntryState = { PreLoad: 0, Loading: 1, Loaded: 2, Error: -1}
@@ -1917,6 +1916,22 @@ ViewerEntry.prototype = {
 		{
 			this.relations.push(no);
 			this.relations.sort(function(a,b){return a-b;});
+		}
+	},
+	load: function ViewerEntry_load()
+	{
+		this.state = ViewerEntryState.Loading;
+		ImageLoadManager.push(this.href, this.onLoaderResponse.bind(this));
+	},
+	onLoaderResponse: function ViewerEntry_onLoaderResponse(obj, state)
+	{
+		if (state == "OK")
+		{
+			this.state = ViewerEntryState.Loaded;
+		}
+		else
+		{
+			this.state = ViewerEntryState.Error;
 		}
 	},
 };
