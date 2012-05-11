@@ -1484,9 +1484,61 @@ var OutlinkPluginForDefault = {
 
 OutlinkPlugins.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginForNicoNico, OutlinkPluginFor2ch, OutlinkPluginForDefault];
 
+/* ■ロードマネージャ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function loadManager(){ }
+loadManager.prototype = {
+	queue: new Array(),
+	loadWidth: 5,		//同時ロード要求数。キューがあるときに変えても意味ない
+	b: false,
+	_c: [],
+	push: function loadManager_push(href, callback)
+	{	//ロード要求突っ込む。有効期限(expired)あったほうがいいかも？
+		var qs = this.queue.length;
+		this.queue.push({href: href, callback: callback});
+		if (!this.b)
+		{
+			this.b = true;
+			setTimeout(this.begin.bind(this), 1);
+		}
+	},
+	begin: function loadManager_begin()
+	{
+		this.b = false;
+		for(var i=0, j = Math.min(this.loadWidth, this.queue.length); i<j; i++)
+		{
+			this.request(this.queue.shift());
+		}
+	},
+	request: function loadManager_request(obj)
+	{
+	},
+	response: function loadmanager_response(obj, status)
+	{
+		console.log("response "+ status + " " + obj.href);
+		obj.status = status;
+		if(obj.callback)obj.callback(obj);
+		this.checkNext();
+	},
+	checkNext: function()
+	{
+		if (this.queue.length)
+		{
+			this.request(this.queue.shift());
+		}
+	},
+};
+var ImageLoadManager = new loadManager();
+	ImageLoadManager.request = function ImageLoadManager_request(obj)
+	{
+		obj.img = new Image();
+		obj.img.addEventListener("load", this.response.bind(this, obj, "OK"), false);
+		obj.img.addEventListener("error", this.response.bind(this, obj, "NG"), false);
+		obj.img.src = obj.href;
+		console.log("request "+obj.href);
+	}
 
 /* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function ImageThumbnail(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+function ImageThumbnail(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; if(url) {this.init(url);}}
 ImageThumbnail.prototype = {
 	//thumbSizeを超えない範囲の大きさを持つ、DIV.ithumbcontainer>CANVASという形の要素を作る。
 	//canvasができるのは画像ロード完了後のみ。エラー時はできない。
@@ -1501,19 +1553,27 @@ ImageThumbnail.prototype = {
 		this.container.dataset.state="loading";	//画像を表示させたいけどURLをここに入れたくないのでこれで頑張って設定
 		//this.container.style.width = this.container.style.height = this.thumbSize + "px";
 
-		var img = new Image();
-		img.addEventListener("load", this.loaded.bind(this), false);
-		img.addEventListener("error", this.error.bind(this), false);
-		this.src = img.src = href;
-		this.img = img;
+		ImageLoadManager.push(href, this.onLoaderResponse.bind(this));
 	},
 	
-	loaded: function ImageThumbnail_loaded(e)
+	onLoaderResponse: function ImageThumbnail_onLoaderResponse(obj)
+	{
+		if (obj.status == "OK")
+		{
+			this.loaded(obj);
+		}
+		else
+		{
+			this.error(obj);
+		}
+	},
+	
+	loaded: function ImageThumbnail_loaded(obj)
 	{
 		this.loading = false;
 		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
 		//現状、直接URL叩いたほうがマシかも？
-		var i = this.img;
+		var i = obj.img;
 		var ds = this.ds(i.naturalWidth,i.naturalHeight);
 		var c;
 		if (this.useCanvas)
@@ -1531,7 +1591,7 @@ ImageThumbnail.prototype = {
 			c = document.createElement("IMG");
 			c.width = ds.width;
 			c.height= ds.height;
-			c.src=this.img.src;
+			c.src=obj.href;
 		}
 		this.container.innerHTML = "";
 		this.container.appendChild(c);
