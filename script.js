@@ -806,8 +806,8 @@ function MarkerService(g,k,m,ma){this.init(g,k,m,ma);}
 MarkerService.prototype = {
 	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
 	storageKey: "_markerservice",	//ストレージのキー
-	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(または="")となる。大文字入れちゃだめ。
-	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalse.
+	mark: "mk",	//レスにマーキングする時のデータセットの名前。大文字入れちゃだめ。mkならnode.dataset.mk="y"(yの部分はMarkerService_getMarkerClassで取得)となる。
+	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalseにしておくと若干速度アップするかも
 
 	init: function MarkerService_init(g,k,m,ma)
 	{
@@ -846,6 +846,11 @@ MarkerService.prototype = {
 		{
 			CommonPref.writeThreadObject(this.storageKey, str);
 		}
+	},
+	load: function MarkerService_load()
+	{
+		return (this.global) ?
+			CommonPref.readGlobalObject(this.storageKey) : CommonPref.readThreadObject(this.storageKey);
 	},
 	refresh: function MarkerService_refresh(newValue, oldValue)
 	{	//マーキングしたりされたりするごとにちゃんと保存しておけば、自分が書いたものとの差分によって処理できると見た！
@@ -918,6 +923,7 @@ var MarkerServices = {
 	},
 	onStorageChanged: function MarkerServices_onStorageChanged(ev)
 	{
+		if (e.newValue == e.oldValue) return;	//変化なしなら帰る（そんなことがあるかどうかは知らない）
 		for(var i=0, j=this.service.length; i<j;i++)
 		{
 			var s = this.service[i].onStorageChanged(ev);
@@ -931,7 +937,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	Bookmark.init = function Bookmark_init()
 	{
 		this.no = 0;
-		var no = parseInt(CommonPref.readThreadObject("bm"));
+		var no = parseInt(this.load());
 		no = !no ? 0 : no;
 		this.refresh(no, no);
 		MarkerServices.push(this);
@@ -976,7 +982,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 var Pickup = new MarkerService(false, "pk", "pickuped", true);
 	Pickup.init = function Pickup_init()
 	{
-		var pickups = CommonPref.readThreadObject("pk");
+		var pickups = this.load();
 		if (!pickups) pickups = "";
 		this.refresh(pickups, pickups);
 		MarkerServices.push(this);
@@ -1024,7 +1030,7 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 	Tracker.init = function Tracker_init()
 	{
 		this._trackers = new Array();
-		var trackers = CommonPref.readGlobalObject("tracker");
+		var trackers = this.load();
 		if (!trackers) trackers = "";
 		this.refresh(trackers, "");
 		MarkerServices.push(this);
