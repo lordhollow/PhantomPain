@@ -317,6 +317,7 @@ var MessageMenu = {
 	_csGearWheel: false,
 	GearWheel: function MessageMenu_GearWheel(event)
 	{
+		event.preventDefault();
 		if (this._csGearWheel) return;
 		this._csGearWheel = true;	//超簡易クリティカルセクション。javascriptはシングルスレッドなのでこれでOK。このオブジェクトはworkerに突っ込めないしね！
 		{
@@ -336,7 +337,6 @@ var MessageMenu = {
 			}
 		}
 		this._csGearWheel = false;
-		event.preventDefault();
 	},
 	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
