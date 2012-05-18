@@ -1845,7 +1845,8 @@ var Finder = {
 /* ■Viewer■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Viewer = {
 	_entries: new Array(),
-	show: function Viewer_show()
+	_orderd: new Array(),
+	init: function Viewer_init()
 	{
 		//表示範囲だけが対象なので・・・
 		var anchors = $("resContainer").getElementsByClassName("outLink");
@@ -1858,12 +1859,19 @@ var Viewer = {
 				var href = a.href;
 				if (!this._entries[href])
 				{
-					this._entries[href] = new ViewerEntry(href)
+					var entry = new ViewerEntry(href);
+					this._entries[href] = entry;
+					this._orderd.push(entry);
 				}
 				this._entries[href].addRelation(parseInt(Util.getDecendantNode(a, "ARTICLE").dataset.no));
 			}
 		}
-		this.beginLoad();
+	},
+	
+	show: function Viewer_show()
+	{
+		this.init();
+//		this.beginLoad();
 	},
 	close: function Viewer_close()
 	{
@@ -1934,6 +1942,7 @@ ViewerEntry.prototype = {
 			this.state = ViewerEntryState.Error;
 		}
 	},
+	typename: "ViewerEntry",
 };
 
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
