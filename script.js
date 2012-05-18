@@ -1875,6 +1875,7 @@ var Viewer = {
 		{
 			var c = document.createElement("DIV");
 			c.id = "ViewerContainer";
+			c.innerHTML = '<img span id="viewerCloseButton" onclick="Viewer.close();">';
 			var cc = document.createElement("DIV");
 			this.container = cc;
 			c.appendChild(cc);
