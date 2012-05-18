@@ -1880,6 +1880,8 @@ var Viewer = {
 			c.appendChild(cc);
 			document.body.appendChild(c);
 			document.body.dataset.mediaview = "y";
+			this.binds = this.keyAssign.bind(this);
+			document.addEventListener("keydown", this.binds,false);
 		}
 	},
 	leaveViewerMode: function Viewer_leaveViewerMode()
@@ -1888,8 +1890,53 @@ var Viewer = {
 		{
 			document.body.removeChild($("ViewerContainer"));
 			this.container = null;
+			document.removeEventListener("keydown", this.binds, false);
 			document.body.dataset.mediaview = "";
 		}
+	},
+	keyAssign: function Viewer_keyAssign(e)
+	{
+		var p = true;
+		switch(e.keyCode)
+		{
+		case 27:
+			this.leaveViewerMode();
+			break;
+		case 33:	//PageUp
+		case 37:	//Å©
+			this.prev();
+			break;
+		case 13:	//Enter
+		case 32:	//Sp
+		case 34:	//PageDown
+		case 39:	//Å®
+			this.next();
+			break;
+		case 35:	//End
+		case 40:	//Å´
+			this.last();
+			break;
+		case 36:	//Home
+		case 38:	//Å™
+			this.first();
+			break;
+		default:
+			p = false;
+			break;
+		}
+		if (p) e.preventDefault();
+	},
+	prev: function Viewer_prev()
+	{
+	},
+	next: function Viewer_next()
+	{
+	},
+	last: function Viewer_last()
+	{
+	},
+	first: function Viewer_first()
+	{
 	},
 	show: function Viewer_show()
 	{
