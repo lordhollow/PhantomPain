@@ -1926,6 +1926,9 @@ var Viewer = {
 		}
 		if (p) e.preventDefault();
 	},
+	home: function Viewer_home()
+	{
+	},
 	prev: function Viewer_prev()
 	{
 	},
@@ -1942,6 +1945,7 @@ var Viewer = {
 	{
 		this.init();
 		this.enterViewerMode();
+		this.home();
 //		this.beginLoad();
 	},
 	close: function Viewer_close()
