@@ -1844,11 +1844,13 @@ var Finder = {
 
 /* ■Viewer■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Viewer = {
-	_entries: new Array(),
-	_orderd: new Array(),
+	_entries: null,
+	_orderd: null,
 	init: function Viewer_init()
 	{
 		//表示範囲だけが対象なので・・・
+		this._entries = new Array();
+		this._orderd  = new Array();
 		var anchors = $("resContainer").getElementsByClassName("outLink");
 		for(var i=0, j = anchors.length; i<j; i++)
 		{
