@@ -1869,14 +1869,33 @@ var Viewer = {
 			}
 		}
 	},
-	
+	enterViewerMode: function Viewer_enterViewerMode()
+	{
+		if (document.body.dataset.mediaview != "y")
+		{
+			var c = document.createElement("DIV");
+			c.id = "ViewerContainer";
+			document.body.appendChild(c);
+			document.body.dataset.mediaview = "y";
+		}
+	},
+	leaveViewerMode: function Viewer_leaveViewerMode()
+	{
+		if (document.body.dataset.mediaview == "y")
+		{
+			document.body.removeChild($("ViewerContainer"));
+			document.body.dataset.mediaview = "";
+		}
+	},
 	show: function Viewer_show()
 	{
 		this.init();
+		this.enterViewerMode();
 //		this.beginLoad();
 	},
 	close: function Viewer_close()
 	{
+		this.leaveViewerMode();
 	},
 	beginLoad: function Viewer_beginLoad()
 	{
