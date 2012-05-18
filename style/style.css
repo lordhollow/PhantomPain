@@ -444,6 +444,7 @@ body[data-mediaview="y"]
 }
 #ViewerContainer
 {
+	display: table;
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -451,6 +452,12 @@ body[data-mediaview="y"]
 	height: 100%;
 	background-color: rgba(0, 0, 0, .8);
 	z-index: 1000;
+}
+#ViewerContainer > div
+{
+	display: table-cell;
+	text-align:center;
+	vertical-align:middle;
 }
 
 /* オーバーレイ */

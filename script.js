@@ -1875,6 +1875,9 @@ var Viewer = {
 		{
 			var c = document.createElement("DIV");
 			c.id = "ViewerContainer";
+			var cc = document.createElement("DIV");
+			this.container = cc;
+			c.appendChild(cc);
 			document.body.appendChild(c);
 			document.body.dataset.mediaview = "y";
 		}
@@ -1884,6 +1887,7 @@ var Viewer = {
 		if (document.body.dataset.mediaview == "y")
 		{
 			document.body.removeChild($("ViewerContainer"));
+			this.container = null;
 			document.body.dataset.mediaview = "";
 		}
 	},
