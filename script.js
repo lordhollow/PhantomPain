@@ -15,6 +15,7 @@ var Preference =
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
+	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1883,6 +1884,10 @@ var Viewer = {
 			document.body.dataset.mediaview = "y";
 			this.binds = this.keyAssign.bind(this);
 			document.addEventListener("keydown", this.binds,false);
+			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
+			this.cursorShowHandler = this.cursorShow.bind(this);
+			document.addEventListener("mousemove", this.cursorShowHandler, false);
+			this.cursorHideCount = 0;
 		}
 	},
 	leaveViewerMode: function Viewer_leaveViewerMode()
@@ -1893,7 +1898,22 @@ var Viewer = {
 			this.container = null;
 			document.removeEventListener("keydown", this.binds, false);
 			document.body.dataset.mediaview = "";
+			clearInterval(this.cursorHideCheckTimer);
+			document.removeEventListener("mousemove", this.cursorShowHandler, false);
 		}
+	},
+	cursorHideCheck: function Viewer_cursorHideCheck()
+	{
+		this.cursorHideCount++;
+		if (this.cursorHideCount == Preference.ViewerCursorHideAt)
+		{
+			this.container.dataset.cursor="hide";
+		}
+	},
+	cursorShow: function Viewer_cursorShow()
+	{
+		this.cursorHideCount = 0;
+		this.container.dataset.cursor="shown";
 	},
 	keyAssign: function Viewer_keyAssign(e)
 	{

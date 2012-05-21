@@ -459,6 +459,10 @@ body[data-mediaview="y"]
 	text-align:center;
 	vertical-align:middle;
 }
+#ViewerContainer > div[data-cursor="hide"]
+{
+	cursor: url("transparent.png"), default;
+}
 	#viewerState
 	{
 		position: absolute;
