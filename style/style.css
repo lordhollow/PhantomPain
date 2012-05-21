@@ -355,7 +355,7 @@ article article
 	position: absolute;
 	border-left: 12px solid rgba(255,255,192,0.95);
 	border-top: 12px solid transparent;
-	z-index: 500;
+	z-index: 2500;
 	left: -10000px;
 	top:  -10000px;
 }
