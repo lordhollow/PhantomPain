@@ -2037,7 +2037,8 @@ var Viewer = {
 			var s = this.getStatus();
 			var o = this._orderd[s.index];
 			c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
-			console.log("showStatus");
+			c.dataset.state="refresh";
+			setTimeout(function(){c.dataset.state="";}, 1);
 		}
 	},
 	show: function Viewer_show()

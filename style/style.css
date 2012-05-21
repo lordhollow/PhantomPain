@@ -472,6 +472,17 @@ body[data-mediaview="y"]
 		color: #FFF;
 		font-family: monospace;
 		font-weight: bold;
+
+		-moz-animation: fadeout 2s 1s linear 1;
+		-moz-animation-fill-mode: forwards;
+	}
+	#viewerState[data-state="refresh"]
+	{
+		-moz-animation: none;
+	}
+	#viewerState:hover
+	{
+		-moz-animation: none;
 	}
 	#viewerCloseButton
 	{
@@ -564,6 +575,13 @@ body[data-mediaview="y"]
 	text-align: left;
 	margin-left: 8px;
 	padding-top: 15em;
+}
+
+/* アニメーションキーフレーム */
+@-moz-keyframes fadeout
+{
+	0% { opacity: 1; }
+	100% { opacity: 0; }
 }
 
 /* */
