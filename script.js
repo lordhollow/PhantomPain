@@ -1875,7 +1875,7 @@ var Viewer = {
 		{
 			var c = document.createElement("DIV");
 			c.id = "ViewerContainer";
-			c.innerHTML = '<span id="viewerCloseButton" onclick="Viewer.close();"></span>';
+			c.innerHTML = '<span id="viewerState"></span><span id="viewerCloseButton" onclick="Viewer.close();"></span>';
 			var cc = document.createElement("DIV");
 			this.container = cc;
 			c.appendChild(cc);
@@ -2004,6 +2004,40 @@ var Viewer = {
 			this._clearContainer();
 			this.container.appendChild(this._orderd[index].getElement());
 			this.index = index;
+		}
+		this.showStatus();
+	},
+	getStatus: function Viewer_getStatus()
+	{
+		var total=0, loading=0, loaded=0, error=0;
+		for(var i=0, j=this._orderd.length; i < j ; i++)
+		{
+			total++;
+			var s = this._orderd[i].state;
+			if (s == ViewerEntryState.Loading)
+			{
+				loading++;
+			}
+			else if (s == ViewerEntryState.Loaded)
+			{
+				loaded++;
+			}
+			else if (s == ViewerEntryState.Error)
+			{
+				error++;
+			}
+		}
+		return {total: total, loading: loading, loaded: loaded, error: error, index: this.index};
+	},
+	showStatus: function Viewer_showStatus()
+	{
+		var c = $("viewerState");
+		if (c)
+		{
+			var s = this.getStatus();
+			var o = this._orderd[s.index];
+			c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+			console.log("showStatus");
 		}
 	},
 	show: function Viewer_show()

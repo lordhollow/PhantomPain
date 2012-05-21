@@ -459,6 +459,20 @@ body[data-mediaview="y"]
 	text-align:center;
 	vertical-align:middle;
 }
+	#viewerState
+	{
+		position: absolute;
+		display: block;
+		left: 4px;
+		top: 4px;
+		border: solid 2px #FFF;
+		border-radius: 8px;
+		padding: 4px 4px;
+		background-color: rgba(0,0,0,.5);
+		color: #FFF;
+		font-family: monospace;
+		font-weight: bold;
+	}
 	#viewerCloseButton
 	{
 		position: absolute;
