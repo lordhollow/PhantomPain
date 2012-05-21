@@ -491,7 +491,7 @@ body[data-mediaview="y"]
 	}
 	#viewerHomeCtrl[data-images="0"]:after
 	{
-		content: "(‰æ‘œ‚ª‚ ‚è‚Ü‚¹‚ñ)";
+		content: "No Images.";
 	}
 	#viewerHomePlayButton
 	{
