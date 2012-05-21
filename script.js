@@ -1875,7 +1875,7 @@ var Viewer = {
 		{
 			var c = document.createElement("DIV");
 			c.id = "ViewerContainer";
-			c.innerHTML = '<img span id="viewerCloseButton" onclick="Viewer.close();">';
+			c.innerHTML = '<span id="viewerCloseButton" onclick="Viewer.close();"></span>';
 			var cc = document.createElement("DIV");
 			this.container = cc;
 			c.appendChild(cc);
@@ -1927,8 +1927,28 @@ var Viewer = {
 		}
 		if (p) e.preventDefault();
 	},
+	_clearContainer: function Viewer__clearContainer()
+	{
+		var nodes = $A(this.container.childNodes);
+		for(var i=0, j=nodes.length; i<j; i++)
+		{
+			this.container.removeChild(nodes[i]);
+		}
+	},
 	home: function Viewer_home()
 	{
+		if(!this.homeCtrl)
+		{
+			var c = document.createElement("DIV");
+			c.id = "viewerHomeCtrl";
+			c.innerHTML = '<span id="viewerHomePlayButton" onclick="Viewer.next();"></span>';
+			this.homeCtrl = c;
+		}
+		var home = this.homeCtrl;
+		home.dataset.images = this._orderd.length;
+		if (home.parentNode) home.parentNode.removeChild(home);
+		this._clearContainer();
+		this.container.appendChild(home);
 	},
 	prev: function Viewer_prev()
 	{

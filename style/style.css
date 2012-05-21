@@ -474,6 +474,41 @@ body[data-mediaview="y"]
 	{
 		opacity: 1;
 	}
+	#viewerHomeCtrl
+	{
+		border: solid 4px #FFF;
+		border-radius: 24px;
+		background-color: #006;
+		padding: 16px;
+		width: 140px;
+		margin: auto;
+	}
+	#viewerHomeCtrl:after
+	{
+		color: #FFF;
+		font-family: "Arial Black", sans-serif;
+		content: attr(data-images) " Images.";
+	}
+	#viewerHomeCtrl[data-images="0"]:after
+	{
+		content: "(画像がありません)";
+	}
+	#viewerHomePlayButton
+	{
+		display: block;
+		width: 48px;
+		height: 48px;
+		margin: auto;
+		background-image: url("viewerPlay-g.png");
+	}
+	#viewerHomePlayButton:hover
+	{
+		background-image: url("viewerPlay.png");
+	}
+	#viewerHomeCtrl[data-images="0"] > #viewerHomePlayButton:hover
+	{
+		background-image: url("viewerPlay-g.png");
+	}
 /* オーバーレイ */
 .overlay
 {
