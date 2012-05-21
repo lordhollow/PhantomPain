@@ -1949,18 +1949,62 @@ var Viewer = {
 		if (home.parentNode) home.parentNode.removeChild(home);
 		this._clearContainer();
 		this.container.appendChild(home);
+		this.index = -1;
 	},
 	prev: function Viewer_prev()
 	{
+		var index = this.index -1;
+		if (index < 0 ) index = this._orderd.length - 1;
+		this.showImage(this.errorSkipToPrev(index));
 	},
 	next: function Viewer_next()
 	{
+		var index = this.index +1;
+		if (index >= this._orderd.length) index = 0;
+		this.showImage(this.errorSkipToNext(index));
 	},
 	last: function Viewer_last()
 	{
+		this.showImage(this.errorSkipToPrev(this._orderd.length - 1));
 	},
 	first: function Viewer_first()
 	{
+		this.showImage(this.errorSkipToNext(0));
+	},
+	errorSkipToNext: function Viewer_errorSkipToNext(index)
+	{
+		for (var j = this._orderd.length; index < j; index++)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	errorSkipToPrev: function Viewer_errorSkipToPrev(index)
+	{
+		for (; index >= 0; index--)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	showImage: function Viewer_showImage(index)
+	{
+		if ((index < 0) || (index >= this._orderd.length))
+		{
+			this.home();
+		}
+		else
+		{
+			this._clearContainer();
+			this.container.appendChild(this._orderd[index].getElement());
+			this.index = index;
+		}
 	},
 	show: function Viewer_show()
 	{
@@ -2021,6 +2065,27 @@ ViewerEntry.prototype = {
 		{
 			this.relations.push(no);
 			this.relations.sort(function(a,b){return a-b;});
+		}
+	},
+	getElement: function ViewerEntry_getElement()
+	{
+		this.element = document.createElement("IMG");
+		this.element.src = ThreadInfo.Skin + "style/loading.gif";
+		this.state = ViewerEntryState.Loading;
+		ImageLoadManager.push(this.href, this.loaded.bind(this));
+		return this.element;
+	},
+	loaded: function ViewerEntry_loaded(obj)
+	{
+		if (obj.status == "OK")
+		{
+			this.state = ViewerEntryState.Loaded;
+			this.element.src = this.href;
+		}
+		else
+		{
+			this.state = ViewerEntryState.Error;
+			this.element.src = ThreadInfo.Skin + "style/error.png";
 		}
 	},
 	load: function ViewerEntry_load()
