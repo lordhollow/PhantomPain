@@ -1970,6 +1970,7 @@ var Viewer = {
 		this._clearContainer();
 		this.container.appendChild(home);
 		this.index = -1;
+		this.showStatus();
 	},
 	prev: function Viewer_prev()
 	{
@@ -2055,8 +2056,15 @@ var Viewer = {
 		if (c)
 		{
 			var s = this.getStatus();
-			var o = this._orderd[s.index];
-			c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+			if (this.index >= 0)
+			{
+				var o = this._orderd[s.index];
+				c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+			}
+			else
+			{
+				c.innerHTML = "{0} Images.".format(s.total);
+			}
 			c.dataset.state="refresh";
 			setTimeout(function(){c.dataset.state="";}, 1);
 		}
@@ -2066,42 +2074,10 @@ var Viewer = {
 		this.init();
 		this.enterViewerMode();
 		this.home();
-//		this.beginLoad();
 	},
 	close: function Viewer_close()
 	{
 		this.leaveViewerMode();
-	},
-	beginLoad: function Viewer_beginLoad()
-	{
-		this.loading = 0;
-		this.loaded = 0;
-		this.error = 0;
-		for (var k in this._entries)
-		{
-			var e = this._entries[k];
-			if (e.relations)
-			{
-				//var e = this._entries[this._entries.keys[i]];
-				var s = e.state;
-				if (s == ViewerEntryState.PreLoad)
-				{	//ì«Ç›çûÇ›ëO
-					e.load();
-				}
-				else if (s == ViewerEntryState.Loading)
-				{	//ì«Ç›çûÇ›íÜ
-					this.loading++;
-				}
-				else if (s == ViewerEntryState.Loaded)
-				{	//ì«Ç›çûÇ›äÆóπ
-					this.loaded++;
-				}
-				else
-				{	//ERR
-					this.error++;
-				}
-			}
-		}
 	},
 };
 const ViewerEntryState = { PreLoad: 0, Loading: 1, Loaded: 2, Error: -1}
@@ -2124,10 +2100,7 @@ ViewerEntry.prototype = {
 	},
 	getElement: function ViewerEntry_getElement()
 	{
-		this.element = document.createElement("IMG");
-		this.element.src = ThreadInfo.Skin + "style/loading.gif";
-		this.state = ViewerEntryState.Loading;
-		ImageLoadManager.push(this.href, this.loaded.bind(this));
+		this.prepare();
 		return this.element;
 	},
 	loaded: function ViewerEntry_loaded(obj)
@@ -2143,21 +2116,22 @@ ViewerEntry.prototype = {
 			this.element.src = ThreadInfo.Skin + "style/error.png";
 		}
 	},
-	load: function ViewerEntry_load()
+	prepare: function ViewerEntry_prepare()
 	{
-		this.state = ViewerEntryState.Loading;
-		ImageLoadManager.push(this.href, this.onLoaderResponse.bind(this));
+		if (this.state == ViewerEntryState.PreLoad)
+		{
+			//console.log("preload request " + this.href);
+			this.element = document.createElement("IMG");
+			this.element.src = ThreadInfo.Skin + "style/loading.gif";
+			this.state = ViewerEntryState.Loading;
+			ImageLoadManager.push(this.href, this.loaded.bind(this));
+		}
 	},
-	onLoaderResponse: function ViewerEntry_onLoaderResponse(obj, state)
+	release: function ViewerEntry_release()
 	{
-		if (state == "OK")
-		{
-			this.state = ViewerEntryState.Loaded;
-		}
-		else
-		{
-			this.state = ViewerEntryState.Error;
-		}
+		//console.log("release " + this.href);
+		this.element = null;
+		this.state = ViewerEntryState.PreLoad;
 	},
 	typename: "ViewerEntry",
 };
