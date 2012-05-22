@@ -497,12 +497,13 @@ body[data-mediaview="y"]
 		width: 20px;
 		height: 20px;
 	}
-	#viewerCtrls > button[name="home"]{ background-image: url("viewer-home.png"); }
+	#viewerCtrls > button[name="home"]{ background-image: url("viewer-home.png"); margin-right: 20px;}
 	#viewerCtrls > button[name="first"]{ background-image: url("viewer-first.png"); }
 	#viewerCtrls > button[name="prev"]{ background-image: url("viewer-prev.png"); }
 	#viewerCtrls > button[name="next"]{ background-image: url("viewer-next.png"); }
 	#viewerCtrls > button[name="last"]{ background-image: url("viewer-last.png"); }
-	#viewerCtrls > button[name="auto"]{ background-image: url("viewer-auto.png"); }
+	#viewerCtrls > button[name="auto"]{ background-image: url("viewer-auto.png"); margin-left: 20px; }
+	#viewerCtrls[data-auto="y"] > button[name="auto"]{ background-image: url("viewer-auto-a.png"); }
 	#viewerCtrls > button[name="close"]{ background-image: url("close.png"); margin-left: 20px;}
 
 #viewerHomeCtrl

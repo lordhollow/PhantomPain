@@ -2186,6 +2186,9 @@ var Viewer = {
 	},
 	toggleAuto: function Viewer_toggleAuto()
 	{
+		this.auto = !this.auto;
+		//TODO>タイマー割り込みの開始
+		$("viewerCtrls").dataset.auto = this.auto ? "y" : "";
 	},
 	errorSkipToNext: function Viewer_errorSkipToNext(index)
 	{
