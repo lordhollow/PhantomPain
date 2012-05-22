@@ -1547,6 +1547,7 @@ ImageThumbnail.prototype = {
 	loading: true,
 	init: function ImageThumbnail_init(href)
 	{
+		this.src = href;
 		this.container = document.createElement("DIV");
 		this.container.className = "ithumbcontainer";
 		this.container.dataset.state="loading";	//‰æ‘œ‚ğ•\¦‚³‚¹‚½‚¢‚¯‚ÇURL‚ğ‚±‚±‚É“ü‚ê‚½‚­‚È‚¢‚Ì‚Å‚±‚ê‚ÅŠæ’£‚Á‚Äİ’è
