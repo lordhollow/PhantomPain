@@ -463,55 +463,57 @@ body[data-mediaview="y"]
 {
 	cursor: url("transparent.png"), default;
 }
-	#viewerState
-	{
-		position: absolute;
-		display: block;
-		left: 4px;
-		top: 4px;
-		border: solid 2px #FFF;
-		border-radius: 8px;
-		padding: 4px 4px;
-		background-color: rgba(0,0,0,.5);
-		color: #FFF;
-		font-family: monospace;
-		font-weight: bold;
+#ViewerCtrl
+{
+	position: absolute;
+	display: block;
+	left: 4px;
+	top: 4px;
+	border: solid 2px #FFF;
+	border-radius: 8px;
+	padding: 4px 4px;
+	background-color: rgba(0,0,0,.5);
+	color: #FFF;
+	font-family: monospace;
+	font-weight: bold;
+	text-align: left;
 
-		-moz-animation: fadeout 2s 1s linear 1;
-		-moz-animation-fill-mode: forwards;
-	}
-	#viewerState[data-state="refresh"]
+	-moz-animation: fadeout 2s 1s linear 1;
+	-moz-animation-fill-mode: forwards;
+}
+	#ViewerCtrl[data-state="refresh"]
 	{
 		-moz-animation: none;
 	}
-	#viewerState:hover
+	#ViewerCtrl:hover
 	{
 		-moz-animation: none;
 	}
-	#viewerCloseButton
+	#viewerState{}
+	#viewerCtrls{}
+	#viewerCtrls > button
 	{
-		position: absolute;
-		display: block;
-		right: 4px;
-		top: 4px;
-		width: 16px;
-		height: 16px;
-		opacity: .5;
-		background-image: url("close.png");
+		border-width: 2px;
+		width: 20px;
+		height: 20px;
 	}
-	#viewerCloseButton:hover
-	{
-		opacity: 1;
-	}
-	#viewerHomeCtrl
-	{
-		border: solid 4px #FFF;
-		border-radius: 24px;
-		background-color: #006;
-		padding: 16px;
-		width: 140px;
-		margin: auto;
-	}
+	#viewerCtrls > button[name="home"]{ background-image: url("viewer-home.png"); }
+	#viewerCtrls > button[name="first"]{ background-image: url("viewer-first.png"); }
+	#viewerCtrls > button[name="prev"]{ background-image: url("viewer-prev.png"); }
+	#viewerCtrls > button[name="next"]{ background-image: url("viewer-next.png"); }
+	#viewerCtrls > button[name="last"]{ background-image: url("viewer-last.png"); }
+	#viewerCtrls > button[name="auto"]{ background-image: url("viewer-auto.png"); }
+	#viewerCtrls > button[name="close"]{ background-image: url("close.png"); margin-left: 20px;}
+
+#viewerHomeCtrl
+{
+	border: solid 4px #FFF;
+	border-radius: 24px;
+	background-color: #006;
+	padding: 16px;
+	width: 140px;
+	margin: auto;
+}
 	#viewerHomeCtrl:after
 	{
 		color: #FFF;

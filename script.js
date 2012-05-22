@@ -2056,7 +2056,19 @@ var Viewer = {
 		{
 			var c = document.createElement("DIV");
 			c.id = "ViewerContainer";
-			c.innerHTML = '<span id="viewerState"></span><span id="viewerCloseButton" onclick="Viewer.close();"></span>';
+			var buttons = [ {name: "home", onclick: "Viewer.home();"},
+				{name: "first", onclick: "Viewer.first();"},
+				{name: "prev", onclick: "Viewer.prev();"},
+				{name: "next", onclick: "Viewer.next();"},
+				{name: "last", onclick: "Viewer.last();"},
+				{name: "auto", onclick: "Viewer.toggleAuto();"},
+				{name: "close", onclick: "Viewer.close();"} ];
+			var bhtml = "";
+			for(var i=0, j=buttons.length; i < j; i++)
+			{
+				bhtml += '<button name="{0}" onclick="{1} return false;">'.format(buttons[i].name, buttons[i].onclick);
+			}
+			c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">' + bhtml + '</div></form>';
 			var cc = document.createElement("DIV");
 			this.container = cc;
 			c.appendChild(cc);
@@ -2172,6 +2184,9 @@ var Viewer = {
 	{
 		this.showImage(this.errorSkipToNext(0));
 	},
+	toggleAuto: function Viewer_toggleAuto()
+	{
+	},
 	errorSkipToNext: function Viewer_errorSkipToNext(index)
 	{
 		for (var j = this._orderd.length; index < j; index++)
@@ -2243,10 +2258,11 @@ var Viewer = {
 			}
 			else
 			{
-				c.innerHTML = "{0} Images.".format(s.total);
+				c.innerHTML = "{0} Images.<br><br>".format(s.total);
 			}
-			c.dataset.state="refresh";
-			setTimeout(function(){c.dataset.state="";}, 1);
+			var ctrl = $("ViewerCtrl");
+			ctrl.dataset.state="refresh";
+			setTimeout(function(){ctrl.dataset.state="";}, 1);
 		}
 	},
 	show: function Viewer_show()
