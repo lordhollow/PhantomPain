@@ -15,6 +15,7 @@ var Preference =
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
+	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -441,6 +442,10 @@ var Menu = {
 		{
 			Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
 		}
+	},
+	ShowViewer: function Menu_ShowViewer()
+	{
+		Viewer.show();
 	},
 };
 
@@ -1394,7 +1399,7 @@ var OutlinkPluginForImage = {
 	},
 	getPreview: function OutlinkPluginForImage_getPreview(href, onload)
 	{
-		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize,false));
+		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize));
 		p.onload = onload;
 		return p.container;
 	},
@@ -1472,7 +1477,7 @@ var OutlinkPluginForDefault = {
 	},
 	getPreview: function OutlinkPluginForDefault_getPreview(href, onload)
 	{
-		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize,false);
+		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize);
 		p.rel = href;
 		return p.container;
 	},
@@ -1486,7 +1491,6 @@ loadManager.prototype = {
 	queue: new Array(),
 	loadWidth: 5,		//同時ロード要求数。キューがあるときに変えても意味ない
 	b: false,
-	_c: [],
 	push: function loadManager_push(href, callback)
 	{	//ロード要求突っ込む。有効期限(expired)あったほうがいいかも？
 		var qs = this.queue.length;
@@ -1510,7 +1514,7 @@ loadManager.prototype = {
 	},
 	response: function loadmanager_response(obj, status)
 	{
-		console.log("response "+ status + " " + obj.href);
+		//console.log("response "+ status + " " + obj.href);
 		obj.status = status;
 		if(obj.callback)obj.callback(obj);
 		this.checkNext();
@@ -1530,18 +1534,17 @@ var ImageLoadManager = new loadManager();
 		obj.img.addEventListener("load", this.response.bind(this, obj, "OK"), false);
 		obj.img.addEventListener("error", this.response.bind(this, obj, "NG"), false);
 		obj.img.src = obj.href;
-		console.log("request "+obj.href);
+		//console.log("request "+obj.href);
 	}
 
 /* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-function ImageThumbnail(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; if(url) {this.init(url);}}
+function ImageThumbnail(url, sz){this.thumbSize = sz; if(url) {this.init(url);}}
 ImageThumbnail.prototype = {
 	//thumbSizeを超えない範囲の大きさを持つ、DIV.ithumbcontainer>CANVASという形の要素を作る。
 	//canvasができるのは画像ロード完了後のみ。エラー時はできない。
 	thumbSize: 200,
 	container: null,	//nodeの子。
 	loading: true,
-	useCanvas: false,
 	init: function ImageThumbnail_init(href)
 	{
 		this.container = document.createElement("DIV");
@@ -1567,28 +1570,11 @@ ImageThumbnail.prototype = {
 	loaded: function ImageThumbnail_loaded(obj)
 	{
 		this.loading = false;
-		//TODO::このcanvasをクリックしたら(ポップアップを閉じて)オーバーレイ表示
-		//現状、直接URL叩いたほうがマシかも？
-		var i = obj.img;
-		var ds = this.ds(i.naturalWidth,i.naturalHeight);
-		var c;
-		if (this.useCanvas)
-		{	//canvasに置換すると軽い・・・か？
-			c = document.createElement("CANVAS");
-			c.width = ds.width;
-			c.height= ds.height;
-			context=c.getContext("2d");
-			context.fillStyle="rgba(0,0,0,1)";
-			context.fillRect(0,0,c.width,c.height);
-			context.drawImage(i,0,0,i.naturalWidth,i.naturalHeight,0,0 ,ds.width,ds.height);
-		}
-		else
-		{
-			c = document.createElement("IMG");
-			c.width = ds.width;
-			c.height= ds.height;
-			c.src=obj.href;
-		}
+		var ds = this.ds(obj.img.naturalWidth, obj.img.naturalHeight);
+		var c = document.createElement("IMG");
+		c.width = ds.width;
+		c.height= ds.height;
+		c.src   = obj.href;
 		this.container.innerHTML = "";
 		this.container.appendChild(c);
 		this.container.dataset.state="ok";
@@ -1615,7 +1601,7 @@ ImageThumbnail.prototype = {
 	},
 };
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
-function ImageThumbnailOnClickOverlay(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+function ImageThumbnailOnClickOverlay(url, sz){this.thumbSize = sz; this.init(url);}
 ImageThumbnailOnClickOverlay.prototype = new ImageThumbnail();
 ImageThumbnailOnClickOverlay.prototype.loaded = function ImageThumbnailOnClickOverlay_loaded(e)
 {
@@ -1633,7 +1619,7 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnCl
 }
 
 /* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
-function ImageThumbnailOnClickOverlayFrame(url, sz, canvas){this.thumbSize = sz; this.useCanvas = canvas; this.init(url);}
+function ImageThumbnailOnClickOverlayFrame(url, sz){this.thumbSize = sz; this.init(url);}
 ImageThumbnailOnClickOverlayFrame.prototype = new ImageThumbnail();
 ImageThumbnailOnClickOverlayFrame.prototype.loaded = function ImageThumbnailOnClickOverlayFrame_loaded(e)
 {
@@ -1855,6 +1841,299 @@ var Finder = {
 		}
 		return ret;
 	},
+};
+
+/* ■Viewer■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Viewer = {
+	_entries: null,
+	_orderd: null,
+	init: function Viewer_init()
+	{
+		//表示範囲だけが対象なので・・・
+		this._entries = new Array();
+		this._orderd  = new Array();
+		var anchors = $("resContainer").getElementsByClassName("outLink");
+		for(var i=0, j = anchors.length; i<j; i++)
+		{
+			var a = anchors[i];
+			var op = OutlinkPlugins.getOutlinkPlugin(a);
+			if (op && op.type == OUTLINK_IMAGE)
+			{
+				var href = a.href;
+				if (!this._entries[href])
+				{
+					var entry = new ViewerEntry(href);
+					this._entries[href] = entry;
+					this._orderd.push(entry);
+				}
+				this._entries[href].addRelation(parseInt(Util.getDecendantNode(a, "ARTICLE").dataset.no));
+			}
+		}
+	},
+	enterViewerMode: function Viewer_enterViewerMode()
+	{
+		if (document.body.dataset.mediaview != "y")
+		{
+			var c = document.createElement("DIV");
+			c.id = "ViewerContainer";
+			c.innerHTML = '<span id="viewerState"></span><span id="viewerCloseButton" onclick="Viewer.close();"></span>';
+			var cc = document.createElement("DIV");
+			this.container = cc;
+			c.appendChild(cc);
+			document.body.appendChild(c);
+			document.body.dataset.mediaview = "y";
+			this.binds = this.keyAssign.bind(this);
+			document.addEventListener("keydown", this.binds,false);
+			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
+			this.cursorShowHandler = this.cursorShow.bind(this);
+			document.addEventListener("mousemove", this.cursorShowHandler, false);
+			this.cursorHideCount = 0;
+		}
+	},
+	leaveViewerMode: function Viewer_leaveViewerMode()
+	{
+		if (document.body.dataset.mediaview == "y")
+		{
+			document.body.removeChild($("ViewerContainer"));
+			this.container = null;
+			document.removeEventListener("keydown", this.binds, false);
+			document.body.dataset.mediaview = "";
+			clearInterval(this.cursorHideCheckTimer);
+			document.removeEventListener("mousemove", this.cursorShowHandler, false);
+		}
+	},
+	cursorHideCheck: function Viewer_cursorHideCheck()
+	{
+		this.cursorHideCount++;
+		if (this.cursorHideCount == Preference.ViewerCursorHideAt)
+		{
+			this.container.dataset.cursor="hide";
+		}
+	},
+	cursorShow: function Viewer_cursorShow()
+	{
+		this.cursorHideCount = 0;
+		this.container.dataset.cursor="shown";
+	},
+	keyAssign: function Viewer_keyAssign(e)
+	{
+		var p = true;
+		switch(e.keyCode)
+		{
+		case 27:
+			this.leaveViewerMode();
+			break;
+		case 33:	//PageUp
+		case 37:	//←
+			this.prev();
+			break;
+		case 13:	//Enter
+		case 32:	//Sp
+		case 34:	//PageDown
+		case 39:	//→
+			this.next();
+			break;
+		case 35:	//End
+		case 40:	//↓
+			this.last();
+			break;
+		case 36:	//Home
+		case 38:	//↑
+			this.first();
+			break;
+		default:
+			p = false;
+			break;
+		}
+		if (p) e.preventDefault();
+	},
+	_clearContainer: function Viewer__clearContainer()
+	{
+		var nodes = $A(this.container.childNodes);
+		for(var i=0, j=nodes.length; i<j; i++)
+		{
+			this.container.removeChild(nodes[i]);
+		}
+	},
+	home: function Viewer_home()
+	{
+		if(!this.homeCtrl)
+		{
+			var c = document.createElement("DIV");
+			c.id = "viewerHomeCtrl";
+			c.innerHTML = '<span id="viewerHomePlayButton" onclick="Viewer.next();"></span>';
+			this.homeCtrl = c;
+		}
+		var home = this.homeCtrl;
+		home.dataset.images = this._orderd.length;
+		if (home.parentNode) home.parentNode.removeChild(home);
+		this._clearContainer();
+		this.container.appendChild(home);
+		this.index = -1;
+		this.showStatus();
+	},
+	prev: function Viewer_prev()
+	{
+		var index = this.index -1;
+		if (index < 0 ) index = this._orderd.length - 1;
+		this.showImage(this.errorSkipToPrev(index));
+	},
+	next: function Viewer_next()
+	{
+		var index = this.index +1;
+		if (index >= this._orderd.length) index = 0;
+		this.showImage(this.errorSkipToNext(index));
+	},
+	last: function Viewer_last()
+	{
+		this.showImage(this.errorSkipToPrev(this._orderd.length - 1));
+	},
+	first: function Viewer_first()
+	{
+		this.showImage(this.errorSkipToNext(0));
+	},
+	errorSkipToNext: function Viewer_errorSkipToNext(index)
+	{
+		for (var j = this._orderd.length; index < j; index++)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	errorSkipToPrev: function Viewer_errorSkipToPrev(index)
+	{
+		for (; index >= 0; index--)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	showImage: function Viewer_showImage(index)
+	{
+		if ((index < 0) || (index >= this._orderd.length))
+		{
+			this.home();
+		}
+		else
+		{
+			this._clearContainer();
+			this.container.appendChild(this._orderd[index].getElement());
+			this.index = index;
+		}
+		this.showStatus();
+	},
+	getStatus: function Viewer_getStatus()
+	{
+		var total=0, loading=0, loaded=0, error=0;
+		for(var i=0, j=this._orderd.length; i < j ; i++)
+		{
+			total++;
+			var s = this._orderd[i].state;
+			if (s == ViewerEntryState.Loading)
+			{
+				loading++;
+			}
+			else if (s == ViewerEntryState.Loaded)
+			{
+				loaded++;
+			}
+			else if (s == ViewerEntryState.Error)
+			{
+				error++;
+			}
+		}
+		return {total: total, loading: loading, loaded: loaded, error: error, index: this.index};
+	},
+	showStatus: function Viewer_showStatus()
+	{
+		var c = $("viewerState");
+		if (c)
+		{
+			var s = this.getStatus();
+			if (this.index >= 0)
+			{
+				var o = this._orderd[s.index];
+				c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+			}
+			else
+			{
+				c.innerHTML = "{0} Images.".format(s.total);
+			}
+			c.dataset.state="refresh";
+			setTimeout(function(){c.dataset.state="";}, 1);
+		}
+	},
+	show: function Viewer_show()
+	{
+		this.init();
+		this.enterViewerMode();
+		this.home();
+	},
+	close: function Viewer_close()
+	{
+		this.leaveViewerMode();
+	},
+};
+const ViewerEntryState = { PreLoad: 0, Loading: 1, Loaded: 2, Error: -1}
+
+function ViewerEntry(href){ this.init(href); }
+ViewerEntry.prototype = {
+	init: function ViewerEntry_init(href)
+	{
+		this.href = href;
+		this.state = ViewerEntryState.PreLoad;
+		this.relations = new Array();
+	},
+	addRelation: function ViewerEntry_addRelation(no)
+	{
+		if (!this.relations.include(no))
+		{
+			this.relations.push(no);
+			this.relations.sort(function(a,b){return a-b;});
+		}
+	},
+	getElement: function ViewerEntry_getElement()
+	{
+		this.prepare();
+		return this.element;
+	},
+	loaded: function ViewerEntry_loaded(obj)
+	{
+		if (obj.status == "OK")
+		{
+			this.state = ViewerEntryState.Loaded;
+			this.element.src = this.href;
+		}
+		else
+		{
+			this.state = ViewerEntryState.Error;
+			this.element.src = ThreadInfo.Skin + "style/error.png";
+		}
+	},
+	prepare: function ViewerEntry_prepare()
+	{
+		if (this.state == ViewerEntryState.PreLoad)
+		{
+			//console.log("preload request " + this.href);
+			this.element = document.createElement("IMG");
+			this.element.src = ThreadInfo.Skin + "style/loading.gif";
+			this.state = ViewerEntryState.Loading;
+			ImageLoadManager.push(this.href, this.loaded.bind(this));
+		}
+	},
+	release: function ViewerEntry_release()
+	{
+		//console.log("release " + this.href);
+		this.element = null;
+		this.state = ViewerEntryState.PreLoad;
+	},
+	typename: "ViewerEntry",
 };
 
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */

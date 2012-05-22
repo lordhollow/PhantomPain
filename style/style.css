@@ -11,10 +11,6 @@ body
 	background-color:#F8F8F8;
 	overflow-y: scroll;
 }
-body[data-mediaview="y"]
-{
-	overflow-y: auto;
-}
 
 /* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
 div, p, session, article, nav, aside, ul, li, h1, h2, iframe, canvas
@@ -359,7 +355,7 @@ article article
 	position: absolute;
 	border-left: 12px solid rgba(255,255,192,0.95);
 	border-top: 12px solid transparent;
-	z-index: 500;
+	z-index: 2500;
 	left: -10000px;
 	top:  -10000px;
 }
@@ -441,6 +437,107 @@ body[data-express-mode="y"] > #resContainer > article { display: none; }
 body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display: block !important; }
 #fformerr { font-size: 70%; color: red }
 
+/* Viewer */
+body[data-mediaview="y"]
+{
+	overflow-y: hidden;
+}
+#ViewerContainer
+{
+	display: table;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, .8);
+	z-index: 1000;
+}
+#ViewerContainer > div
+{
+	display: table-cell;
+	text-align:center;
+	vertical-align:middle;
+}
+#ViewerContainer > div[data-cursor="hide"]
+{
+	cursor: url("transparent.png"), default;
+}
+	#viewerState
+	{
+		position: absolute;
+		display: block;
+		left: 4px;
+		top: 4px;
+		border: solid 2px #FFF;
+		border-radius: 8px;
+		padding: 4px 4px;
+		background-color: rgba(0,0,0,.5);
+		color: #FFF;
+		font-family: monospace;
+		font-weight: bold;
+
+		-moz-animation: fadeout 2s 1s linear 1;
+		-moz-animation-fill-mode: forwards;
+	}
+	#viewerState[data-state="refresh"]
+	{
+		-moz-animation: none;
+	}
+	#viewerState:hover
+	{
+		-moz-animation: none;
+	}
+	#viewerCloseButton
+	{
+		position: absolute;
+		display: block;
+		right: 4px;
+		top: 4px;
+		width: 16px;
+		height: 16px;
+		opacity: .5;
+		background-image: url("close.png");
+	}
+	#viewerCloseButton:hover
+	{
+		opacity: 1;
+	}
+	#viewerHomeCtrl
+	{
+		border: solid 4px #FFF;
+		border-radius: 24px;
+		background-color: #006;
+		padding: 16px;
+		width: 140px;
+		margin: auto;
+	}
+	#viewerHomeCtrl:after
+	{
+		color: #FFF;
+		font-family: "Arial Black", sans-serif;
+		content: attr(data-images) " Images.";
+	}
+	#viewerHomeCtrl[data-images="0"]:after
+	{
+		content: "No Images.";
+	}
+	#viewerHomePlayButton
+	{
+		display: block;
+		width: 48px;
+		height: 48px;
+		margin: auto;
+		background-image: url("viewerPlay-g.png");
+	}
+	#viewerHomePlayButton:hover
+	{
+		background-image: url("viewerPlay.png");
+	}
+	#viewerHomeCtrl[data-images="0"] > #viewerHomePlayButton:hover
+	{
+		background-image: url("viewerPlay-g.png");
+	}
 /* オーバーレイ */
 .overlay
 {
@@ -482,6 +579,13 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	text-align: left;
 	margin-left: 8px;
 	padding-top: 15em;
+}
+
+/* アニメーションキーフレーム */
+@-moz-keyframes fadeout
+{
+	0% { opacity: 1; }
+	100% { opacity: 0; }
 }
 
 /* */
