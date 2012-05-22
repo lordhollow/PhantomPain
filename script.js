@@ -1297,6 +1297,78 @@ var MessageStructure = {
 		return ret;
 	},
 };
+/* ■URL分析 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function URL(url){ this.init(url); }
+URL.prototype = {
+	init: function URL_init(url)
+	{
+		this.url = url;
+		//bbs2chreader/chaika スレッド表示URL
+		this.isReaderUrl = (this.startWith(ThreadInfo.Server));
+		if(this.isReaderUrl) url = url.substr(ThreadInfo.Server.length);
+		//bbs2chreader/chaika スキン
+		this.isReaderSkinUrl = (this.startWith(ThreadInfo.Skin));
+		if(this.isReaderSkinUrl) url = url.substr(ThreadInfo.Skin.length);
+		//bbs2chreader/chaika 板一覧
+		var readerBoardScheme = "bbs2ch:board:";
+		this.isReaderBoardUrl = (this.startWith(readerBoardScheme));
+		if(this.isReaderBoardUrl) url = url.substr(readerBoardScheme.length);
+		readerBoardScheme = "chaika://board/";
+		this.isReaderBoardUrl = (this.startWith(readerBoardScheme));
+		if(this.isReaderBoardUrl) url = url.substr(readerBoardScheme.length);
+
+		//ドメインとパスの切り分け
+		if (url.match(/http:\/\/([^\/]+)(.+)/i))
+		{
+			this.domain = RegExp.$1;
+			this.path   = RegExp.$2;
+		}
+		
+		//スレッド判定
+		this.maybeThread = url.match(/\/test\/read.cgi\//) ? true : false;
+		
+		//4つ(2chか町BBSか2chのクローンかその他WWWか）に分類
+		if (this.domain.match(/(2ch.net|bbspink.com)$/))
+		{
+			this.type =  "2CH";
+		}
+		else if(this.domain.match(/(machi.to)$/))
+		{
+			this.type = "MACHI";
+		}
+		else if(this.maybeThread)
+		{
+			this.type = "CLONE";
+		}
+		else
+		{
+			this.type = "WWW";
+		}
+		
+		//スレッドなら、板とスレッドと表示範囲の指定を取得
+		if (this.maybeThread)
+		{
+			if (url.match(/\/test\/read.cgi\/([^\/]+)\/([^\/]+)(\/(.+))?/))
+			{
+				this.boardId = RegExp.$1;
+				this.threadId= RegExp.$2;
+				if (RegExp.$4)
+				{
+					this.range = RegExp.$4;
+				}
+				else
+				{
+					this.range = "";
+				}
+			}
+		}
+		console.log(this);
+	},
+	startWith: function URL_startWith(x)
+	{
+		return this.url.substr(0, x.length) == x;
+	},
+};
 
 /* ■外部リンク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 const OUTLINK_NON   = 0;	//outlinkじゃない
