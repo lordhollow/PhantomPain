@@ -25,7 +25,10 @@ div, p, session, article, nav, aside, ul, li, h1, h2, iframe, canvas
 	padding: 0;
 	border: none;
 }
-
+button
+{
+	vertical-align: top;
+}
 /* なんかのコンテナにspan.contentとspan.spaceを入れるとspaceを伸ばして余白を埋める */
 span.content
 {
@@ -73,12 +76,13 @@ span.space
 		.menu li:hover > ul {
 			display: block
 		}
-		.menu img
+		.menu button
 		{
 			width: 16px;
 			height: 16px;
-			cmargin-right: 4px;
 			margin: 0px 1px;
+			border: none;
+			background-color: transparent;
 		}
 
 /* ヘッダのバー */
@@ -427,6 +431,7 @@ article article
 	display: inline;
 	padding: 2px;
 }
+
 /* 検索 */
 .popup[data-finder="y"] { opacity: 0.5; }
 .popup[data-finder="y"]:hover { opacity: 1;}
@@ -499,14 +504,14 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 		width: 20px;
 		height: 20px;
 	}
-	#viewerCtrls > button[name="home"]{ background-image: url("viewer-home.png"); margin-right: 20px;}
-	#viewerCtrls > button[name="first"]{ background-image: url("viewer-first.png"); }
-	#viewerCtrls > button[name="prev"]{ background-image: url("viewer-prev.png"); }
-	#viewerCtrls > button[name="next"]{ background-image: url("viewer-next.png"); }
-	#viewerCtrls > button[name="last"]{ background-image: url("viewer-last.png"); }
-	#viewerCtrls > button[name="auto"]{ background-image: url("viewer-auto.png"); margin-left: 20px; }
-	#viewerCtrls[data-auto="y"] > button[name="auto"]{ background-image: url("viewer-auto-a.png"); }
-	#viewerCtrls > button[name="close"]{ background-image: url("close.png"); margin-left: 20px;}
+	#viewerCtrls > button[name="home"]{  background-image: -moz-image-rect(url(buttons.png), 64, 64, 80, 48); margin-right: 20px;}
+	#viewerCtrls > button[name="first"]{ background-image: -moz-image-rect(url(buttons.png), 64, 48, 80, 32); }
+	#viewerCtrls > button[name="prev"]{  background-image: -moz-image-rect(url(buttons.png), 64,112, 80, 96); }
+	#viewerCtrls > button[name="next"]{  background-image: -moz-image-rect(url(buttons.png), 64, 96, 80, 80); }
+	#viewerCtrls > button[name="last"]{  background-image: -moz-image-rect(url(buttons.png), 64, 80, 80, 64); }
+	#viewerCtrls > button[name="auto"]{  background-image: -moz-image-rect(url(buttons.png), 64, 16, 80,  0); margin-left: 20px; }
+	#viewerCtrls[data-auto="y"] > button[name="auto"]{background-image: -moz-image-rect(url(buttons.png), 64, 32, 80, 16);  }
+	#viewerCtrls > button[name="close"]{ background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); margin-left: 20px;}
 
 #viewerHomeCtrl
 {
@@ -575,6 +580,14 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	border-top: dotted 2px #CCC;
 	text-align: right;
 }
+	#footmenu button
+	{
+		width: 16px;
+		height: 16px;
+		margin: 0px 1px;
+		border: none;
+		background-color: transparent;
+	}
 
 /* フッタ */
 #footer
@@ -594,3 +607,58 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 }
 
 /* */
+
+.icon_template      { background-image: -moz-image-rect(url(buttons.png),  0, 16, 16,  0); }
+.icon_more          { background-image: -moz-image-rect(url(buttons.png),  0, 32, 16, 16); }
+.icon_beginautomore { background-image: -moz-image-rect(url(buttons.png),  0, 48, 16, 32); }
+.icon_endautomore   { background-image: -moz-image-rect(url(buttons.png),  0, 64, 16, 48); }
+.icon_backword      { background-image: -moz-image-rect(url(buttons.png),  0, 80, 16, 64); }
+.icon_gear          { background-image: -moz-image-rect(url(buttons.png),  0, 96, 16, 80); }
+/* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); } */
+/* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,128, 16,112); } */
+
+.icon_bookmark  { background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
+.icon_bookmarkb { background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }
+.icon_bookmarka { background-image: -moz-image-rect(url(buttons.png), 16, 48, 32, 32); }
+.icon_bookmarkn { background-image: -moz-image-rect(url(buttons.png), 16, 64, 32, 48); }
+.icon_close     { background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); }
+.icon_error     { background-image: -moz-image-rect(url(buttons.png), 16, 96, 32, 80); }
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 16,112, 32, 96); } */
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 16,128, 32,112); } */
+
+.icon_new      { background-image: -moz-image-rect(url(buttons.png), 32, 16, 48,  0); }
+.icon_nonew    { background-image: -moz-image-rect(url(buttons.png), 32, 32, 48, 16); }
+.icon_pickup   { background-image: -moz-image-rect(url(buttons.png), 32, 48, 48, 32); }
+.icon_expickup { background-image: -moz-image-rect(url(buttons.png), 32, 64, 48, 48); }
+.icon_nopickup { background-image: -moz-image-rect(url(buttons.png), 32, 80, 48, 64); }
+.icon_bad      { background-image: -moz-image-rect(url(buttons.png), 32, 96, 48, 80); }
+.icon_image    { background-image: -moz-image-rect(url(buttons.png), 32,112, 48, 96); }
+.icon_eximage  { background-image: -moz-image-rect(url(buttons.png), 32,128, 48,112); }
+
+.icon_popupref      { background-image: -moz-image-rect(url(buttons.png), 48, 16, 64,  0); }
+.icon_exref         { background-image: -moz-image-rect(url(buttons.png), 48, 32, 64, 16); }
+.icon_tracking      { background-image: -moz-image-rect(url(buttons.png), 48, 48, 64, 32); }
+.icon_notracking    { background-image: -moz-image-rect(url(buttons.png), 48, 64, 64, 48); }
+.icon_popuptracking { background-image: -moz-image-rect(url(buttons.png), 48, 80, 64, 64); }
+.icon_resto         { background-image: -moz-image-rect(url(buttons.png), 48, 96, 64, 80); }
+.icon_tree          { background-image: -moz-image-rect(url(buttons.png), 48,112, 64, 96); }
+.icon_notree        { background-image: -moz-image-rect(url(buttons.png), 48,128, 64,112); }
+
+.icon_viewauto  { background-image: -moz-image-rect(url(buttons.png), 64, 16, 80,  0); }
+.icon_viewautoa { background-image: -moz-image-rect(url(buttons.png), 64, 32, 80, 16); }
+.icon_viewfirst { background-image: -moz-image-rect(url(buttons.png), 64, 48, 80, 32); }
+.icon_viewhome  { background-image: -moz-image-rect(url(buttons.png), 64, 64, 80, 48); }
+.icon_viewlast  { background-image: -moz-image-rect(url(buttons.png), 64, 80, 80, 64); }
+.icon_viewnext  { background-image: -moz-image-rect(url(buttons.png), 64, 96, 80, 80); }
+.icon_viewprev  { background-image: -moz-image-rect(url(buttons.png), 64,112, 80, 96); }
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 64,128, 80,112); } */
+
+.icon_write     { background-image: -moz-image-rect(url(buttons.png), 80, 16, 96,  0); }
+.icon_config    { background-image: -moz-image-rect(url(buttons.png), 80, 32, 96, 16); }
+.icon_find      { background-image: -moz-image-rect(url(buttons.png), 80, 48, 96, 32); }
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 64, 96, 48); } */
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 80, 96, 64); } */
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); } */
+/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80,112, 96, 96); } */
+/* .icon_blank   { background-image: -moz-image-rect(url(buttons.png), 80,128, 96,112); } */
+

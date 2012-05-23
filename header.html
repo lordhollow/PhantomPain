@@ -42,79 +42,80 @@ CommonPref.setIdentifier("<THREADURL/>");
 </h1>
 <div id="ctrlbox" class="menu">
 	<ul>
-	<li><img src="style/about.png" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></li>
-	<li id="Menu.Bookmark" title="しおりあり(クリックでジャンプ)" onclick="Menu.JumpToBookmark();">
-		<img src="style/bookmark.png" title="しおりあり(クリックでジャンプ)" class="bmon" onclick="Menu.JumpToBookmark();">
-		<img src="style/bookmark-g.png" title="しおりなし" class="bmoff">
-		<img src="style/bookmark-b.png" title="しおりあり([表示範囲以前]クリックで読み込んでジャンプ)" class="bmbefore" onclick="Menu.JumpToBookmark();">
-		<img src="style/bookmark-a.png" title="しおりあり([表示範囲以降]クリックで読み込んでジャンプ)" class="bmafter"  onclick="Menu.JumpToBookmark();">
+	<li><button class="icon_template" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></button></li>
+	<li id="Menu.Bookmark">
+		<button class="bmon     icon_bookmark" title="しおりあり(クリックでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
+		<button class="bmoff    icon_bookmarkn" title="しおりなし"></button>
+		<button class="bmbefore icon_bookmarkb" title="しおりあり([表示範囲以前]クリックで読み込んでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
+		<button class="bmafter  icon_bookmarka" title="しおりあり([表示範囲以降]クリックで読み込んでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
 		<ul>
-		<li><img src="style/bookmark-g.png" title="しおり解除" class="bmon" onclick="Menu.ResetBookmark();"></li>
+		<li><button class="bmon     icon_bookmarkn" title="しおり解除" onclick="Menu.ResetBookmark();"></button></li>
 		</ul>
 	</li>
 	<li id="Menu.Pickup">
-		<img src="style/pickup.png" title="Pickup" class="pickon" onclick="Menu.PopupPickups();">
-		<img src="style/pickup-g.png" title="Pickup" class="pickoff">
+		<button class="pickon icon_pickup" title="Pickup" onclick="Menu.PopupPickups();"/></button>
+		<button class="pickoff icon_nopickup" title="Pickup"></button>
 		<ul>
-		<li><img src="style/pickup-extract.png" title="ピックアップ抽出"></li>
+		<li><button class="pickoff icon_expickup" title="Pickup抽出"></button></li>
 		</ul>
 	</li>
-	<li><img src="style/find.png" title="抽出" onclick="Menu.ToggleFinder();" id="Menu.Finder"></li>
-	<li><img src="style/picture.png" title="展開か閲覧">
+	<li><button class="icon_find" title="抽出" onclick="Menu.ToggleFinder();" id="Menu.Finder"></button></li>
+	<li><button class="icon_image" title="画像展開か閲覧"></button>
 		<ul>
-		<li><img src="style/picture.png" title="画像展開" onclick="Menu.PreviewOutlinks();"></li>
-		<li><img src="style/picture-extract.png" title="画像閲覧" onclick="Menu.ShowViewer();"></li>
+		<li><button class="icon_image" title="画像展開" onclick="Menu.PreviewOutlinks();"></button></li>
+		<li><button class="icon_eximage" title="画像閲覧" onclick="Menu.ShowViewer();"></button></li>
 		</ul>
 	</li>
 	<li class="automoreoff">
-		<img src="style/more.png" title="More" onclick="Menu.More();">
+		<button class="icon_more" title="More" onclick="Menu.More();"></button>
 		<ul>
-		<li><img src="style/moreback.png" title="MoreBack" onclick="Menu.MoreBack();"></li>
-		<li><img src="style/automore.png" title="AutoMore" onclick="Menu.BeginAutoMore();"></li>
+		<li><button class="icon_backword" title="MoreBack" onclick="Menu.MoreBack();"></button></li>
+		<li><button class="icon_beginautomore" title="AutoMore" onclick="Menu.BeginAutoMore();"></button></li>
 		</ul>
 	</li>
 	<li class="automoreon">
-		<img src="style/automore.png" title="AutoMore" onclick="Menu.EndAutoMore();">
+		<button class="icon_endautomore" title="AutoMore" onclick="Menu.EndAutoMore();"></button>
 	</li>
 	<li>
-		<img src="style/new.png" title="新着あり(クリックでジャンプ)" onclick="Menu.JumpToNewMark();" class="nron">
-		<img src="style/new-g.png" title="新着なし" class="nroff">
+		<button class="nron  icon_new" title="新着あり(クリックでジャンプ)" onclick="Menu.JumpToNewMark();"></button>
+		<button class="nroff icon_nonew" title="新着なし"></button>
 	</li>
-	<li><a href="bbs2ch:post:<THREADURL/>" id="wa"><img src="style/write.png" title="書き込み"></a></li>
-	<li><img src="style/config.png" title="設定"></li>
+	<li><a href="bbs2ch:post:<THREADURL/>" id="wa"><button class="icon_write" title="書き込み"></button></a></li>
+	<li><button class="icon_config" title="設定"></button></li>
 	</ul>
 </div><!-- ctrlbox -->
 </div><!-- headBar -->
 <div id="resMenu" class="menu">
 	<ul>
-	<li><img src="style/reply.png" title="ResTo" onclick="MessageMenu.ResTo(event);"></li>
-	<li class="resto"><img src="style/replies.png" title="逆参照" onclick="MessageMenu.PopupRef(event);" id="RMenu.Ref">
+	<li><button class="icon_resto" title="ResTo" onclick="MessageMenu.ResTo(event);"></button></li>
+	<li class="resto"><button class="icon_popupref" title="逆参照" onclick="MessageMenu.PopupRef(event);" id="RMenu.Ref"></button>
 		<ul>
 		<li>
-			<img src="style/tree.png" title="逆参構築" onclick="MessageMenu.CreateRefTree(event);" class="treeon">
-			<img src="style/tree-g.png" title="逆参解体" onclick="MessageMenu.DeleteRefTree(event);" class="treeoff">
+			<button class="treeon  icon_tree" title="逆参構築" onclick="MessageMenu.CreateRefTree(event);"></button>
+			<button class="treeoff icon_notree" title="逆参解体" onclick="MessageMenu.DeleteRefTree(event);"></button>
 		</li>
-		<li><img src="style/replies-extract.png" title="逆参抽出" onclick="MessageMenu.ExtractRef(event);"></li>
+		<li><button class="treeon icon_exref" title="逆参抽出" onclick="MessageMenu.ExtractRef(event);"></button></li>
 		</ul>
 	</li>
 	<li>
-		<img src="style/track-g.png" title="追跡対象外(クリックで追跡開始)" class="trackon" onclick="MessageMenu.BeginTracking(event);">
-		<img src="style/track.png" title="追跡中(クリックで解除)" class="trackoff" onclick="MessageMenu.EndTracking(event);">
+		<button class="trackon  icon_notracking" title="追跡対象外(クリックで追跡開始)"onclick="MessageMenu.BeginTracking(event);"></button>
+		<button class="trackoff icon_tracking" title="追跡中(クリックで解除)" onclick="MessageMenu.EndTracking(event);"></button>
 		<ul>
-		<li><img src="style/track-p.png" title="追跡項目ポップアップ" class="trackpop" id="RMenu.TrPop" onclick="MessageMenu.PopupTracked(event);"></li>
+		<li>
+			<button class="trackpop icon_popuptracking" title="追跡項目ポップアップ" id="RMenu.TrPop" onclick="MessageMenu.PopupTracked(event);"></button></li>
 		</ul>
 	</li>
 	<li>
-		<img src="style/bookmark-g.png" title="しおりを挟む" onclick="MessageMenu.SetBookmark(event);" class="bmoff">
-		<img src="style/bookmark.png" title="しおり(クリックで除去)" onclick="MessageMenu.ResetBookmark(event);" class="bmon">
+		<button class="bmoff icon_bookmarkn" title="しおりを挟む" onclick="MessageMenu.SetBookmark(event);"></button>
+		<button class="bmon icon_bookmark" title="しおり(クリックで除去)" onclick="MessageMenu.ResetBookmark(event);"></button>
 	</li>
 	<li>
-		<img src="style/pickup-g.png" title="Pickup" onclick="MessageMenu.SetPickup(event);" class="pickoff">
-		<img src="style/pickup.png" title="Pickup" onclick="MessageMenu.ResetPickup(event);" class="pickon">
+		<button class="pickoff icon_nopickup" title="Pickup" onclick="MessageMenu.SetPickup(event);"></button>
+		<button class="pickon icon_pickup" title="Pickup" onclick="MessageMenu.ResetPickup(event);"></button>
 	</li>
 	<!--<li><img src="style/hide.png" title="非表示" onclick="MessageMenu.ToggleHiding(event);"></li>-->
-	<li class="imgon"><img src="style/picture.png" title="画像展開" onclick="MessageMenu.ExtractImages(event);"></li>
-	<li><img src="style/updown.png" title="ギア" onclick="MessageMenu.BeginGear(event);" id="RMenu.Gear"></li>
+	<li class="imgon"><button class="icon_image" title="画像展開" onclick="MessageMenu.ExtractImages(event);"></button></li>
+	<li><button class="icon_gear" title="ギア" onclick="MessageMenu.BeginGear(event);" id="RMenu.Gear"></button></li>
 	</ul>
 </div><!-- resMenu -->
 <div id="popupContainer"></div>
