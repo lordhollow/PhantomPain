@@ -1,7 +1,9 @@
 /*
 	z-index:
-		#headBar	1000
-		.popup		500
+		#headBar         1000
+		#ViewerContainer 1000
+		.popup           1250
+		.overlay         1500
 */
 
 body
@@ -359,7 +361,7 @@ article article
 	position: absolute;
 	border-left: 12px solid rgba(255,255,192,0.95);
 	border-top: 12px solid transparent;
-	z-index: 2500;
+	z-index: 1250;
 	left: -10000px;
 	top:  -10000px;
 }
