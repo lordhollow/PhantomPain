@@ -612,7 +612,7 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 .icon_more          { background-image: -moz-image-rect(url(buttons.png),  0, 32, 16, 16); }
 .icon_beginautomore { background-image: -moz-image-rect(url(buttons.png),  0, 48, 16, 32); }
 .icon_endautomore   { background-image: -moz-image-rect(url(buttons.png),  0, 64, 16, 48); }
-.icon_backword      { background-image: -moz-image-rect(url(buttons.png),  0, 80, 16, 64); }
+.icon_backward      { background-image: -moz-image-rect(url(buttons.png),  0, 80, 16, 64); }
 .icon_gear          { background-image: -moz-image-rect(url(buttons.png),  0, 96, 16, 80); }
 /* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); } */
 /* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,128, 16,112); } */
