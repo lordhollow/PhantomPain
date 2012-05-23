@@ -17,6 +17,8 @@ var Preference =
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
 	SlideshowInterval: 5,		//スライドショーの間隔(秒)
+	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
+	LoadForwardOnBottomWheel: true,	//一番下で下にスクロールしようとするとロードが掛かる
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -522,7 +524,7 @@ var Menu = {
 		if (max <min) max=min;
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
-		MessageUtil.focus(min);
+		MessageUtil.focus(max);
 	},
 	BeginAutoMore: function Menu_BeginAutoMore()
 	{
@@ -2503,6 +2505,43 @@ function init()
 	
 	var dt2 = new Date();
 	console.log("init() spend {0} ms.".format(dt2-dt1));
+	
+	//これどっか別のところに移したい ＆ 定数を設定値化したい
+	if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)
+	{
+		var wc = 0;
+		document.body.addEventListener("DOMMouseScroll", function(e)
+		{
+			//console.log("{0}, {1}, {2} ".format(window.scrollY, document.body.offsetHeight, document.body.offsetHeight - window.innerHeight));
+			if (Preference.LoadBackwardOnTopWheel 
+				&& (window.scrollY == 0)
+				&& (e.detail < 0)
+				&& (ThreadMessages.deployedMin != 1))
+			{
+				if (--wc < -10)
+				{
+					wc = 0;
+					Menu.MoreBack();
+				}
+			}
+			else if (Preference.LoadForwardOnBottomWheel
+				 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
+				 && (e.detail > 0)
+				 && (ThreadMessages.deployedMax != ThreadInfo.Total))
+			{
+				if (++wc > 10)
+				{
+					wc = 0;
+					Menu.More();
+				}
+			}
+			else
+			{
+				wc = 0;
+			}
+			console.log(wc);
+		},false);
+	}
 };
 
 //簡易版string.format。置換しかできない。
