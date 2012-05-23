@@ -521,28 +521,28 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	{
 		color: #FFF;
 		font-family: "Arial Black", sans-serif;
-		content: attr(data-images) " Images.";
+		content: attr(data-images) "Images.";
 	}
 	#viewerHomeCtrl[data-images="0"]:after
 	{
-		content: "No Images.";
+		content: "NoImages.";
 	}
-	#viewerHomePlayButton
+	#viewerHomeCtrl>button
 	{
-		display: block;
 		width: 48px;
 		height: 48px;
+		border: none;
 		margin: auto;
-		background-image: url("viewerPlay-g.png");
+		background-color: transparent;
 	}
-	#viewerHomePlayButton:hover
-	{
-		background-image: url("viewerPlay.png");
-	}
-	#viewerHomeCtrl[data-images="0"] > #viewerHomePlayButton:hover
-	{
-		background-image: url("viewerPlay-g.png");
-	}
+	#viewerHomeCtrl>button[name="play"] { background-image: url("viewerPlay-g.png"); }
+	#viewerHomeCtrl>button[name="play"]:hover { background-image: url("viewerPlay.png"); }
+	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerPlay-g.png"); }
+
+	#viewerHomeCtrl>button[name="auto"] { background-image: url("viewerAutoPlay-g.png"); margin-left: 8px; }
+	#viewerHomeCtrl>button[name="auto"]:hover { background-image: url("viewerAutoPlay.png"); }
+	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerAutoPlay-g.png"); }
+
 /* オーバーレイ */
 .overlay
 {

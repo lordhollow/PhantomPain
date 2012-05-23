@@ -2155,11 +2155,12 @@ var Viewer = {
 	},
 	home: function Viewer_home()
 	{
+		this.endSlideshow();
 		if(!this.homeCtrl)
 		{
 			var c = document.createElement("DIV");
 			c.id = "viewerHomeCtrl";
-			c.innerHTML = '<span id="viewerHomePlayButton" onclick="Viewer.next();"></span>';
+			c.innerHTML = '<button name="play" onclick="Viewer.next();return false;"><button name="auto" onclick="Viewer.beginSlideshow();return false;">';
 			this.homeCtrl = c;
 		}
 		var home = this.homeCtrl;
