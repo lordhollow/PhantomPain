@@ -16,6 +16,7 @@ var Preference =
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
+	SlideshowInterval: 5,		//スライドショーの間隔(秒)
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -2029,6 +2030,7 @@ var Viewer = {
 	_orderd: null,
 	init: function Viewer_init()
 	{
+		this.auto = false;
 		//表示範囲だけが対象なので・・・
 		this._entries = new Array();
 		this._orderd  = new Array();
@@ -2186,9 +2188,39 @@ var Viewer = {
 	},
 	toggleAuto: function Viewer_toggleAuto()
 	{
-		this.auto = !this.auto;
-		//TODO>タイマー割り込みの開始
-		$("viewerCtrls").dataset.auto = this.auto ? "y" : "";
+		return this.auto ? this.endSlideshow() : this.beginSlideshow();
+	},
+	beginSlideshow: function Viewer_beginSlideshow()
+	{
+		if (!this.auto)
+		{
+			this.auto = true;
+			this.slideshowTick = 0;
+			if (this.index < 0) this.first();
+			this.slideshowTimer = setInterval(this.slideshowUpdate.bind(this), 250);
+		}
+		$("viewerCtrls").dataset.auto = "y";
+		return this.auto;
+	},
+	endSlideshow: function Viewer_endSlideshow()
+	{
+		if (this.auto)
+		{
+			this.auto = false;
+			this.slideshowTick = 0;
+			clearInterval(this.slideshowTimer);
+		}
+		$("viewerCtrls").dataset.auto = "";
+		return this.auto;
+	},
+	slideshowUpdate: function Viewer_slideshowUpdate()
+	{
+		this.slideshowTick += 0.25;
+		if (this.slideshowTick >= Preference.SlideshowInterval)
+		{
+			this.next();
+			this.slideshowTick = 0;
+		}
 	},
 	errorSkipToNext: function Viewer_errorSkipToNext(index)
 	{
@@ -2224,6 +2256,7 @@ var Viewer = {
 			this.container.appendChild(this._orderd[index].getElement());
 			this.index = index;
 		}
+		if (this.auto) this.slideshowTick = 0;	//スライドショー中に任意で飛ばしたらそこから計測
 		this.showStatus();
 	},
 	getStatus: function Viewer_getStatus()
@@ -2276,6 +2309,7 @@ var Viewer = {
 	},
 	close: function Viewer_close()
 	{
+		this.endSlideshow();
 		this.leaveViewerMode();
 	},
 };
