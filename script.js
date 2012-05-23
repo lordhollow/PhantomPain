@@ -2539,7 +2539,6 @@ function init()
 			{
 				wc = 0;
 			}
-			console.log(wc);
 		},false);
 	}
 };
