@@ -11,6 +11,10 @@ body
 	background-color:#F8F8F8;
 	overflow-y: scroll;
 }
+body[data-contents-overlay="y"]
+{
+	overflow-y: hidden;
+}
 
 /* 面倒なので使うブロック要素のデフォルトは全部マージンもパディングも0 */
 div, p, session, article, nav, aside, ul, li, h1, h2, iframe, canvas
@@ -438,10 +442,6 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 #fformerr { font-size: 70%; color: red }
 
 /* Viewer */
-body[data-mediaview="y"]
-{
-	overflow-y: hidden;
-}
 #ViewerContainer
 {
 	display: table;

@@ -1794,7 +1794,8 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnCl
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
 	ov.innerHTML = '<div><img src="{0}" class="ovlImg" style="max-height:{1}px; max-width:{2}px;margin:{3}px"></div>'.format(this.src, window.innerHeight-4, window.innerWidth-2,2);
-	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
+	document.body.dataset.contentsOverlay = "y";
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = "";}, false);
 	ov.addEventListener("DOMMouseScroll", function(e){ e.preventDefault(); } , false);
 	document.body.appendChild(ov);
 }
@@ -1811,8 +1812,9 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 {
 	var ov = document.createElement("DIV");
 	ov.className="overlay";
-	ov.innerHTML = '<div><iframe src="{0}"></div>'.format(this.rel);
-	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); }, false);
+	ov.innerHTML = '<div><iframe src="{0}" style="height:{1}px"></div>'.format(this.rel, window.innerHeight-32);
+	document.body.dataset.contentsOverlay = "y";
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = ""; }, false);
 	document.body.appendChild(ov);
 }
 
@@ -2076,6 +2078,7 @@ var Viewer = {
 			c.appendChild(cc);
 			document.body.appendChild(c);
 			document.body.dataset.mediaview = "y";
+			document.body.dataset.contentsOverlay = "y";
 			this.binds = this.keyAssign.bind(this);
 			document.addEventListener("keydown", this.binds,false);
 			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
@@ -2092,6 +2095,7 @@ var Viewer = {
 			this.container = null;
 			document.removeEventListener("keydown", this.binds, false);
 			document.body.dataset.mediaview = "";
+			document.body.dataset.contentsOverlay = "";
 			clearInterval(this.cursorHideCheckTimer);
 			document.removeEventListener("mousemove", this.cursorShowHandler, false);
 		}
