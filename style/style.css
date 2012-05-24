@@ -408,7 +408,7 @@ article article
 /* ギアモーポップアップ */
 .popup[data-gearmode="y"]
 {
-	border: none;
+	border-left-color: #CFF;
 }
 .popup[data-gearmode="y"] > div
 {

@@ -8,7 +8,7 @@ var Preference =
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
-	TemplateLength: 6,			//テンプレポップアップで表示するレスの数
+	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
 	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
 	PopupOffsetY: 16,			//ポップアップのオフセット
 	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
@@ -311,7 +311,12 @@ var EventHandlers = {
 	LoadOnWheelDelta: 0,
 	mouseWheel: function EventHandlers_mouseWheel(e)
 	{
-		if (this.mode=="thread")
+		if (e.target.enchantedGear)
+		{
+			e.target.enchantedGear.step(e.detail < 0 ? -1 : 1);
+			e.preventDefault();
+		}
+		else if (this.mode=="thread")
 		{
 			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
 		}
@@ -572,14 +577,31 @@ var MessageMenu = {
 
 var Menu = {
 
-	PopupTemplate: function Menu_PopupTemplate()
+	PopupTemplate: function Menu_PopupTemplate(e)
 	{
-		var pp = new ResPopup(null);
-		pp.offsetX = 8; pp.offsetY = 16;
-		MessageLoader.load(1, Preference.TemplateLength);
-		var tids = [];
-		for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-		pp.popupNumbers(tids, Util.getElementPagePos($("Menu.Template")), true);
+		if (!e) e = $("Menu.Template");
+		if (Preference.TemplateLength)
+		{
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
+			MessageLoader.load(1, Preference.TemplateLength);
+			var tids = [];
+			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+			pp.popupNumbers(tids, Util.getElementPagePos(e), true);
+		}
+		else 
+		{	//TemplateLength = 0設定時はギアとして出す
+			if (e.enchantedGear)
+			{
+				e.enchantedGear.close();
+			}
+			else
+			{
+				var pp = new GearPopup(e);
+				pp.offsetX = 8; pp.offsetY = 16;
+				pp.showPopup(1, Util.getElementPagePos(e), true);
+			}
+		}
 	},
 	
 	JumpToNewMark: function Menu_JumpToNewMark()
@@ -2028,6 +2050,50 @@ ResPopup.prototype = new Popup();
 		this.show(innerContainer, pos, fixed);
 	};
 
+function GearPopup(enchantElement) { this.init(enchantElement); }
+GearPopup.prototype = new Popup();
+	GearPopup.prototype.init = function GearPopup_init(enchantElement)
+	{
+		this.content = document.createElement("DIV");
+		enchantElement.dataset.gearEnchanted = "y";
+		enchantElement.enchantedGear = this;
+		this.onClose = function()
+		{
+			enchantElement.dataset.gearEnchanted = "y";
+			enchantElement.enchantedGear = null;
+		};
+	};
+	GearPopup.prototype.showPopup = function GearPopup_showPopup(no, pos, fixed)
+	{
+		var n = this.getNode(no);
+		this.content.appendChild(n);
+		this.pos = pos;
+		this.show(this.content, pos, fixed);
+		var c = this.container;
+		c.dataset.gearmode = "y";
+	};
+	GearPopup.prototype.step = function GearPopup_step(cnt)
+	{
+		if (this.stepping) return;
+		this.stepping = true;
+		var n = this.getNode(this.no + cnt);
+		if (n)
+		{
+			this.content.innerHTML = "";
+			this.content.appendChild(n);
+			this.adjust(this.pos);
+		}
+		this.stepping = false;
+	};
+	GearPopup.prototype.getNode = function GearPopup_getNode(no)
+	{
+		if (no < 1) no = 1;
+		if (no > ThreadInfo.Total) no = ThreadInfo.Total;
+		MessageLoader.load(no, no);
+		this.no = no;
+		return ThreadMessages.getNode(no, true);
+	};
+
 /* ■検索・抽出 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Finder = {
 	
@@ -2472,6 +2538,12 @@ var Util = {
 		if (e.tagName == tagName) return e;
 		if (e.parentNode  == null) return null;
 		return this.getDecendantNode(e.parentNode, tagName);
+	},
+	getDecendantNodeByX: function Util_getDecendantNodeByX(e, x, v)
+	{	//特定プロパティの値を持つ親を帰す。
+		if (e[x] == v) return e;
+		if (e.parentNode == null) return null;
+		return this.getDecendantNodeByX(e.parentNode, v);
 	},
 	getElementPagePos: function Util_getElementPagePos(e)
 	{	//要素の絶対座標を求める
