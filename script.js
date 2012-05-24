@@ -181,6 +181,7 @@ var EventHandlers = {
 		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
+		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
 	},
 	enter: function EventHandlers_enter(mode)
 	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
@@ -202,6 +203,10 @@ var EventHandlers = {
 			p = this.invokeViewerKeyHandler(e);
 		}
 		if (p) e.preventDefault();
+	},
+	invokeThreadKeyHandler: function EventHandlers_invokeThreadKeyHandler(e)
+	{
+		return false;
 	},
 	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
 	{
@@ -301,6 +306,43 @@ var EventHandlers = {
 		if(cancel){
 			aEvent.preventDefault();
 			aEvent.stopPropagation();
+		}
+	},
+	LoadOnWheelDelta: 0,
+	mouseWheel: function EventHandlers_mouseWheel(e)
+	{
+		if (this.mode=="thread")
+		{
+			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
+		}
+	},
+	resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
+	{
+		if (Preference.LoadBackwardOnTopWheel 
+			&& (window.scrollY == 0)
+			&& (e.detail < 0)
+			&& (ThreadMessages.deployedMin != 1))
+		{
+			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				Menu.MoreBack();
+			}
+		}
+		else if (Preference.LoadForwardOnBottomWheel
+			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
+			 && (e.detail > 0)
+			 && (ThreadMessages.deployedMax != ThreadInfo.Total))
+		{
+			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				Menu.More();
+			}
+		}
+		else
+		{
+			this.LoadOnWheelDelta = 0;
 		}
 	},
 	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
@@ -2530,42 +2572,6 @@ function init()
 	
 	var dt2 = new Date();
 	console.log("init() spend {0} ms.".format(dt2-dt1));
-	
-	//これどっか別のところに移したい
-	if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)
-	{
-		var wc = 0;
-		document.body.addEventListener("DOMMouseScroll", function(e)
-		{
-			//console.log("{0}, {1}, {2} ".format(window.scrollY, document.body.offsetHeight, document.body.offsetHeight - window.innerHeight));
-			if (Preference.LoadBackwardOnTopWheel 
-				&& (window.scrollY == 0)
-				&& (e.detail < 0)
-				&& (ThreadMessages.deployedMin != 1))
-			{
-				if (--wc < -Preference.LoadOnWheelDelta)
-				{
-					wc = 0;
-					Menu.MoreBack();
-				}
-			}
-			else if (Preference.LoadForwardOnBottomWheel
-				 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
-				 && (e.detail > 0)
-				 && (ThreadMessages.deployedMax != ThreadInfo.Total))
-			{
-				if (++wc > Preference.LoadOnWheelDelta)
-				{
-					wc = 0;
-					Menu.More();
-				}
-			}
-			else
-			{
-				wc = 0;
-			}
-		},false);
-	}
 };
 
 //簡易版string.format。置換しかできない。
