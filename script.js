@@ -2260,7 +2260,10 @@ var Viewer = {
 		else
 		{
 			this._clearContainer();
-			this.container.appendChild(this._orderd[index].getElement());
+			var e = this._orderd[index].getElement();
+			e.style.maxHeight = window.innerHeight + "px";
+			e.style.maxWidth  = window.innerWidth + "px";
+			this.container.appendChild(e);
 			this.index = index;
 		}
 		if (this.auto) this.slideshowTick = 0;	//スライドショー中に任意で飛ばしたらそこから計測
