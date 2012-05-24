@@ -176,9 +176,63 @@ var EventHandlers = {
 	//ひとつしかないものは、HTMLやらにnodeに直接登録してしまえばOK。
 	init: function EventHandlers_init()
 	{
+		this.mode = "thread";
+		document.addEventListener("keydown", this.keydown.bind(this),false);
 		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
+	},
+	enter: function EventHandlers_enter(mode)
+	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
+		this.mode = mode;
+	},
+	leave: function EventHandlers_leave(mode)
+	{
+		this.mode = "thread";
+	},
+	keydown: function EventHandlers_keydown(e)
+	{	//本当はkeydownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
+		var p = true;
+		if (this.mode == "thread")
+		{
+			p = this.invokeThreadKeyHandler(e);
+		}
+		else if (this.mode == "viewer")
+		{
+			p = this.invokeViewerKeyHandler(e);
+		}
+		if (p) e.preventDefault();
+	},
+	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
+	{
+		switch(e.keyCode)
+		{
+		case 27:
+			Viewer.leaveViewerMode();
+			break;
+		case 33:	//PageUp
+		case 37:	//←
+			Viewer.prev();
+			break;
+		case 13:	//Enter
+		case 32:	//Sp
+		case 34:	//PageDown
+		case 39:	//→
+			Viewer.next();
+			break;
+		case 35:	//End
+		case 40:	//↓
+			Viewer.last();
+			break;
+		case 36:	//Home
+		case 38:	//↑
+			Viewer.first();
+			break;
+		default:
+			return false;
+			break;
+		}
+		return true;
 	},
 	mouseOver: function EventHandlers_mouseOver(aEvent)
 	{
@@ -2082,8 +2136,7 @@ var Viewer = {
 			document.body.appendChild(c);
 			document.body.dataset.mediaview = "y";
 			document.body.dataset.contentsOverlay = "y";
-			this.binds = this.keyAssign.bind(this);
-			document.addEventListener("keydown", this.binds,false);
+			EventHandlers.enter("viewer");
 			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
 			this.cursorShowHandler = this.cursorShow.bind(this);
 			document.addEventListener("mousemove", this.cursorShowHandler, false);
@@ -2096,7 +2149,7 @@ var Viewer = {
 		{
 			document.body.removeChild($("ViewerContainer"));
 			this.container = null;
-			document.removeEventListener("keydown", this.binds, false);
+			EventHandlers.leave("viewer");
 			document.body.dataset.mediaview = "";
 			document.body.dataset.contentsOverlay = "";
 			clearInterval(this.cursorHideCheckTimer);
@@ -2115,38 +2168,6 @@ var Viewer = {
 	{
 		this.cursorHideCount = 0;
 		this.container.dataset.cursor="shown";
-	},
-	keyAssign: function Viewer_keyAssign(e)
-	{
-		var p = true;
-		switch(e.keyCode)
-		{
-		case 27:
-			this.leaveViewerMode();
-			break;
-		case 33:	//PageUp
-		case 37:	//←
-			this.prev();
-			break;
-		case 13:	//Enter
-		case 32:	//Sp
-		case 34:	//PageDown
-		case 39:	//→
-			this.next();
-			break;
-		case 35:	//End
-		case 40:	//↓
-			this.last();
-			break;
-		case 36:	//Home
-		case 38:	//↑
-			this.first();
-			break;
-		default:
-			p = false;
-			break;
-		}
-		if (p) e.preventDefault();
 	},
 	_clearContainer: function Viewer__clearContainer()
 	{
