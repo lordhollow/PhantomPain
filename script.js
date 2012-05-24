@@ -19,6 +19,7 @@ var Preference =
 	SlideshowInterval: 5,		//スライドショーの間隔(秒)
 	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
 	LoadForwardOnBottomWheel: true,	//一番下で下にスクロールしようとするとロードが掛かる
+	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -2509,7 +2510,7 @@ function init()
 	var dt2 = new Date();
 	console.log("init() spend {0} ms.".format(dt2-dt1));
 	
-	//これどっか別のところに移したい ＆ 定数を設定値化したい
+	//これどっか別のところに移したい
 	if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)
 	{
 		var wc = 0;
@@ -2521,7 +2522,7 @@ function init()
 				&& (e.detail < 0)
 				&& (ThreadMessages.deployedMin != 1))
 			{
-				if (--wc < -10)
+				if (--wc < -Preference.LoadOnWheelDelta)
 				{
 					wc = 0;
 					Menu.MoreBack();
@@ -2532,7 +2533,7 @@ function init()
 				 && (e.detail > 0)
 				 && (ThreadMessages.deployedMax != ThreadInfo.Total))
 			{
-				if (++wc > 10)
+				if (++wc > Preference.LoadOnWheelDelta)
 				{
 					wc = 0;
 					Menu.More();
