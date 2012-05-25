@@ -311,6 +311,25 @@ var EventHandlers = {
 	LoadOnWheelDelta: 0,
 	mouseWheel: function EventHandlers_mouseWheel(e)
 	{
+		if (e.target.id == "RMenu_Gear")
+		{
+			if (e.target.enchantedGear)
+			{
+				if (e.target.enchantedGear.origin != parseInt(MessageMenu._menu.dataset.binding))
+				{	//adjust
+					e.target.enchantedGear.changePos(Util.getElementPagePos(e.target));
+					e.target.enchantedGear.changeOrigin(parseInt(MessageMenu._menu.dataset.binding));
+					e.preventDefault();
+					return;
+				}
+			}
+			else
+			{
+				MessageMenu.BeginGear();
+				e.preventDefault();
+				return;
+			}
+		}
 		var t = Util.getDecendantNodeByData(e.target, "gearEnchanted", "y");
 		if (t)
 		{
@@ -403,8 +422,6 @@ var MessageMenu = {
 	init: function MessageMenu_init()
 	{
 		this._menu = $("resMenu");
-		$("RMenu.Gear").addEventListener("DOMMouseScroll",this.GearWheel.bind(this),false);
-		
 		this._menu.parentNode.removeChild(this._menu);	//これあったほうが安心感がある
 	},
 
@@ -414,13 +431,11 @@ var MessageMenu = {
 		if (m == null) return;	//レスメニューなし
 		if (node == m.parentNode) return;	//同じとこに割り当て→無視
 		if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
-		this.gearNode = null;
 		this.popTrack = null;
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
 			node.insertBefore(m, node.childNodes[1]);
-			//pickup, bookmark, hiding状態の反映 → Bookmark, Pickup, Hiding,Trackでdatasetに設定、CSSで反映
 		}
 		else
 		{
@@ -526,42 +541,17 @@ var MessageMenu = {
 	},
 	BeginGear: function MessageMenu_BeginGear(event)
 	{
-		if (this.gearNode)
-		{	//今のところ表示に戻す？
-			return;
-		}
-		var pp = new ResPopup(null);
-		pp.offsetX = 8; pp.offsetY = 16; pp.offsetXe = 20;
-		pp.popupNumbers([this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Gear")) , false);
-		pp.onClose = (function(p){this.gearNode = null;}).bind(this);
-		var c = pp.container;
-		c.dataset.gearmode = "y";
-		this.gearNode = c.childNodes[0];
-		this.gearPopup = pp;
-	},
-	_csGearWheel: false,
-	GearWheel: function MessageMenu_GearWheel(event)
-	{
-		event.preventDefault();
-		if (this._csGearWheel) return;
-		this._csGearWheel = true;	//超簡易クリティカルセクション。javascriptはシングルスレッドなのでこれでOK。このオブジェクトはworkerに突っ込めないしね！
+		var e = $("RMenu_Gear");
+		if (e.enchantedGear)
 		{
-			if (this.gearNode == null)
-			{	//TODO::もしかして必ずしも自動開始したくないかも？
-				this.BeginGear(event);
-			}
-			var id = parseInt(this.gearNode.firstChild.dataset.no);
-			id += (event.detail < 0 ) ? -1 : +1;
-			MessageLoader.load(id,id);	//ろーど
-			var n = ThreadMessages.getNode(id, true);
-			if (n != null)
-			{
-				this.gearNode.innerHTML = "";
-				this.gearNode.appendChild(n);
-				this.gearPopup.adjust(Util.getElementPagePos($("RMenu.Gear")));
-			}
+			e.enchantedGear.close();
 		}
-		this._csGearWheel = false;
+		else
+		{
+			var pp = new GearPopup(e);
+			pp.offsetX = 8; pp.offsetY = 16;
+			pp.showPopup(parseInt(this._menu.dataset.binding), Util.getElementPagePos(e), false);
+		}
 	},
 	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
@@ -2076,21 +2066,32 @@ GearPopup.prototype = new Popup();
 			enchantElement.enchantedGear = null;
 		};
 	};
+	GearPopup.prototype.changePos = function GearPopup_changePos(pos)
+	{
+		this.pos = pos;
+		this.adjust(pos);
+	};
+	GearPopup.prototype.changeOrigin = function GearPopup_changeOrigin(no)
+	{
+		this.to(no);
+		this.origin = no;
+	};
 	GearPopup.prototype.showPopup = function GearPopup_showPopup(no, pos, fixed)
 	{
 		var n = this.getNode(no);
 		this.content.appendChild(n);
 		this.pos = pos;
+		this.origin = no;
 		this.show(this.content, pos, fixed);
 		var c = this.container;
 		c.dataset.gearEnchanted = "y";
 		c.enchantedGear = this;
 	};
-	GearPopup.prototype.step = function GearPopup_step(cnt)
+	GearPopup.prototype.to = function GearPopup_to(no)
 	{
 		if (this.stepping) return;
 		this.stepping = true;
-		var n = this.getNode(this.no + cnt);
+		var n = this.getNode(no);
 		if (n)
 		{
 			this.content.innerHTML = "";
@@ -2098,6 +2099,10 @@ GearPopup.prototype = new Popup();
 			this.adjust(this.pos);
 		}
 		this.stepping = false;
+	};
+		GearPopup.prototype.step = function GearPopup_step(cnt)
+	{
+		this.to(this.no + cnt);
 	};
 	GearPopup.prototype.getNode = function GearPopup_getNode(no)
 	{
