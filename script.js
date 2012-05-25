@@ -318,6 +318,16 @@ var EventHandlers = {
 			e.preventDefault();
 			return;
 		}
+		t = Util.getDecendantNodeByData(e.target, "popupEnchanted", "y");
+		if (t)
+		{
+			t = t.childNodes[0];
+			if(((e.detail<0)&&(t.scrollTop==0))||
+			   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
+				e.preventDefault();
+				return;
+			}
+		}
 		else if (this.mode=="thread")
 		{
 			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
@@ -1960,6 +1970,7 @@ Popup.prototype = {
 		this.container = container;
 		this.limitSize(pos);
 		this.adjust(pos);
+		container.dataset.popupEnchanted = "y";
 	},
 	
 	close: function Popup_close()
@@ -2542,7 +2553,7 @@ var Util = {
 		if (e.parentNode  == null) return null;
 		return this.getDecendantNode(e.parentNode, tagName);
 	},
-	getDecendantNodeByData: function getDecendantNodeByData(e, x, v)
+	getDecendantNodeByData: function  Util_getDecendantNodeByClass(e, x, v)
 	{	//特定追加データの値を持つ親を帰す。
 		if (e.dataset && (e.dataset[x] == v))return e;
 		if (e.parentNode == null) return null;
