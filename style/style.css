@@ -406,13 +406,17 @@ article article
 	font-size: 80%;
 }
 /* ギアモーポップアップ */
-.popup[data-gearmode="y"]
+.popup[data-gear-enchanted="y"] > div
 {
 	border-left-color: #CFF;
 }
-.popup[data-gearmode="y"] > div
+.popup[data-gear-enchanted="y"] > div
 {
 	background-color: #CFF;
+}
+.popup[data-gear-enchanted="y"]  #RMenu_Gear
+{
+	display: none;
 }
 
 /* Outlink展開 */
