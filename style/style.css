@@ -406,7 +406,7 @@ article article
 	font-size: 80%;
 }
 /* ギアモーポップアップ */
-.popup[data-gear-enchanted="y"] > div
+.popup[data-gear-enchanted="y"]
 {
 	border-left-color: #CFF;
 }
