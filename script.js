@@ -2058,12 +2058,18 @@ GearPopup.prototype = new Popup();
 	GearPopup.prototype.init = function GearPopup_init(enchantElement)
 	{
 		this.content = document.createElement("DIV");
-		enchantElement.dataset.gearEnchanted = "y";
-		enchantElement.enchantedGear = this;
+		if (enchantElement)
+		{
+			enchantElement.dataset.gearEnchanted = "y";
+			enchantElement.enchantedGear = this;
+		}
 		this.onClose = function()
 		{
-			enchantElement.dataset.gearEnchanted = "";
-			enchantElement.enchantedGear = null;
+			if (enchantElement)
+			{
+				enchantElement.dataset.gearEnchanted = "";
+				enchantElement.enchantedGear = null;
+			}
 		};
 	};
 	GearPopup.prototype.changePos = function GearPopup_changePos(pos)
