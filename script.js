@@ -311,10 +311,12 @@ var EventHandlers = {
 	LoadOnWheelDelta: 0,
 	mouseWheel: function EventHandlers_mouseWheel(e)
 	{
-		if (e.target.enchantedGear)
+		var t = Util.getDecendantNodeByData(e.target, "gearEnchanted", "y");
+		if (t)
 		{
-			e.target.enchantedGear.step(e.detail < 0 ? -1 : 1);
+			t.enchantedGear.step(e.detail < 0 ? -1 : 1);
 			e.preventDefault();
+			return;
 		}
 		else if (this.mode=="thread")
 		{
@@ -2059,7 +2061,7 @@ GearPopup.prototype = new Popup();
 		enchantElement.enchantedGear = this;
 		this.onClose = function()
 		{
-			enchantElement.dataset.gearEnchanted = "y";
+			enchantElement.dataset.gearEnchanted = "";
 			enchantElement.enchantedGear = null;
 		};
 	};
@@ -2070,7 +2072,8 @@ GearPopup.prototype = new Popup();
 		this.pos = pos;
 		this.show(this.content, pos, fixed);
 		var c = this.container;
-		c.dataset.gearmode = "y";
+		c.dataset.gearEnchanted = "y";
+		c.enchantedGear = this;
 	};
 	GearPopup.prototype.step = function GearPopup_step(cnt)
 	{
@@ -2539,11 +2542,11 @@ var Util = {
 		if (e.parentNode  == null) return null;
 		return this.getDecendantNode(e.parentNode, tagName);
 	},
-	getDecendantNodeByX: function Util_getDecendantNodeByX(e, x, v)
-	{	//特定プロパティの値を持つ親を帰す。
-		if (e[x] == v) return e;
+	getDecendantNodeByData: function getDecendantNodeByData(e, x, v)
+	{	//特定追加データの値を持つ親を帰す。
+		if (e.dataset && (e.dataset[x] == v))return e;
 		if (e.parentNode == null) return null;
-		return this.getDecendantNodeByX(e.parentNode, v);
+		return this.getDecendantNodeByData(e.parentNode, x, v);
 	},
 	getElementPagePos: function Util_getElementPagePos(e)
 	{	//要素の絶対座標を求める
