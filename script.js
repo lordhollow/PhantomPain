@@ -15,6 +15,7 @@ var Preference =
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
+	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
 	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
 	SlideshowInterval: 5,		//スライドショーの間隔(秒)
 	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
@@ -2237,6 +2238,7 @@ var Viewer = {
 				if (!this._entries[href])
 				{
 					var entry = new ViewerEntry(href);
+					if (Preference.ViewerPreloadWidth < 0) entry.prepare();
 					this._entries[href] = entry;
 					this._orderd.push(entry);
 				}
