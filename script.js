@@ -1956,16 +1956,37 @@ Popup.prototype = {
 		container.className = "popup";
 		if (fixed) container.style.position = "fixed";
 		this.fixed = fixed;
-		if (this.closeOnMouseLeave) container.addEventListener("mouseleave", this.close.bind(this), false);
+		if (this.closeOnMouseLeave) container.addEventListener("mouseleave", this.checkClose.bind(this), false);
 		$("popupContainer").appendChild(container);
 		this.container = container;
 		this.limitSize(pos);
 		this.adjust(pos);
 		container.dataset.popupEnchanted = "y";
 	},
-	
+	checkClose: function Popup_checkClose(aEvent)
+	{
+		var e=this.container.firstChild;
+		if (this.fixed)
+		{
+			pos = {x: aEvent.clientX, y: aEvent.clientY};
+		}
+		else
+		{
+			pos = {x: aEvent.pageX, y: aEvent.pageY};
+		}
+		var p = Util.getElementPagePos(e);
+		console.log(p);
+		p.pageX += 12;	//なんかズレてるので補正。この12はなんだろう？PopupOffsetが正しいのか？
+		console.log("({2},{3})-({4},{5}): {0},{1}".format(pos.x, pos.y, p.pageX, p.pageY, p.pageX+e.offsetWidth,p.pageY+e.offsetHeight));
+		if(pos.x<=p.pageX||
+		   pos.y<=p.pageY||
+		   pos.x>=p.pageX+e.offsetWidth||
+		   pos.y>=p.pageY+e.offsetHeight)this.close();
+	},
 	close: function Popup_close()
 	{
+		if (this.closed) return;
+		this.closed = true;
 		this.container.parentNode.removeChild(this.container);
 		if (this.onClose) this.onClose(this);
 	},
