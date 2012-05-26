@@ -1640,7 +1640,7 @@ var OutlinkPlugins = {
 	{	//Outlinkのプレビューをポップアップする
 		if (anchor != null)
 		{
-			var tid = setTimeout(this.popup.bind(this, plugin, anchor, false), Preference.ResPopupDelay);
+			var tid = setTimeout(this.popup.bind(this, plugin, anchor, Util.isFixedElement(anchor)), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
 				function(){
 					clearTimeout(tid);
