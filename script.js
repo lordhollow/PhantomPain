@@ -2020,7 +2020,7 @@ ResPopup.prototype = new Popup();
 		//DelayÇédä|ÇØÇÈ
 		if (anchor != null)
 		{
-			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), false), Preference.ResPopupDelay);
+			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), Util.isFixedElement(anchor)), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
 				function(){
 					clearTimeout(tid);
@@ -2571,6 +2571,16 @@ var Util = {
 		if (e.dataset && (e.dataset[x] == v))return e;
 		if (e.parentNode == null) return null;
 		return this.getDecendantNodeByData(e.parentNode, x, v);
+	},
+	isFixedElement: function Util_isFixedElement(e)
+	{
+		try
+		{
+			var style = document.defaultView.getComputedStyle(e, null);
+			if (style.position == "fixed") return true;
+			if (e.parentNode == null) return false;
+			return this.isFixedElement(e.parentNode);
+		} catch(e) { return false; }
 	},
 	getElementPagePos: function Util_getElementPagePos(e)
 	{	//óvëfÇÃê‚ëŒç¿ïWÇãÅÇﬂÇÈ
