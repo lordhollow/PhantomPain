@@ -192,7 +192,7 @@ var EventHandlers = {
 		this.mode = "thread";
 	},
 	keydown: function EventHandlers_keydown(e)
-	{	//本当はkeydownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
+	{	//本当はdownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
 		var p = true;
 		if (this.mode == "thread")
 		{
@@ -206,7 +206,17 @@ var EventHandlers = {
 	},
 	invokeThreadKeyHandler: function EventHandlers_invokeThreadKeyHandler(e)
 	{
-		return false;
+		switch(e.keyCode)
+		{
+			case 13:	//Enter
+				var url = Preference.PostScheme + ThreadInfo.Url;
+				window.location.href = url;
+				break;
+			default:
+				return false;
+				break;
+		}
+		return true;
 	},
 	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
 	{
