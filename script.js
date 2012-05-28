@@ -1619,7 +1619,7 @@ URL.prototype = {
 				}
 			}
 		}
-		console.log(this);
+		//console.log(this);
 	},
 	startWith: function URL_startWith(x)
 	{
