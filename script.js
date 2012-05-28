@@ -696,12 +696,11 @@ var Thread = {
 	{
 		//identifier設定
 		var url = new URL(ThreadInfo.Url);
-		this.boardId = "{0}.{1}".format(url.type=="CLONE" ? url.domain :  url.type, url.boardId).toLowerCase();
+		this.boardId = "{0}.{1}".format(url.type == "2CH" ? "" : url.domain, url.boardId).toLowerCase();
 		this.threadId = this.boardId + "." + url.threadId;
-
-		//スレタイのdetaに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
-		if (e) e.dataset.boardId = this.boardId;
+		if (e) e.dataset.board = this.boardId;
 	},
 
 };

@@ -2,6 +2,6 @@
 {
 	font-size: 75%;
 }
-#threadName[data-board-id="2ch.smartphone"]:after{	content: "[スマートフォン]"}
+#threadName[data-board="smartphone"]:after{	content: "[スマートフォン]"}
 
 
