@@ -401,7 +401,7 @@ article article
 	}
 
 
-.popup article
+.popup > article
 {
 	font-size: 80%;
 }
