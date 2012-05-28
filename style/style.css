@@ -5,6 +5,7 @@
 		.popup           1250
 		.overlay         1500
 */
+@import url("boardname.css");
 
 body
 {
@@ -665,4 +666,3 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); } */
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80,112, 96, 96); } */
 /* .icon_blank   { background-image: -moz-image-rect(url(buttons.png), 80,128, 96,112); } */
-

@@ -1,0 +1,7 @@
+#threadName:after
+{
+	font-size: 75%;
+}
+#threadName[data-board-id="2ch.smartphone"]:after{	content: "[スマートフォン]"}
+
+

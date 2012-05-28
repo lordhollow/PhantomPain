@@ -691,6 +691,21 @@ var Menu = {
 	},
 };
 
+var Thread = {
+	init: function Thread_init()
+	{
+		//identifier設定
+		var url = new URL(ThreadInfo.Url);
+		this.boardId = "{0}.{1}".format(url.type=="CLONE" ? url.domain :  url.type, url.boardId).toLowerCase();
+		this.threadId = this.boardId + "." + url.threadId;
+
+		//スレタイのdetaに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+		var e = $("threadName");
+		if (e) e.dataset.boardId = this.boardId;
+	},
+
+};
+
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var ThreadMessages = {
 	domobj: new Array(),	//DOMオブジェクト。indexはレス番号
@@ -2645,6 +2660,7 @@ function init()
 	worker.postMessage({begins: 0});
 //*/
 	var dt1 = new Date();
+	Thread.init();	//ここから↓の初期化のうちいくつかを叩くかも
 	ThreadMessages.init();
 	MessageMenu.init();
 	BoardPane.init();
