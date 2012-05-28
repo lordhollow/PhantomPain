@@ -898,18 +898,18 @@ var ThreadMessages = {
 		}
 	},
 	getDeployMode: function ThreadMessages_getDeployMode(no)
-	{	//ブックマークの位置によってn(変),b(表示範囲より前),y(表示範囲内),a(表示範囲より後ろ)のいずれかを返す
+	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
 		if (no <= 0)
 		{
 			return "n";
 		}
 		else if (no < ThreadMessages.deployedMin)
 		{
-			return "b";
+			return "yb";
 		}
 		else if (no > ThreadMessages.deployedMax)
 		{
-			return "a";
+			return "ya";
 		}
 		else
 		{
@@ -1231,11 +1231,12 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	}
 	Bookmark.marked = function Bookmark_marked()
 	{
-		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
-		$("Menu.Bookmark").dataset.bmn= this.no;
+		$("Menu_Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
+		$("Menu_Bookmark").dataset.bmn= this.no;
 	}
 	Bookmark.focus = function Bookmark_focus()
 	{
+		//TODO: そこまでdeployされていなければdeployしてジャンプ
 		MessageUtil.focus(this.no)
 	}
 

@@ -276,31 +276,25 @@ h2
 	}
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
-		.bmoff{ display: inline; }
-		.bmbefore { display: none; }
-		.bmafter { display: none; }
-		#ctrlbox li[data-bm="y"] > .bmon { display: inline;} 		/* メニューバー */
-		#ctrlbox li[data-bm="y"] > .bmoff{ display: none; }		/* メニューバー */
-		#ctrlbox li[data-bm="a"] > .bmafter { display: inline;} 	/* メニューバー */
-		#ctrlbox li[data-bm="a"] > .bmoff{ display: none; }		/* メニューバー */
-		#ctrlbox li[data-bm="b"] > .bmbefore { display: inline;}	/* メニューバー */
-		#ctrlbox li[data-bm="b"] > .bmoff{ display: none; }		/* メニューバー */
-
-		li[data-bm="y"] > ul > li > .bmon { display: inline; }
-		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
-		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
-		#ctrlbox li[data-bm="y"]:before,
-		#ctrlbox li[data-bm="a"]:before,
-		#ctrlbox li[data-bm="b"]:before
+		#Menu_Bookmark[data-bm^="y"]+ul .bmon { display: inline; }
+		#Menu_Bookmark
+		{
+			position: relative;
+			background-image: -moz-image-rect(url(buttons.png), 16, 64, 32, 48);
+		}
+		#Menu_Bookmark[data-bm="y"]{ background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
+		#Menu_Bookmark[data-bm="yb"]{ background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }
+		#Menu_Bookmark[data-bm="ya"]{ background-image: -moz-image-rect(url(buttons.png), 16, 48, 32, 32); }
+		#Menu_Bookmark[data-bm^="y"]:after
 		{
 			content: attr(data-bmn);
-			position: absolute;
+			position:absolute;
 			font-size: 8px;
 			color: #FFF;
-			top: 6px;
 			font-family: monospace;
 			font-weight: bold;
 			width: 16px;
+			left: 0px;
 			text-align: right;
 		}
 

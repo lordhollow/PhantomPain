@@ -42,13 +42,10 @@ CommonPref.setIdentifier("<THREADURL/>");
 <div id="ctrlbox" class="menu">
 	<ul>
 	<li><button class="icon_template" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></button></li>
-	<li id="Menu.Bookmark">
-		<button class="bmon     icon_bookmark" title="しおりあり(クリックでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
-		<button class="bmoff    icon_bookmarkn" title="しおりなし"></button>
-		<button class="bmbefore icon_bookmarkb" title="しおりあり([表示範囲以前]クリックで読み込んでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
-		<button class="bmafter  icon_bookmarka" title="しおりあり([表示範囲以降]クリックで読み込んでジャンプ)" onclick="Menu.JumpToBookmark();"></button>
+	<li>
+		<button class="icon_bookmark" title="しおり" onclick="Menu.JumpToBookmark();" id="Menu_Bookmark"></button>
 		<ul>
-		<li><button class="bmon     icon_bookmarkn" title="しおり解除" onclick="Menu.ResetBookmark();"></button></li>
+		<li><button class="bmon icon_bookmarkn" title="しおり解除" onclick="Menu.ResetBookmark();"></button></li>
 		</ul>
 	</li>
 	<li id="Menu.Pickup">
