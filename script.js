@@ -11,7 +11,8 @@ var Preference =
 	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
 	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
 	PopupOffsetY: 16,			//ポップアップのオフセット
-	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
+	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
+	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
@@ -1956,7 +1957,6 @@ function Popup() { }
 Popup.prototype = {
 	offsetX: Preference.PopupOffsetX,
 	offsetY: Preference.PopupOffsetY,
-	offsetXe: 0,
 	closeOnMouseLeave: true,
 	show: function Popup_show(content, pos, fixed)
 	{
@@ -1988,36 +1988,19 @@ Popup.prototype = {
 		var poy = (this.fixed) ? 0 : window.pageYOffset;	//固定の時はスクロール位置を気にしない
 		var maxHeight = window.innerHeight - (pos.pageY + Preference.PopupOffsetY - poy) - 40;
 		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
-		if(e.clientWidth > maxWidth)
-		{
-			e.style.width = maxWidth + "px";
-		}
-		if(e.clientHeight > maxHeight)
-		{
-			e.style.height = maxHeight + "px";
-		}
+		e.style.maxWidth = maxWidth + "px";
+		e.style.maxHeight = maxHeight + "px";
 	},
 	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
 	adjust: function Popup_adjust(pos)
 	{
-		var e = this.container.firstChild;
-		var px = pos.pageX;
-		var py = pos.pageY;
-		//指定アンカー位置からのオフセット
-		px+= this.offsetX;
-		py += this.offsetY;
-		
-		//そこに置いたとき、横方向にはみ出す量
-		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅 + 追加オフセット)
-		var x = (px + e.offsetWidth +  Preference.PopupMargin) - (document.body.offsetWidth + this.offsetXe) ; 
-		if (x < 0) x = 0;	//動かす必要がないときは動かさない
-		
-		//ポインタ（ひげの先）を持ってくる
-		e.parentNode.style.left = px + "px";
-		e.parentNode.style.top  = py + "px";
-		
-		//箱を持ってくる
-		e.style.marginLeft = -(x + 24) + "px";	//20ってのは、ヒゲの幅と本体の曲がってる部分のサイズの和より大きく、かつ大きすぎない丁度いい数字を設定
+		this.container.style.left = "-10000px";	//調整前に一度外に追い出さないと折り返した幅になってる
+		var px = pos.pageX + this.offsetX, py = pos.pageY + this.offsetY;
+		var x = px + this.container.firstChild.offsetWidth - document.body.offsetWidth;
+		this.container.style.left = px + "px";
+		this.container.style.top  = py + "px";
+		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
+		this.container.firstChild.style.marginLeft = x + "px";
 	},
 };
 
