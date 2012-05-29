@@ -547,6 +547,28 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	#viewerHomeCtrl>button[name="auto"]:hover { background-image: url("viewerAutoPlay.png"); }
 	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerAutoPlay-g.png"); }
 
+/* 通知領域 */
+#noticeContainer
+{
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	margin: 8px;
+	border-radius: 8px;
+	border: solid 3px rgba(255,255,255,1);
+	background-color: rgba(0,64,0,0.8);
+	padding: 4px;
+	font-size: 70%;
+	font-family: "Arial Black", sans-serif;
+	color: #FFF;
+	-moz-animation: fadeout 2s 1s linear 1;
+	-moz-animation-fill-mode: forwards;
+}
+	#noticeContainer[data-refresh-state="refresh"]
+	{
+		-moz-animation: none;
+	}
+
 /* オーバーレイ */
 .overlay
 {

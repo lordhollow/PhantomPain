@@ -23,6 +23,7 @@ var Preference =
 	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
 	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
+	NoticeLength: 10,			//表示するお知らせの数
 };
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -2564,6 +2565,28 @@ ViewerEntry.prototype = {
 	typename: "ViewerEntry",
 };
 
+/* ■通知領域■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Notice = {
+	init: function Notice_init()
+	{
+		this.container = document.createElement("DIV");
+		this.container.id = "noticeContainer";
+		document.body.appendChild(this.container);
+	},
+	add: function Notice_add(msg)
+	{
+		if (!this.container) this.init();
+		if (this.container.childNodes.length == Preference.NoticeLength)
+		{
+			this.container.removeChild(this.container.firstChild);
+		}
+		var e = document.createElement("P");
+		e.innerHTML = msg;
+		this.container.appendChild(e);
+		Util.notifyRefreshInternal(this.container);
+	},
+};
+
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Util = {
 	//数字をﾊﾝｶｸにする
@@ -2615,7 +2638,7 @@ var Util = {
 	{
 		var element = e;
 		element.dataset.refreshState = "refresh";
-		setTimeout(function(){element.dataset.refreshState = "";}, 1);
+		setTimeout(function(){element.dataset.refreshState = "";}, 15);
 	}
 };
 
@@ -2703,9 +2726,13 @@ function init()
 	//TODO::なければブックマークへジャンプとかするかも
 
 	EventHandlers.init();
-	
+
+	Notice.add(ThreadInfo.Status);
+	Notice.add("{0} messages.".format(ThreadInfo.Total));
+	if (ThreadInfo.New) Notice.add("({0} new messages.)".format(ThreadInfo.New));
+
 	var dt2 = new Date();
-	console.log("init() spend {0} ms.".format(dt2-dt1));
+	Notice.add("{0} ms for initialize".format(dt2-dt1));
 };
 
 //簡易版string.format。置換しかできない。
