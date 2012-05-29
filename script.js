@@ -2493,8 +2493,7 @@ var Viewer = {
 				c.innerHTML = "{0} Images.<br><br>".format(s.total);
 			}
 			var ctrl = $("ViewerCtrl");
-			ctrl.dataset.state="refresh";
-			setTimeout(function(){ctrl.dataset.state="";}, 1);
+			Util.notifyRefreshInternal(ctrl);
 		}
 	},
 	show: function Viewer_show()
@@ -2612,6 +2611,12 @@ var Util = {
 		}
 		return pos;
 	},
+	notifyRefreshInternal: function Util_notifyRefreshInternal(e)
+	{
+		var element = e;
+		element.dataset.refreshState = "refresh";
+		setTimeout(function(){element.dataset.refreshState = "";}, 1);
+	}
 };
 
 var MessageUtil = {

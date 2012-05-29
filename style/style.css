@@ -487,7 +487,7 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	-moz-animation: fadeout 2s 1s linear 1;
 	-moz-animation-fill-mode: forwards;
 }
-	#ViewerCtrl[data-state="refresh"]
+	#ViewerCtrl[data-refresh-state="refresh"]
 	{
 		-moz-animation: none;
 	}
