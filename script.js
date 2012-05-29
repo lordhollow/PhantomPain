@@ -319,6 +319,10 @@ var EventHandlers = {
 				}
 			}
 		}
+		else if (t.id == "footer")
+		{
+			if (Notice.container) Util.notifyRefreshInternal(Notice.container);
+		}
 		if(cancel){
 			aEvent.preventDefault();
 			aEvent.stopPropagation();
