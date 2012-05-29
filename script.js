@@ -20,6 +20,8 @@ var Preference =
 	SlideshowInterval: 5,		//スライドショーの間隔(秒)
 	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
 	LoadForwardOnBottomWheel: true,	//一番下で下にスクロールしようとするとロードが掛かる
+	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
+	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 };
 
@@ -373,8 +375,11 @@ var EventHandlers = {
 			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
 			{
 				this.LoadOnWheelDelta = 0;
-				Menu.MoreBack();
+				var focusTo = ThreadMessages.deployedMin - 1;
+				Thread.deploy(-Preference.LoadOnWheelWidth);
+				MessageUtil.focus(focusTo);
 			}
+			e.preventDefault();
 		}
 		else if (Preference.LoadForwardOnBottomWheel
 			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
@@ -384,7 +389,9 @@ var EventHandlers = {
 			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
 			{
 				this.LoadOnWheelDelta = 0;
-				Menu.More();
+				var focusTo = ThreadMessages.deployedMax + 1;
+				Thread.deploy(Preference.LoadOnWheelWidth);
+				MessageUtil.focus(focusTo);
 			}
 		}
 		else
@@ -642,21 +649,16 @@ var Menu = {
 	More: function Menu_More()
 	{
 		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
-		var min = ThreadMessages.deployedMax+1;
-		var max = ThreadMessages.deployedMax+30;
-		MessageLoader.load(min, max);
-		ThreadMessages.deploy(min, max);
-		MessageUtil.focus(min);
+		var focusTo = ThreadMessages.deployedMax+1;
+		Thread.deploy(30);
+		MessageUtil.focus(focusTo);
 	},
 	MoreBack: function Menu_MoreBack()
 	{
-		var min = ThreadMessages.deployedMin-30;
-		var max = ThreadMessages.deployedMin-1;
-		if (min <=0) min = 1;
-		if (max <min) max=min;
-		MessageLoader.load(min, max);
-		ThreadMessages.deploy(min, max);
-		MessageUtil.focus(max);
+		console.log("moreback");
+		var focusTo = ThreadMessages.deployedMin-1;
+		Thread.deploy(-30);
+		MessageUtil.focus(focusTo);
 	},
 	BeginAutoMore: function Menu_BeginAutoMore()
 	{
@@ -701,6 +703,27 @@ var Thread = {
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
+	},
+	deploy: function Thread_deploy(width)
+	{	//widthが負のときは前方にdeploy, 正のときは後方にdeploy
+		this.deployTo(width < 0 ? ThreadMessages.deployedMin + width : ThreadMessages.deployedMax + width);
+	},
+	deployTo: function Thread_deployTo(to)
+	{
+		if (to <= 0) to = 1;
+		if (to >= ThreadInfo.Total) to = ThreadInfo.Total;
+		var min = to,  max = to;
+		if (to < ThreadMessages.deployedMin)
+		{
+			max = ThreadMessages.deployedMin-1;
+		}
+		if (to > ThreadMessages.deployedMax)
+		{
+			min = ThreadMessages.deployedMax+1;
+		}
+		console.log("deployTo: {0}->{1}".format(min,max));
+		MessageLoader.load(min, max);
+		ThreadMessages.deploy(min, max);
 	},
 
 };
