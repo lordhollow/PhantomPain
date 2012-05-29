@@ -2,8 +2,8 @@ var skinName = "PhantomPain3";
 var skinVer  = "ver. \"closed alpha\"";
 var ownerApp;
 
-var Preference =
-{
+var _Preference =
+{	//設定初期値
 	ResMenuAttachDelay: 250,	//レスメニューがアタッチされるまでのディレイ(ms)
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
@@ -25,6 +25,7 @@ var Preference =
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 	NoticeLength: 10,			//表示するお知らせの数
 };
+var Preference = clone(_Preference);
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 Function.prototype.bind = function prototype_bind() {
@@ -64,6 +65,17 @@ Array.prototype.include = function prototype_include(val) {
 	}
 	return false;
 }
+
+Array.prototype.clone = function() {
+	return Array.apply(null, this);
+}
+
+function clone(obj) {
+	var f = function(){};
+	f.prototype = obj;
+	return new f;
+}
+
 var $=function prototype_getElementById(id){return document.getElementById(id);}
 
 /* ■スキンの設定■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
