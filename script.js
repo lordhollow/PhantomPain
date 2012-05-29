@@ -1259,7 +1259,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	}
 	Bookmark.focus = function Bookmark_focus()
 	{
-		//TODO: ‚»‚±‚Ü‚Ådeploy‚³‚ê‚Ä‚¢‚È‚¯‚ê‚Îdeploy‚µ‚ÄƒWƒƒƒ“ƒv
+		Thread.deployTo(this.no);
 		MessageUtil.focus(this.no)
 	}
 
