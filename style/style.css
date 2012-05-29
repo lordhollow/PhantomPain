@@ -484,7 +484,7 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	font-weight: bold;
 	text-align: left;
 
-	-moz-animation: fadeout 2s 1s linear 1;
+	-moz-animation: fadeout 3s 0s linear 1;
 	-moz-animation-fill-mode: forwards;
 }
 	#ViewerCtrl[data-refresh-state="refresh"]
@@ -561,7 +561,7 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	font-size: 70%;
 	font-family: "Arial Black", sans-serif;
 	color: #FFF;
-	-moz-animation: fadeout 2s 1s linear 1;
+	-moz-animation: fadeoutAndClose 3s 0s linear 1;
 	-moz-animation-fill-mode: forwards;
 }
 	#noticeContainer[data-refresh-state="refresh"]
@@ -624,6 +624,14 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 @-moz-keyframes fadeout
 {
 	0% { opacity: 1; }
+	30% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+@-moz-keyframes fadeoutAndClose
+{
+	0% { opacity: 1; }
+	30% { opacity: 1; }
 	100% { opacity: 0; }
 }
 

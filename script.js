@@ -186,6 +186,8 @@ var EventHandlers = {
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
 		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
+		document.addEventListener("animationstart", this.animationStart.bind(this),false);
+		document.addEventListener("animationend", this.animationEnd.bind(this),false);
 	},
 	enter: function EventHandlers_enter(mode)
 	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
@@ -398,6 +400,22 @@ var EventHandlers = {
 		else
 		{
 			this.LoadOnWheelDelta = 0;
+		}
+	},
+	animationStart: function EventHandlers_animationStart(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "";
+		}
+	},
+	animationEnd: function EventHandlers_animationEnd(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "none";
 		}
 	},
 	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
