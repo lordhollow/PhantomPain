@@ -683,10 +683,16 @@ var Menu = {
 	},
 	More: function Menu_More()
 	{
-		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
-		var focusTo = ThreadMessages.deployedMax+1;
-		Thread.deploy(30);
-		MessageUtil.focus(focusTo);
+		if (ThreadMessages.deployedMax == ThreadInfo.Total)
+		{
+			Thread.check();
+		}
+		else
+		{
+			var focusTo = ThreadMessages.deployedMax+1;
+			Thread.deploy(30);
+			MessageUtil.focus(focusTo);
+		}
 	},
 	MoreBack: function Menu_MoreBack()
 	{
@@ -738,6 +744,86 @@ var Thread = {
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
+	},
+	check: function Thread_check()
+	{	//新着レスの確認を開始
+		if (ThreadMessages.deployedMax != ThreadInfo.Total)
+		{	//最後まで表示されていないときは全部表示してから。
+			Thread.deployTo(ThreadInfo.Total);
+		}
+		if (!this.checking)
+		{
+			this.checking = true;
+			document.body.dataset.loading = "y";
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = this._loadCheck.bind(this, req);
+			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n", true);
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
+			req.send(null);
+		}
+	},
+	_loadCheck: function Thread__loadCheck(req, e)
+	{
+		if (req.readyState==4)
+		{	//XmlHttpRequest完了時
+			if (!this._update(req.status, req.responseText))
+			{	//なんかエラー
+				Notice.add("ロードエラー");
+			}
+			document.body.dataset.loading = "";
+			this.checking = false;
+		}
+	},
+	_update: function Thread__update(status, html)
+	{
+		if ((status >= 200) && (status<300))
+		{
+			if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
+			{
+				var obj;
+				eval("obj = "+ RegExp.$1);	//{ status, total, new }
+				if (obj.new)
+				{	//新着があるとき～
+					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+					{
+						var nc = document.createElement("DIV");
+						nc.innerHTML = RegExp.$1;
+						ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
+					}
+					this.deployTo(obj.Total);
+					MessageUtil.focus(obj.Total - obj.new + 1)
+				}
+				Notice.add("新着{0}".format(obj.new ? obj.new + "件" : "なし"));
+				return true;
+			}
+		}
+		return false;
+	},
+	beginAutoCheck: function Thread_beginAutoCheck()
+	{
+		if(this.auto)return;
+		this.auto = true
+		document.body.dataset.autoload = "y";
+		this.autoTimer = setInterval(this.autocheckTick.bind(this), 1000);
+	},
+	endAutoCheck: function Thread_endAutoCheck()
+	{
+		if (!this.auto)return;
+		this.auto = false;
+		document.body.dataset.autoload = "";
+		clearInterval(this.autoTimer);
+		this.autoTimer = 0;
+	},
+	toggleAutoCheck: function Thread_toggleAutoCheck()
+	{
+		if (this.auto)
+		{
+			this.endAutoCheck();
+		}
+		else
+		{
+			this.beginAutoCheck();
+		}
 	},
 	deploy: function Thread_deploy(width)
 	{	//widthが負のときは前方にdeploy, 正のときは後方にdeploy
@@ -993,21 +1079,6 @@ var ThreadMessages = {
 
 /* ■ローダー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageLoader = {
-	loadPrev: function MessageLoader_loadPrev()
-	{
-		var w = Preference.MoreWidth;
-	},
-	loadNext: function MessageLoader_loadNext()
-	{
-		var w = Preference.MoreWidth;
-	},
-	beginAutoLoad: function MessageLoader_beginAutoLoad()
-	{
-	},
-	endAutoLoad: function MessageLoader_endAutoLoad()
-	{
-	},
-	
 	load: function MessageLoader_load(min, max)
 	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
 		//alert([min, max]);
@@ -1067,57 +1138,6 @@ var MessageLoader = {
 			}
 		}
 	},
-	
-	_checkingNewMessage: false,
-	_checkNewMessageCallback: new Array(),
-	_checkNewMessageRequest: null,
-	checkNewMessage: function MessageLoader_checkNewMessage(callback)
-	{
-		this._checkNewMessageCallback.push(callback);
-		if(!this._checkingNewMessage)
-		{
-			this._checkingNewMessage = true;
-			var req = new XMLHttpRequest();
-			req.onreadystatechange = this._loadCheck.bind(this);
-			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n");
-			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
-			req.send(null);
-			this._checkNewMessageRequest=req;
-		}
-	},
-	
-	_loadCheck: function MessageLoader__loadCheck()
-	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
-		var req = this._checkNewMessageRequest;
-		if (!req) return;
-		if (req.readyState==4)	//end
-		{
-			if ((req.status>=200)&&(req.status<300))
-			{	//OK～
-				var html = req.responseText;
-				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-				{	//追加でロードした分はpush(deployはしません)
-					var nc = document.createElement("DIV");
-					nc.innerHTML = RegExp.$1;
-					ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
-				}
-				if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
-				{
-					var obj;
-					eval("obj = "+ RegExp.$1);
-					for (var i=0, j=this._checkNewMessageCallback.length; i<j; i++)
-					{
-						var c = this._checkNewMessageCallback[i];
-						if (c) c(obj);
-					}
-				}
-			}
-			this._checkNewMessageCallback = new Array();
-			this._checkingNewMessage = false;
-			this._checkNewMessageRequest = null;
-		}
-	},
-
 };
 
 /* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
