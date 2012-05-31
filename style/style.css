@@ -1,10 +1,11 @@
 /*
 	z-index:
-		#headBar         1000
+		#headBar	1000
 		#ViewerContainer 1000
 		.popup           1250
 		.overlay         1500
 */
+@import url("boardname.css");
 
 body
 {
@@ -40,6 +41,39 @@ span.space
 {
 	width: 100%;
 	display: table-cell;
+}
+
+/* 画像が回転する */
+/* 1毎の画像をくるくる回すには、div.riの中に画像を１つだけ入れる。 */
+.ri
+{
+	/* 回転するのに必要な分だけスペースが確保されるようなので、サイズを指定するべき */
+	height: 16px;
+	width: 16px;
+	-moz-animation: turnImage 1s linear 5;
+}
+/* 2枚の画像でくるくる回すには、div.rcの中に画像を２枚入れる。 */
+.rc
+{
+	display: block;
+	position: relative;
+	height: 16px;
+	width: 16px;
+	-moz-transform-style: preserve-3d;
+	-moz-transform: rotateX(0) rotateY(0) rotateZ(0);
+	-moz-animation: turnImage 1s linear 5;
+}
+.rc img:nth-child(1)
+{
+	position: absolute; 
+	-moz-backface-visibility: visible;
+	-moz-transform:  translateZ(.1px);
+}
+.rc img:nth-child(2)
+{
+	position: absolute; 
+	-moz-backface-visibility: visible;
+	-moz-transform:  rotateY(180deg) translateZ(.1px);
 }
 
 /* ドロップダウンメニュー(16pxの画像ボタン入り) */
@@ -141,10 +175,6 @@ span.space
 		{
 			background-color: #666;
 		}
-		.automoreon { display: none; }
-		.automoreoff{ display: list-item; }
-		body[data-autoload="y"] .automoreon { display: list-item; }
-		body[data-autoload="y"] .automoreoff{ display: none; }
 
 /* スレ一覧ペイン */
 #boardPane
@@ -282,31 +312,25 @@ h2
 	}
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
-		.bmoff{ display: inline; }
-		.bmbefore { display: none; }
-		.bmafter { display: none; }
-		#ctrlbox li[data-bm="y"] > .bmon { display: inline;} 		/* メニューバー */
-		#ctrlbox li[data-bm="y"] > .bmoff{ display: none; }		/* メニューバー */
-		#ctrlbox li[data-bm="a"] > .bmafter { display: inline;} 	/* メニューバー */
-		#ctrlbox li[data-bm="a"] > .bmoff{ display: none; }		/* メニューバー */
-		#ctrlbox li[data-bm="b"] > .bmbefore { display: inline;}	/* メニューバー */
-		#ctrlbox li[data-bm="b"] > .bmoff{ display: none; }		/* メニューバー */
-
-		li[data-bm="y"] > ul > li > .bmon { display: inline; }
-		article[data-bm="y"] > div > ul > li > .bmon { display: inline; }
-		article[data-bm="y"] > div > ul > li > .bmoff{ display: none; }
-		#ctrlbox li[data-bm="y"]:before,
-		#ctrlbox li[data-bm="a"]:before,
-		#ctrlbox li[data-bm="b"]:before
+		#Menu_Bookmark[data-bm^="y"]+ul .bmon { display: inline; }
+		#Menu_Bookmark
+		{
+			position: relative;
+			background-image: -moz-image-rect(url(buttons.png), 16, 64, 32, 48);
+		}
+		#Menu_Bookmark[data-bm="y"]{ background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
+		#Menu_Bookmark[data-bm="yb"]{ background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }
+		#Menu_Bookmark[data-bm="ya"]{ background-image: -moz-image-rect(url(buttons.png), 16, 48, 32, 32); }
+		#Menu_Bookmark[data-bm^="y"]:after
 		{
 			content: attr(data-bmn);
-			position: absolute;
+			position:absolute;
 			font-size: 8px;
 			color: #FFF;
-			top: 6px;
 			font-family: monospace;
 			font-weight: bold;
 			width: 16px;
+			left: 0px;
 			text-align: right;
 		}
 
@@ -344,6 +368,14 @@ h2
 		.nroff{ display: inline; }
 		body[data-has-new="y"] .nron { display: inline; }
 		body[data-has-new="y"] .nroff{ display: none; }
+
+		/* 自動モード */
+		.icon_automore { background-image: -moz-image-rect(url(buttons.png),  0, 48, 16, 32); }
+		body[data-autoload="y"] .icon_automore { background-image: -moz-image-rect(url(buttons.png),  0, 64, 16, 48); }
+		body[data-autoload="y"] .icon_more
+		{
+			-moz-animation: turnImage 1s linear infinite;
+		}
 
 article article
 {
@@ -408,7 +440,7 @@ article article
 	}
 
 
-.popup article
+.popup > article
 {
 	font-size: 80%;
 }
@@ -446,6 +478,7 @@ article article
 /* 検索 */
 .popup[data-finder="y"] { opacity: 0.5; }
 .popup[data-finder="y"]:hover { opacity: 1;}
+
 #finder
 {
 }
@@ -496,10 +529,10 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	font-weight: bold;
 	text-align: left;
 
-	-moz-animation: fadeout 2s 1s linear 1;
+	-moz-animation: fadeout 3s 0s linear 1;
 	-moz-animation-fill-mode: forwards;
 }
-	#ViewerCtrl[data-state="refresh"]
+	#ViewerCtrl[data-refresh-state="refresh"]
 	{
 		-moz-animation: none;
 	}
@@ -559,6 +592,28 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	#viewerHomeCtrl>button[name="auto"]:hover { background-image: url("viewerAutoPlay.png"); }
 	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerAutoPlay-g.png"); }
 
+/* 通知領域 */
+#noticeContainer
+{
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	margin: 8px;
+	border-radius: 8px;
+	border: solid 3px rgba(255,255,255,1);
+	background-color: rgba(0,64,0,0.8);
+	padding: 4px;
+	font-size: 70%;
+	font-family: "Arial Black", sans-serif;
+	color: #FFF;
+	-moz-animation: fadeoutAndClose 3s 0s linear 1;
+	-moz-animation-fill-mode: forwards;
+}
+	#noticeContainer[data-refresh-state="refresh"]
+	{
+		-moz-animation: none;
+	}
+
 /* オーバーレイ */
 .overlay
 {
@@ -614,9 +669,23 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 @-moz-keyframes fadeout
 {
 	0% { opacity: 1; }
+	30% { opacity: 1; }
 	100% { opacity: 0; }
 }
 
+@-moz-keyframes fadeoutAndClose
+{
+	0% { opacity: 1; }
+	30% { opacity: 1; }
+	100% { opacity: 0; }
+}
+
+@-moz-keyframes turnImage
+{
+	/* rotateYの代わりにrotateZにすると、時計回りにぐるぐる回る。 */
+	0% { -moz-transform: rotateY(0) ;}
+	100% {-moz-transform: rotateY(360deg) ; }
+}
 /* */
 
 .icon_template      { background-image: -moz-image-rect(url(buttons.png),  0, 16, 16,  0); }
@@ -672,4 +741,3 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); } */
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80,112, 96, 96); } */
 /* .icon_blank   { background-image: -moz-image-rect(url(buttons.png), 80,128, 96,112); } */
-

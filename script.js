@@ -2,8 +2,8 @@ var skinName = "PhantomPain3";
 var skinVer  = "ver. \"closed alpha\"";
 var ownerApp;
 
-var Preference =
-{
+var _Preference =
+{	//設定初期値
 	ResMenuAttachDelay: 250,	//レスメニューがアタッチされるまでのディレイ(ms)
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
@@ -11,8 +11,10 @@ var Preference =
 	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
 	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
 	PopupOffsetY: 16,			//ポップアップのオフセット
-	PopupMargin: 0,				//画面外にはみ出すポップアップを押し戻す量
+	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
+	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
+	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
@@ -20,8 +22,12 @@ var Preference =
 	SlideshowInterval: 5,		//スライドショーの間隔(秒)
 	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
 	LoadForwardOnBottomWheel: true,	//一番下で下にスクロールしようとするとロードが掛かる
+	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
+	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
+	NoticeLength: 10,			//表示するお知らせの数
 };
+var Preference = clone(_Preference);
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 Function.prototype.bind = function prototype_bind() {
@@ -61,6 +67,17 @@ Array.prototype.include = function prototype_include(val) {
 	}
 	return false;
 }
+
+Array.prototype.clone = function() {
+	return Array.apply(null, this);
+}
+
+function clone(obj) {
+	var f = function(){};
+	f.prototype = obj;
+	return new f;
+}
+
 var $=function prototype_getElementById(id){return document.getElementById(id);}
 
 /* ■スキンの設定■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -183,6 +200,8 @@ var EventHandlers = {
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
 		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
+		document.addEventListener("animationstart", this.animationStart.bind(this),false);
+		document.addEventListener("animationend", this.animationEnd.bind(this),false);
 	},
 	enter: function EventHandlers_enter(mode)
 	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
@@ -193,7 +212,7 @@ var EventHandlers = {
 		this.mode = "thread";
 	},
 	keydown: function EventHandlers_keydown(e)
-	{	//本当はkeydownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
+	{	//本当はdownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
 		var p = true;
 		if (this.mode == "thread")
 		{
@@ -207,7 +226,17 @@ var EventHandlers = {
 	},
 	invokeThreadKeyHandler: function EventHandlers_invokeThreadKeyHandler(e)
 	{
-		return false;
+		switch(e.keyCode)
+		{
+			case 13:	//Enter
+				var url = Preference.PostScheme + ThreadInfo.Url;
+				window.location.href = url;
+				break;
+			default:
+				return false;
+				break;
+		}
+		return true;
 	},
 	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
 	{
@@ -304,6 +333,10 @@ var EventHandlers = {
 				}
 			}
 		}
+		else if (t.id == "footer")
+		{
+			if (Notice.container) Util.notifyRefreshInternal(Notice.container);
+		}
 		if(cancel){
 			aEvent.preventDefault();
 			aEvent.stopPropagation();
@@ -363,8 +396,11 @@ var EventHandlers = {
 			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
 			{
 				this.LoadOnWheelDelta = 0;
-				Menu.MoreBack();
+				var focusTo = ThreadMessages.deployedMin - 1;
+				Thread.deploy(-Preference.LoadOnWheelWidth);
+				MessageUtil.focus(focusTo);
 			}
+			e.preventDefault();
 		}
 		else if (Preference.LoadForwardOnBottomWheel
 			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
@@ -374,12 +410,30 @@ var EventHandlers = {
 			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
 			{
 				this.LoadOnWheelDelta = 0;
-				Menu.More();
+				var focusTo = ThreadMessages.deployedMax + 1;
+				Thread.deploy(Preference.LoadOnWheelWidth);
+				MessageUtil.focus(focusTo);
 			}
 		}
 		else
 		{
 			this.LoadOnWheelDelta = 0;
+		}
+	},
+	animationStart: function EventHandlers_animationStart(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "";
+		}
+	},
+	animationEnd: function EventHandlers_animationEnd(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "none";
 		}
 	},
 	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
@@ -631,28 +685,27 @@ var Menu = {
 	},
 	More: function Menu_More()
 	{
-		//TODO:deployedMaxがThreadInfo.Totalのとき、新規にロード(l1n)
-		var min = ThreadMessages.deployedMax+1;
-		var max = ThreadMessages.deployedMax+30;
-		MessageLoader.load(min, max);
-		ThreadMessages.deploy(min, max);
-		MessageUtil.focus(min);
+		if (ThreadMessages.deployedMax == ThreadInfo.Total)
+		{
+			Thread.check();
+		}
+		else
+		{
+			var focusTo = ThreadMessages.deployedMax+1;
+			Thread.deploy(30);
+			MessageUtil.focus(focusTo);
+		}
 	},
 	MoreBack: function Menu_MoreBack()
 	{
-		var min = ThreadMessages.deployedMin-30;
-		var max = ThreadMessages.deployedMin-1;
-		if (min <=0) min = 1;
-		if (max <min) max=min;
-		MessageLoader.load(min, max);
-		ThreadMessages.deploy(min, max);
-		MessageUtil.focus(max);
+		console.log("moreback");
+		var focusTo = ThreadMessages.deployedMin-1;
+		Thread.deploy(-30);
+		MessageUtil.focus(focusTo);
 	},
-	BeginAutoMore: function Menu_BeginAutoMore()
+	ToggleAutoMore: function Menu_ToggleAutoMore()
 	{
-	},
-	EndAutoMore: function Menu_EndAutoMore()
-	{
+		Thread.toggleAutoCheck();
 	},
 	PreviewOutlinks: function Menu_PreviewOutlinks()
 	{
@@ -679,6 +732,130 @@ var Menu = {
 	{
 		Viewer.show();
 	},
+};
+
+var Thread = {
+	init: function Thread_init()
+	{
+		//identifier設定
+		var url = new URL(ThreadInfo.Url);
+		this.boardId = "{0}.{1}".format(url.type == "2CH" ? "" : url.domain, url.boardId).toLowerCase();
+		this.threadId = this.boardId + "." + url.threadId;
+		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+		var e = $("threadName");
+		if (e) e.dataset.board = this.boardId;
+	},
+	check: function Thread_check()
+	{	//新着レスの確認を開始
+		this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
+		if (ThreadMessages.deployedMax != ThreadInfo.Total)
+		{	//最後まで表示されていないときは全部表示してから。
+			Thread.deployTo(ThreadInfo.Total);
+		}
+		if (!this.checking)
+		{
+			this.checking = true;
+			document.body.dataset.loading = "y";
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = this._loadCheck.bind(this, req);
+			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n", true);
+			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
+			req.send(null);
+		}
+	},
+	_loadCheck: function Thread__loadCheck(req, e)
+	{
+		if (req.readyState==4)
+		{	//XmlHttpRequest完了時
+			if (!this._update(req.status, req.responseText))
+			{	//なんかエラー
+				Notice.add("ロードエラー");
+			}
+			document.body.dataset.loading = "";
+			this.checking = false;
+		}
+	},
+	_update: function Thread__update(status, html)
+	{
+		if ((status >= 200) && (status<300))
+		{
+			if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
+			{
+				var obj;
+				eval("obj = "+ RegExp.$1);	//{ status, total, new }
+				if (obj.new)
+				{	//新着があるとき～
+					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+					{
+						var nc = document.createElement("DIV");
+						nc.innerHTML = RegExp.$1;
+						ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
+					}
+					this.deployTo(obj.Total);
+					MessageUtil.focus(obj.Total - obj.new + 1)
+				}
+				Notice.add("新着{0}".format(obj.new ? obj.new + "件" : "なし"));
+				return true;
+			}
+		}
+		return false;
+	},
+	beginAutoCheck: function Thread_beginAutoCheck()
+	{
+		if(this.auto)return;
+		this.auto = true
+		document.body.dataset.autoload = "y";
+		this.autoTickCount = 0;
+		this.autoTimer = setInterval(this.autocheckTick.bind(this), 1000);
+	},
+	endAutoCheck: function Thread_endAutoCheck()
+	{
+		if (!this.auto)return;
+		this.auto = false;
+		document.body.dataset.autoload = "";
+		clearInterval(this.autoTimer);
+		this.autoTimer = 0;
+	},
+	toggleAutoCheck: function Thread_toggleAutoCheck()
+	{
+		if (this.auto)
+		{
+			this.endAutoCheck();
+		}
+		else
+		{
+			this.beginAutoCheck();
+		}
+	},
+	autocheckTick: function Thread_autocheckTick()
+	{
+		if (++this.autoTickCount >= Preference.AutoReloadInterval)
+		{
+			this.check();
+		}
+	},
+	deploy: function Thread_deploy(width)
+	{	//widthが負のときは前方にdeploy, 正のときは後方にdeploy
+		this.deployTo(width < 0 ? ThreadMessages.deployedMin + width : ThreadMessages.deployedMax + width);
+	},
+	deployTo: function Thread_deployTo(to)
+	{
+		if (to <= 0) to = 1;
+		if (to >= ThreadInfo.Total) to = ThreadInfo.Total;
+		var min = to,  max = to;
+		if (to < ThreadMessages.deployedMin)
+		{
+			max = ThreadMessages.deployedMin-1;
+		}
+		if (to > ThreadMessages.deployedMax)
+		{
+			min = ThreadMessages.deployedMax+1;
+		}
+		console.log("deployTo: {0}->{1}".format(min,max));
+		MessageLoader.load(min, max);
+		ThreadMessages.deploy(min, max);
+	},
+
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -874,18 +1051,18 @@ var ThreadMessages = {
 		}
 	},
 	getDeployMode: function ThreadMessages_getDeployMode(no)
-	{	//ブックマークの位置によってn(変),b(表示範囲より前),y(表示範囲内),a(表示範囲より後ろ)のいずれかを返す
+	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
 		if (no <= 0)
 		{
 			return "n";
 		}
 		else if (no < ThreadMessages.deployedMin)
 		{
-			return "b";
+			return "yb";
 		}
 		else if (no > ThreadMessages.deployedMax)
 		{
-			return "a";
+			return "ya";
 		}
 		else
 		{
@@ -911,21 +1088,6 @@ var ThreadMessages = {
 
 /* ■ローダー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var MessageLoader = {
-	loadPrev: function MessageLoader_loadPrev()
-	{
-		var w = Preference.MoreWidth;
-	},
-	loadNext: function MessageLoader_loadNext()
-	{
-		var w = Preference.MoreWidth;
-	},
-	beginAutoLoad: function MessageLoader_beginAutoLoad()
-	{
-	},
-	endAutoLoad: function MessageLoader_endAutoLoad()
-	{
-	},
-	
 	load: function MessageLoader_load(min, max)
 	{	//minからmaxまでをログピックアップモードで読み出してReadyにする。
 		//alert([min, max]);
@@ -985,57 +1147,6 @@ var MessageLoader = {
 			}
 		}
 	},
-	
-	_checkingNewMessage: false,
-	_checkNewMessageCallback: new Array(),
-	_checkNewMessageRequest: null,
-	checkNewMessage: function MessageLoader_checkNewMessage(callback)
-	{
-		this._checkNewMessageCallback.push(callback);
-		if(!this._checkingNewMessage)
-		{
-			this._checkingNewMessage = true;
-			var req = new XMLHttpRequest();
-			req.onreadystatechange = this._loadCheck.bind(this);
-			req.open('GET', ThreadInfo.Server + ThreadInfo.Url + "l1n");
-			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
-			req.send(null);
-			this._checkNewMessageRequest=req;
-		}
-	},
-	
-	_loadCheck: function MessageLoader__loadCheck()
-	{	//checkNewMessageによる、XMLHTTPRequestの状態変化イベント処理
-		var req = this._checkNewMessageRequest;
-		if (!req) return;
-		if (req.readyState==4)	//end
-		{
-			if ((req.status>=200)&&(req.status<300))
-			{	//OK～
-				var html = req.responseText;
-				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-				{	//追加でロードした分はpush(deployはしません)
-					var nc = document.createElement("DIV");
-					nc.innerHTML = RegExp.$1;
-					ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
-				}
-				if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
-				{
-					var obj;
-					eval("obj = "+ RegExp.$1);
-					for (var i=0, j=this._checkNewMessageCallback.length; i<j; i++)
-					{
-						var c = this._checkNewMessageCallback[i];
-						if (c) c(obj);
-					}
-				}
-			}
-			this._checkNewMessageCallback = new Array();
-			this._checkingNewMessage = false;
-			this._checkNewMessageRequest = null;
-		}
-	},
-
 };
 
 /* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -1207,11 +1318,12 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	}
 	Bookmark.marked = function Bookmark_marked()
 	{
-		$("Menu.Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
-		$("Menu.Bookmark").dataset.bmn= this.no;
+		$("Menu_Bookmark").dataset.bm = ThreadMessages.getDeployMode(this.no);
+		$("Menu_Bookmark").dataset.bmn= this.no;
 	}
 	Bookmark.focus = function Bookmark_focus()
 	{
+		Thread.deployTo(this.no);
 		MessageUtil.focus(this.no)
 	}
 
@@ -1594,7 +1706,7 @@ URL.prototype = {
 				}
 			}
 		}
-		console.log(this);
+		//console.log(this);
 	},
 	startWith: function URL_startWith(x)
 	{
@@ -1947,7 +2059,6 @@ function Popup() { }
 Popup.prototype = {
 	offsetX: Preference.PopupOffsetX,
 	offsetY: Preference.PopupOffsetY,
-	offsetXe: 0,
 	closeOnMouseLeave: true,
 	show: function Popup_show(content, pos, fixed)
 	{
@@ -2000,36 +2111,19 @@ Popup.prototype = {
 		var poy = (this.fixed) ? 0 : window.pageYOffset;	//固定の時はスクロール位置を気にしない
 		var maxHeight = window.innerHeight - (pos.pageY + Preference.PopupOffsetY - poy) - 40;
 		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
-		if(e.clientWidth > maxWidth)
-		{
-			e.style.width = maxWidth + "px";
-		}
-		if(e.clientHeight > maxHeight)
-		{
-			e.style.height = maxHeight + "px";
-		}
+		e.style.maxWidth = maxWidth + "px";
+		e.style.maxHeight = maxHeight + "px";
 	},
 	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
 	adjust: function Popup_adjust(pos)
 	{
-		var e = this.container.firstChild;
-		var px = pos.pageX;
-		var py = pos.pageY;
-		//指定アンカー位置からのオフセット
-		px+= this.offsetX;
-		py += this.offsetY;
-		
-		//そこに置いたとき、横方向にはみ出す量
-		// x = (位置X + 幅 + マージン) - (描画領域幅 - スクロールバー幅 + 追加オフセット)
-		var x = (px + e.offsetWidth +  Preference.PopupMargin) - (document.body.offsetWidth + this.offsetXe) ; 
-		if (x < 0) x = 0;	//動かす必要がないときは動かさない
-		
-		//ポインタ（ひげの先）を持ってくる
-		e.parentNode.style.left = px + "px";
-		e.parentNode.style.top  = py + "px";
-		
-		//箱を持ってくる
-		e.style.marginLeft = -(x + 24) + "px";	//20ってのは、ヒゲの幅と本体の曲がってる部分のサイズの和より大きく、かつ大きすぎない丁度いい数字を設定
+		this.container.style.left = "-10000px";	//調整前に一度外に追い出さないと折り返した幅になってる
+		var px = pos.pageX + this.offsetX, py = pos.pageY + this.offsetY;
+		var x = px + this.container.firstChild.offsetWidth - document.body.offsetWidth;
+		this.container.style.left = px + "px";
+		this.container.style.top  = py + "px";
+		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
+		this.container.firstChild.style.marginLeft = x + "px";
 	},
 };
 
@@ -2485,8 +2579,7 @@ var Viewer = {
 				c.innerHTML = "{0} Images.<br><br>".format(s.total);
 			}
 			var ctrl = $("ViewerCtrl");
-			ctrl.dataset.state="refresh";
-			setTimeout(function(){ctrl.dataset.state="";}, 1);
+			Util.notifyRefreshInternal(ctrl);
 		}
 	},
 	show: function Viewer_show()
@@ -2557,6 +2650,28 @@ ViewerEntry.prototype = {
 	typename: "ViewerEntry",
 };
 
+/* ■通知領域■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Notice = {
+	init: function Notice_init()
+	{
+		this.container = document.createElement("DIV");
+		this.container.id = "noticeContainer";
+		document.body.appendChild(this.container);
+	},
+	add: function Notice_add(msg)
+	{
+		if (!this.container) this.init();
+		if (this.container.childNodes.length == Preference.NoticeLength)
+		{
+			this.container.removeChild(this.container.firstChild);
+		}
+		var e = document.createElement("P");
+		e.innerHTML = msg;
+		this.container.appendChild(e);
+		Util.notifyRefreshInternal(this.container);
+	},
+};
+
 /* ■ユーティリティ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Util = {
 	//数字をﾊﾝｶｸにする
@@ -2614,6 +2729,12 @@ var Util = {
 		}
 		return pos;
 	},
+	notifyRefreshInternal: function Util_notifyRefreshInternal(e)
+	{
+		var element = e;
+		element.dataset.refreshState = "refresh";
+		setTimeout(function(){element.dataset.refreshState = "";}, 15);
+	}
 };
 
 var MessageUtil = {
@@ -2685,6 +2806,7 @@ function init()
 	worker.postMessage({begins: 0});
 //*/
 	var dt1 = new Date();
+	Thread.init();	//ここから↓の初期化のうちいくつかを叩くかも
 	ThreadMessages.init();
 	MessageMenu.init();
 	BoardPane.init();
@@ -2699,9 +2821,13 @@ function init()
 	//TODO::なければブックマークへジャンプとかするかも
 
 	EventHandlers.init();
-	
+
+	Notice.add(ThreadInfo.Status);
+	Notice.add("{0} messages.".format(ThreadInfo.Total));
+	if (ThreadInfo.New) Notice.add("({0} new messages.)".format(ThreadInfo.New));
+
 	var dt2 = new Date();
-	console.log("init() spend {0} ms.".format(dt2-dt1));
+	Notice.add("{0} ms for initialize".format(dt2-dt1));
 };
 
 //簡易版string.format。置換しかできない。
