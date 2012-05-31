@@ -327,7 +327,7 @@ var EventHandlers = {
 					ids = ids.sort(function(a,b){return a-b;});
 					var pp = new ResPopup(null);
 					pp.offsetX = 32; pp.offsetY = 16;
-					pp.popupNumbers(ids, Util.getElementPagePos(t) , false);
+					pp.popupNumbers(ids, Util.getElementPagePos(t) , Util.isFixedElement(t));
 					t.__idpopup = pp;
 					pp.onClose = function(){ t.__idpopup = null; } ;
 				}
@@ -513,7 +513,7 @@ var MessageMenu = {
 			var pp = new ResPopup(null);
 			pp.offsetX = 8; pp.offsetY = 16;
 			pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
-			pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , false);
+			pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , Util.isFixedElement(node));
 			node.refPopup = pp;	//Ç‚Ç‚Ç±ÇµÇ≠Ç»ÇÈÇ©ÇÁdomÇ…objÇéùÇΩÇπÇΩÇ≠Ç»Ç¢ÇØÇ«Ç»ÇüÅEÅEÅE
 		}
 		else
@@ -626,7 +626,7 @@ var MessageMenu = {
 			var ids = tracking.getTrackingNumbers();
 			var pp = new ResPopup(null);
 			pp.offsetX = 8; pp.offsetY = 16;
-			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , false);
+			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , Util.isFixedElement(event.target));
 			this.popTrack = pp;
 		}
 	}
