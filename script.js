@@ -692,7 +692,7 @@ var Menu = {
 		else
 		{
 			var focusTo = ThreadMessages.deployedMax+1;
-			Thread.deploy(30);
+			Thread.deploy(Preference.MoreWidth);
 			MessageUtil.focus(focusTo);
 		}
 	},
@@ -700,7 +700,7 @@ var Menu = {
 	{
 		console.log("moreback");
 		var focusTo = ThreadMessages.deployedMin-1;
-		Thread.deploy(-30);
+		Thread.deploy(-Preference.MoreWidth);
 		MessageUtil.focus(focusTo);
 	},
 	ToggleAutoMore: function Menu_ToggleAutoMore()
@@ -841,7 +841,19 @@ var Thread = {
 	},
 	deploy: function Thread_deploy(width)
 	{	//widthが負のときは前方にdeploy, 正のときは後方にdeploy
-		this.deployTo(width < 0 ? ThreadMessages.deployedMin + width : ThreadMessages.deployedMax + width);
+		if (!width)
+		{
+			this.deployAll();
+		}
+		else
+		{
+			this.deployTo(width < 0 ? ThreadMessages.deployedMin + width : ThreadMessages.deployedMax + width);
+		}
+	},
+	deployAll: function Thread_deployAll()
+	{	//かけている全てを設置する。
+		this.deployTo(1);
+		this.deployTo(ThreadInfo.Total);
 	},
 	deployTo: function Thread_deployTo(to)
 	{
@@ -878,10 +890,33 @@ var ThreadMessages = {
 		{	//これ、キューに登録して非同期とかにしたほうがいいのかも。
 			this.processMessage(e.children[i]);
 		}
-		this.deployedMin = parseInt(e.firstElementChild.dataset.no);
+		this.updateDeployedInfo();
+	},
+	updateDeployedInfo: function ThreadMessages_updateDeployedInfo(e)
+	{
+		if(!e) e = $("resContainer");
+		var first = parseInt(e.firstElementChild.dataset.no);
+		if (e.children.length != 1)
+		{
+			var second = parseInt(e.children[1].dataset.no);
+			if (first == 1)
+			{
+				if (second == 2)
+				{
+					this.deployedMin = 1;
+				}
+				else
+				{
+					this.deployedMin = second;
+				}
+			}
+			else
+			{
+				this.deployedMin = first;
+			}
+		}
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
 	},
-	
 	deploy: function ThreadMessages_deploy(min, max)
 	{	//minからmaxまでをdeployNodeする。
 		//ロードされていないものはロードしないのであらかじめload(min, maxしておくように!）
@@ -958,6 +993,7 @@ var ThreadMessages = {
 			rc.appendChild(node);
 		}
 		if (nn < this.deployedMin) this.deployedMin = nn;
+		if ((this.deployedMin == 2) && this.isDeployed(1)) this.deployedMin = 1;
 		if (nn > this.deployedMax) this.deployedMax = nn;
 	},
 	
