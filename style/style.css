@@ -168,10 +168,6 @@ span.space
 		{
 			background-color: #333;
 		}
-		.automoreon { display: none; }
-		.automoreoff{ display: list-item; }
-		body[data-autoload="y"] .automoreon { display: list-item; }
-		body[data-autoload="y"] .automoreoff{ display: none; }
 
 /* スレ一覧ペイン */
 #boardPane
@@ -365,6 +361,14 @@ h2
 		.nroff{ display: inline; }
 		body[data-has-new="y"] .nron { display: inline; }
 		body[data-has-new="y"] .nroff{ display: none; }
+
+		/* 自動モード */
+		.icon_automore { background-image: -moz-image-rect(url(buttons.png),  0, 48, 16, 32); }
+		body[data-autoload="y"] .icon_automore { background-image: -moz-image-rect(url(buttons.png),  0, 64, 16, 48); }
+		body[data-autoload="y"] .icon_more
+		{
+			-moz-animation: turnImage 1s linear infinite;
+		}
 
 article article
 {
