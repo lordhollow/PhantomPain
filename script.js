@@ -791,10 +791,15 @@ var Thread = {
 						nc.innerHTML = RegExp.$1;
 						ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
 					}
-					this.deployTo(obj.Total);
+					//TODO::既存の新着マーク除去
+					ThreadInfo.Total = obj.total;
+					ThreadInfo.New = obj.new;
+					ThreadInfo.Fetched = obj.total - obj.new;
+					ThreadInfo.Status = obj.status;
+					this.deployTo(ThreadInfo.Total);
 					MessageUtil.focus(obj.Total - obj.new + 1)
 				}
-				Notice.add("新着{0}".format(obj.new ? obj.new + "件" : "なし"));
+				Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", Util.timestamp()));
 				return true;
 			}
 		}
@@ -851,7 +856,7 @@ var Thread = {
 		{
 			min = ThreadMessages.deployedMax+1;
 		}
-		console.log("deployTo: {0}->{1}".format(min,max));
+		//console.log("deployTo: {0}->{1}".format(min,max));
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
 	},
@@ -2734,7 +2739,17 @@ var Util = {
 		var element = e;
 		element.dataset.refreshState = "refresh";
 		setTimeout(function(){element.dataset.refreshState = "";}, 15);
-	}
+	},
+	timestamp: function Util_timestamp(d)
+	{
+		if (!d) d = new Date();
+		var h=d.getHours();
+		var m=d.getMinutes();
+		var s=d.getSeconds();
+		if(m<10)m="0"+m;
+		if(s<10)s="0"+s;
+		return h+":"+m+":"+s;
+	},
 };
 
 var MessageUtil = {
