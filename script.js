@@ -2091,9 +2091,7 @@ Popup.prototype = {
 			pos = {x: aEvent.pageX, y: aEvent.pageY};
 		}
 		var p = Util.getElementPagePos(e);
-		console.log(p);
 		p.pageX += 12;	//なんかズレてるので補正。この12はなんだろう？PopupOffsetが正しいのか？
-		console.log("({2},{3})-({4},{5}): {0},{1}".format(pos.x, pos.y, p.pageX, p.pageY, p.pageX+e.offsetWidth,p.pageY+e.offsetHeight));
 		if(pos.x<=p.pageX||
 		   pos.y<=p.pageY||
 		   pos.x>=p.pageX+e.offsetWidth||
