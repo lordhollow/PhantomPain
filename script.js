@@ -746,6 +746,7 @@ var Thread = {
 	},
 	check: function Thread_check()
 	{	//新着レスの確認を開始
+		this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
 		if (ThreadMessages.deployedMax != ThreadInfo.Total)
 		{	//最後まで表示されていないときは全部表示してから。
 			Thread.deployTo(ThreadInfo.Total);
@@ -829,7 +830,6 @@ var Thread = {
 	{
 		if (++this.autoTickCount >= Preference.AutoReloadInterval)
 		{
-			this.autoTickCount = 0;
 			this.check();
 		}
 	},
