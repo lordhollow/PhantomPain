@@ -61,15 +61,12 @@ CommonPref.setIdentifier("<THREADURL/>");
 		<li><button class="icon_eximage" title="画像閲覧" onclick="Menu.ShowViewer();"></button></li>
 		</ul>
 	</li>
-	<li class="automoreoff">
+	<li>
 		<button class="icon_more" title="More" onclick="Menu.More();"></button>
 		<ul>
 		<li><button class="icon_backward" title="MoreBack" onclick="Menu.MoreBack();"></button></li>
-		<li><button class="icon_beginautomore" title="AutoMore" onclick="Menu.BeginAutoMore();"></button></li>
+		<li><button class="icon_beginautomore" title="自動更新" onclick="Menu.ToggleAutoMore();"></button></li>
 		</ul>
-	</li>
-	<li class="automoreon">
-		<button class="icon_endautomore" title="AutoMore" onclick="Menu.EndAutoMore();"></button>
 	</li>
 	<li>
 		<button class="nron  icon_new" title="新着あり(クリックでジャンプ)" onclick="Menu.JumpToNewMark();"></button>

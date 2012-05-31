@@ -14,6 +14,7 @@ var _Preference =
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
+	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
@@ -701,11 +702,9 @@ var Menu = {
 		Thread.deploy(-30);
 		MessageUtil.focus(focusTo);
 	},
-	BeginAutoMore: function Menu_BeginAutoMore()
+	ToggleAutoMore: function Menu_ToggleAutoMore()
 	{
-	},
-	EndAutoMore: function Menu_EndAutoMore()
-	{
+		Thread.toggleAutoCheck();
 	},
 	PreviewOutlinks: function Menu_PreviewOutlinks()
 	{
@@ -804,6 +803,7 @@ var Thread = {
 		if(this.auto)return;
 		this.auto = true
 		document.body.dataset.autoload = "y";
+		this.autoTickCount = 0;
 		this.autoTimer = setInterval(this.autocheckTick.bind(this), 1000);
 	},
 	endAutoCheck: function Thread_endAutoCheck()
@@ -823,6 +823,14 @@ var Thread = {
 		else
 		{
 			this.beginAutoCheck();
+		}
+	},
+	autocheckTick: function Thread_autocheckTick()
+	{
+		if (++this.autoTickCount >= Preference.AutoReloadInterval)
+		{
+			this.autoTickCount = 0;
+			this.check();
 		}
 	},
 	deploy: function Thread_deploy(width)
