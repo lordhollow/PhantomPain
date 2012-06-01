@@ -1842,7 +1842,7 @@ var OutlinkPlugins = {
 		{
 			container = document.createElement("DIV");
 			container.className = "outLinkPreview";
-			resNode.insertBefore(container, resNode.children[3]);
+			resNode.insertBefore(container, resNode.getElementsByTagName("p")[0].nextSibling);
 			for(var i=0,j=outlinks.length; i<j; i++)
 			{
 				var plugin = this.getOutlinkPlugin(outlinks[i]);
