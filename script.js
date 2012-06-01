@@ -13,6 +13,7 @@ var _Preference =
 	PopupOffsetY: 16,			//ポップアップのオフセット
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
+	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
@@ -2119,6 +2120,7 @@ Popup.prototype = {
 		var container = document.createElement("DIV");
 		container.appendChild(content);
 		container.className = "popup";
+		container.popup = this;
 		if (fixed) container.style.position = "fixed";
 		this.fixed = fixed;
 		if (this.closeOnMouseLeave) container.addEventListener("mouseleave", this.checkClose.bind(this), false);
@@ -2150,8 +2152,15 @@ Popup.prototype = {
 	{
 		if (this.closed) return;
 		this.closed = true;
-		this.container.parentNode.removeChild(this.container);
+		if (this.container && this.container.parentNode) this.container.parentNode.removeChild(this.container);
 		if (this.onClose) this.onClose(this);
+		if (Preference.PopupDestructChain && this.childPopups)
+		{
+			for(var i=0, j=this.childPopups.length; i < j; i++)
+			{
+				this.childPopups[i].close();
+			}
+		}
 	},
 	//サイズ制限
 	limitSize: function Popup_limitSize(pos)
@@ -2177,6 +2186,20 @@ Popup.prototype = {
 		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
 		this.container.firstChild.style.marginLeft = x + "px";
 	},
+	getPopupObj: function Popup_getPopupObj(element)
+	{	//elementの親につけられたpopupを探す
+		if (element)
+		{
+			if (element.popup)	return element.popup;
+			if (element.parentNode) return this.getPopupObj(element.parentNode);
+		}
+		return null;
+	},
+	registorChild: function Popup_registorChild(popup)
+	{
+		if (!this.childPopups) this.childPopups = new Array();
+		this.childPopups.push(popup);
+	},
 };
 
 function ResPopup(anchor){ this.init(anchor); }
@@ -2187,6 +2210,11 @@ ResPopup.prototype = new Popup();
 		//Delayを仕掛ける
 		if (anchor != null)
 		{
+			var parentPopup = this.getPopupObj(anchor);
+			if (parentPopup)
+			{
+				parentPopup.registorChild(this);
+			}
 			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), Util.isFixedElement(anchor)), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
 				function(){
