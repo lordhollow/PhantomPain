@@ -312,7 +312,10 @@ h2
 	}
 		/* レスメニュー上のブックマークボタン切り替え */
 		.bmon { display: none; }
+		.bmoff{ display: inline; }
 		#Menu_Bookmark[data-bm^="y"]+ul .bmon { display: inline; }
+		article[data-bm="y"] .bmon { display:inline; }
+		article[data-bm="y"] .bmoff{ display:none; }
 		#Menu_Bookmark
 		{
 			position: relative;
