@@ -458,7 +458,7 @@ article article
 	}
 
 
-.popup > article
+.popup > div > article
 {
 	font-size: 80%;
 }
