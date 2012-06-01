@@ -401,6 +401,10 @@ article article
 	margin: 6px 1em;
 	float: left;
 }
+	.ctf
+	{
+		clear: both;
+	}
 	article[data-track^="m"] > .ct
 	{
 		border-radius: 6px;

@@ -560,7 +560,8 @@ var MessageMenu = {
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
 					this._createNodeTree(rf[i], node);
 				}
-				c.appendChild(node);
+				c.insertBefore(node, c.lastElementChild);
+				//c.appendChild(node);
 			}
 		}
 	},
@@ -1080,7 +1081,7 @@ var ThreadMessages = {
 				{
 					obj.removeChild(obj.childNodes[1]);
 				}
-				while(obj.childNodes.length > 2)
+				while(obj.childNodes.length > 3)
 				{
 					obj.removeChild(obj.childNodes[2]);
 				}
@@ -1840,7 +1841,7 @@ var OutlinkPlugins = {
 		{
 			container = document.createElement("DIV");
 			container.className = "outLinkPreview";
-			resNode.appendChild(container);
+			resNode.insertBefore(container, resNode.children[3]);
 			for(var i=0,j=outlinks.length; i<j; i++)
 			{
 				var plugin = this.getOutlinkPlugin(outlinks[i]);
