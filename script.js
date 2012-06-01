@@ -739,7 +739,19 @@ var Thread = {
 	{
 		//identifier設定
 		var url = new URL(ThreadInfo.Url);
-		this.boardId = "{0}.{1}".format(url.type == "2CH" ? "" : url.domain, url.boardId).toLowerCase();
+		if (url.type == "2CH")
+		{
+			this.boardId = "";
+		}
+		else if (url.type == "MACHI")
+		{
+			this.boardId = "machi.";
+		}
+		else
+		{
+			this.boardId = url.domain + ".";
+		}
+		this.boardId = (this.boardId + url.boardId).toLowerCase();
 		this.threadId = this.boardId + "." + url.threadId;
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
@@ -1710,7 +1722,7 @@ URL.prototype = {
 		}
 		
 		//スレッド判定
-		this.maybeThread = url.match(/\/test\/read.cgi\//) ? true : false;
+		this.maybeThread = url.match(/\/read.cgi\//) ? true : false;
 		
 		//4つ(2chか町BBSか2chのクローンかその他WWWか）に分類
 		if (this.domain.match(/(2ch.net|bbspink.com)$/))
@@ -1733,7 +1745,7 @@ URL.prototype = {
 		//スレッドなら、板とスレッドと表示範囲の指定を取得
 		if (this.maybeThread)
 		{
-			if (url.match(/\/test\/read.cgi\/([^\/]+)\/([^\/]+)(\/(.+))?/))
+			if (url.match(/\/read.cgi\/([^\/]+)\/([^\/]+)(\/(.+))?/))
 			{
 				this.boardId = RegExp.$1;
 				this.threadId= RegExp.$2;
