@@ -694,6 +694,13 @@ var Menu = {
 		MessageLoader.load(Pickup.pickups);
 		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
 	},
+	ExpressPickups: function Menu_ExpressPickups()
+	{
+		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+		$("fform").q.value = "";
+		$("fform").p.checked = true;
+		Finder.express();
+	},
 	More: function Menu_More()
 	{
 		if (ThreadMessages.deployedMax == ThreadInfo.Total)
