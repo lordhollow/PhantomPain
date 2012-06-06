@@ -234,7 +234,7 @@ h2
 	article[data-focus="on"]
 	{
 		background-color: #FCC;
-		-moz-box-shadow: 0px 12px 16px 8px #FCC; 
+		box-shadow: 0px 12px 16px 8px #FCC; 
 	}
 
 	h2 > * 
