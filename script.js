@@ -230,8 +230,15 @@ var EventHandlers = {
 		switch(e.keyCode)
 		{
 			case 13:	//Enter
-				var url = Preference.PostScheme + ThreadInfo.Url;
-				window.location.href = url;
+				if (document.body.dataset.expressMode=="y")
+				{	//抽出モードではEnter無効。modeでやったほうがよくね？
+					return true;
+				}
+				else
+				{
+					var url = Preference.PostScheme + ThreadInfo.Url;
+					window.location.href = url;
+				}
 				break;
 			default:
 				return false;
@@ -523,7 +530,10 @@ var MessageMenu = {
 		}
 	},
 	ExtractRef: function MessageMenu_ExtractRef(event)
-	{
+	{	//場所指定が泥臭いなぁ
+		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+		$("fform").q.value = "[resto:{0}]".format(this._menu.parentNode.dataset.no);
+		Finder.express();
 	},
 	CreateRefTree: function MessageMenu_CreateRefTree(event)
 	{	//参照ツリーを構築する
@@ -2375,6 +2385,11 @@ var Finder = {
 		var icase=!$("fform").i.checked;
 		var pick = $("fform").p.checked;
 		
+		if (cond.match(/\[resto:(\d+)\]/))
+		{
+			this.expressReffer(parseInt(RegExp.$1));
+			return;
+		}
 		if (!reg) cond = this.escape(cond);
 		var flag = icase ? "i" : "";
 		var exp = null;
@@ -2389,6 +2404,15 @@ var Finder = {
 		}
 		ThreadMessages.foreach(function(node){
 			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
+		}, false);
+	},
+	expressReffer: function Finder_expressReffer(no)
+	{
+		var t = MessageStructure.nodesReplyFrom[no];
+		t = t ? t.clone() : [];
+		t.push(no);
+		ThreadMessages.foreach(function(node){
+			node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
 		}, false);
 	},
 	escape: function Finder_escape(str)
