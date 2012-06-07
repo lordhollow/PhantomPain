@@ -363,7 +363,7 @@ var EventHandlers = {
 			{
 				if (e.target.enchantedGear.origin != parseInt(MessageMenu._menu.dataset.binding))
 				{	//adjust
-					e.target.enchantedGear.changePos(Util.getElementPagePos(e.target));
+					e.target.enchantedGear.changePos(e.target);
 					e.target.enchantedGear.changeOrigin(parseInt(MessageMenu._menu.dataset.binding));
 					e.preventDefault();
 					return;
@@ -618,7 +618,6 @@ var MessageMenu = {
 		else
 		{
 			var pp = new GearPopup(e);
-			pp.offsetX = 8; pp.offsetY = 16;
 			pp.showPopup(parseInt(this._menu.dataset.binding), Util.getElementPagePos(e), false);
 		}
 	},
@@ -667,7 +666,6 @@ var Menu = {
 			else
 			{
 				var pp = new GearPopup(e);
-				pp.offsetX = 8; pp.offsetY = 16;
 				pp.showPopup(1, Util.getElementPagePos(e), true);
 			}
 		}
@@ -2167,12 +2165,7 @@ Popup.prototype = {
 	
 	show: function Popup_show(content)
 	{
-		//位置計算(アレンジされているようその下辺中央を指すように)
-		var pos = Util.getElementPagePos(this.arranged);
-		pos.pageX += pos.width /2;
-		pos.pageY += pos.height;
-		console.log(pos);
-	
+		var pos = this.getPopupPos();
 		this.container.appendChild(content);
 		$("popupContainer").appendChild(this.container);
 		this.limitSize(pos);
@@ -2226,6 +2219,7 @@ Popup.prototype = {
 	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
 	adjust: function Popup_adjust(pos)
 	{
+		if (!pos) pos = this.getPopupPos();
 		this.container.style.left = "-10000px";	//調整前に一度外に追い出さないと折り返した幅になってる
 		var px = pos.pageX + this.offsetX, py = pos.pageY + this.offsetY;
 		var x = px + this.container.firstChild.offsetWidth - document.body.offsetWidth;
@@ -2233,6 +2227,14 @@ Popup.prototype = {
 		this.container.style.top  = py + "px";
 		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
 		this.container.firstChild.style.marginLeft = x + "px";
+	},
+	getPopupPos: function Popup_getPopupPos()
+	{
+		//位置計算(アレンジされているようその下辺中央を指すように)
+		var pos = Util.getElementPagePos(this.arranged);
+		pos.pageX += pos.width /2;
+		pos.pageY += pos.height;
+		return pos;
 	},
 	getPopupObj: function Popup_getPopupObj(element)
 	{	//elementの親につけられたpopupを探す
@@ -2302,6 +2304,7 @@ function GearPopup(enchantElement) { this.init(enchantElement); }
 GearPopup.prototype = new Popup();
 	GearPopup.prototype.init = function GearPopup_init(enchantElement)
 	{
+		this._init(enchantElement);
 		this.content = document.createElement("DIV");
 		if (enchantElement)
 		{
@@ -2317,23 +2320,22 @@ GearPopup.prototype = new Popup();
 			}
 		};
 	};
-	GearPopup.prototype.changePos = function GearPopup_changePos(pos)
-	{
-		this.pos = pos;
-		this.adjust(pos);
+	GearPopup.prototype.changePos = function GearPopup_changePos(e)
+	{	//名前良くない
+		this.arranged = e;
+		this.adjust();
 	};
 	GearPopup.prototype.changeOrigin = function GearPopup_changeOrigin(no)
 	{
 		this.to(no);
 		this.origin = no;
 	};
-	GearPopup.prototype.showPopup = function GearPopup_showPopup(no, pos, fixed)
+	GearPopup.prototype.showPopup = function GearPopup_showPopup(no)
 	{
 		var n = this.getNode(no);
 		this.content.appendChild(n);
-		this.pos = pos;
 		this.origin = no;
-		this.show(this.content, pos, fixed);
+		this.show(this.content);
 		var c = this.container;
 		c.dataset.gearEnchanted = "y";
 		c.enchantedGear = this;
@@ -2347,11 +2349,11 @@ GearPopup.prototype = new Popup();
 		{
 			this.content.innerHTML = "";
 			this.content.appendChild(n);
-			this.adjust(this.pos);
+			this.adjust();
 		}
 		this.stepping = false;
 	};
-		GearPopup.prototype.step = function GearPopup_step(cnt)
+	GearPopup.prototype.step = function GearPopup_step(cnt)
 	{
 		this.to(this.no + cnt);
 	};
