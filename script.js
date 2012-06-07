@@ -9,8 +9,8 @@ var _Preference =
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
 	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
-	PopupOffsetX: 16,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
-	PopupOffsetY: 16,			//ポップアップのオフセット
+	PopupOffsetX: 0,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
+	PopupOffsetY: 0,			//ポップアップのオフセット
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
@@ -339,8 +339,7 @@ var EventHandlers = {
 				{
 					ids = ids.sort(function(a,b){return a-b;});
 					var pp = new ResPopup(null);
-					pp.offsetX = 32; pp.offsetY = 16;
-					pp.popupNumbers(ids, Util.getElementPagePos(t) , Util.isFixedElement(t));
+					pp.popup(ids, t);
 					t.__idpopup = pp;
 					pp.onClose = function(){ t.__idpopup = null; } ;
 				}
@@ -524,9 +523,8 @@ var MessageMenu = {
 		{
 			node.dataset.popupRefShowing = "y";
 			var pp = new ResPopup(null);
-			pp.offsetX = 8; pp.offsetY = 16;
 			pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
-			pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , Util.isFixedElement(node));
+			pp.popup(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], "RMenu.Ref");
 			node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
 		}
 		else
@@ -641,8 +639,7 @@ var MessageMenu = {
 		{
 			var ids = tracking.getTrackingNumbers();
 			var pp = new ResPopup(null);
-			pp.offsetX = 8; pp.offsetY = 16;
-			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , Util.isFixedElement(event.target));
+			pp.popup(ids, "RMenu.TrPop");
 			this.popTrack = pp;
 		}
 	}
@@ -656,11 +653,10 @@ var Menu = {
 		if (Preference.TemplateLength)
 		{
 			var pp = new ResPopup(null);
-			pp.offsetX = 8; pp.offsetY = 16;
 			MessageLoader.load(1, Preference.TemplateLength);
 			var tids = [];
 			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-			pp.popupNumbers(tids, Util.getElementPagePos(e), true);
+			pp.popup(tids, e);
 		}
 		else 
 		{	//TemplateLength = 0設定時はギアとして出す
@@ -695,9 +691,8 @@ var Menu = {
 	PopupPickups: function Menu_PopupPickups()
 	{
 		var pp = new ResPopup(null);
-		pp.offsetX = 8; pp.offsetY = 16;
 		MessageLoader.load(Pickup.pickups);
-		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
+		pp.popup(Pickup.pickups, "Menu.Pickup");
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
@@ -2133,26 +2128,59 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function Popup() { }
 Popup.prototype = {
-	offsetX: Preference.PopupOffsetX,
-	offsetY: Preference.PopupOffsetY,
+	offsetX: Preference.PopupOffsetX,	//[!Obsolated]
+	offsetY: Preference.PopupOffsetY,	//[!Obsolated]
 	closeOnMouseLeave: true,
-	show: function Popup_show(content, pos, fixed)
+	
+	_init: function Popup_init(e)
+	{	//eはなにからポップアップさせようとしているか。要素または要素のIDを指定する。
+		if (!e.tagName) e = $(e);
+		if (!e)
+		{
+			console.log("PopupInitializedError");
+			console.log(e);
+			e = document.body;	//なんもないならとりあえずエラーにならないようにBodyにつけとく
+		}
+		this.arranged = e;	//適用先オブジェクト
+		this.fixed = Util.isFixedElement(e);	//適用先オブジェクトは固定されたもの？
+		
+		//親の探索
+		while (e)
+		{
+			if (e.popup)
+			{	//ポップアップからのポップアップ→子として登録
+				e.popup.registorChild(this);
+				break;
+			}
+			e = e.parentNode;
+		}
+		
+		//自分を作成
+		var c = document.createElement("DIV");
+		c.addEventListener("mouseleave", this.checkClose.bind(this), false);
+		c.className = "popup";
+		c.dataset.popupEnchanted = "y";
+		c.dataset.fixedPopup = this.fixed ? "y" : "";
+		c.popup = this;
+		this.container = c;
+	},
+	
+	show: function Popup_show(content)
 	{
-		var container = document.createElement("DIV");
-		container.appendChild(content);
-		container.className = "popup";
-		container.popup = this;
-		if (fixed) container.style.position = "fixed";
-		this.fixed = fixed;
-		if (this.closeOnMouseLeave) container.addEventListener("mouseleave", this.checkClose.bind(this), false);
-		$("popupContainer").appendChild(container);
-		this.container = container;
+		//位置計算(アレンジされているようその下辺中央を指すように)
+		var pos = Util.getElementPagePos(this.arranged);
+		pos.pageX += pos.width /2;
+		pos.pageY += pos.height;
+		console.log(pos);
+	
+		this.container.appendChild(content);
+		$("popupContainer").appendChild(this.container);
 		this.limitSize(pos);
 		this.adjust(pos);
-		container.dataset.popupEnchanted = "y";
 	},
 	checkClose: function Popup_checkClose(aEvent)
 	{
+		if (!this.closeOnMouseLeave) return;
 		var e=this.container.firstChild;
 		if (this.fixed)
 		{
@@ -2163,11 +2191,10 @@ Popup.prototype = {
 			pos = {x: aEvent.pageX, y: aEvent.pageY};
 		}
 		var p = Util.getElementPagePos(e);
-		p.pageX += 12;	//なんかズレてるので補正。この12はなんだろう？PopupOffsetが正しいのか？
 		if(pos.x<=p.pageX||
 		   pos.y<=p.pageY||
-		   pos.x>=p.pageX+e.offsetWidth||
-		   pos.y>=p.pageY+e.offsetHeight)this.close();
+		   pos.x>=p.pageX+p.width||
+		   pos.y>=p.pageY+p.height)this.close();
 	},
 	close: function Popup_close()
 	{
@@ -2230,13 +2257,8 @@ ResPopup.prototype = new Popup();
 	{
 		//Delayを仕掛ける
 		if (anchor != null)
-		{
-			var parentPopup = this.getPopupObj(anchor);
-			if (parentPopup)
-			{
-				parentPopup.registorChild(this);
-			}
-			var tid = setTimeout(this.popup.bind(this, anchor.textContent, Util.getElementPagePos(anchor), Util.isFixedElement(anchor)), Preference.ResPopupDelay);
+		{//.textContent
+			var tid = setTimeout(this.popup.bind(this, anchor), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
 				function(){
 					clearTimeout(tid);
@@ -2244,20 +2266,26 @@ ResPopup.prototype = new Popup();
 				},false);
 		}
 	};
-	ResPopup.prototype.popup =  function ResPopup_popup(target, pos, fixed)
-	{	//ポップアップを表示, targetはレスアンカーの文字列。posはどの要素からポップアップするか
-		this.used = true;
-		MessageLoader.loadByAnchorStr(target);
-		var ids = MessageUtil.splitResNumbers(target);
-		this.showPopup(ids, pos, fixed);
-	};
-	ResPopup.prototype.popupNumbers =  function ResPopup_popupNumbers(ids, pos, fixed)
-	{	//ポップアップを表示, idsはレス番号の配列。
-		this.used = true;
-		this.showPopup(ids, pos, fixed);
-	};
-	ResPopup.prototype.showPopup =  function ResPopup_showPopup(ids, pos, fixed)
+	
+	ResPopup.prototype.popup =  function ResPopup_popup(obj, e)
 	{
+		var ids;
+		if (!e) e = obj;
+		if (obj.tagName)
+		{	//要素。アンカーだと信じる
+			ids = MessageUtil.splitResNumbers(obj.textContent);
+			MessageLoader.loadByAnchorStr(obj.textContent);
+		}
+		else if (obj.length)
+		{	//配列・・・だといいなぁ
+			ids = obj;
+		}
+		else
+		{	//その他・・・適当に
+			ids = [obj];
+		}
+		
+		this._init(e);
 		var innerContainer = document.createElement("DIV");
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
@@ -2267,7 +2295,7 @@ ResPopup.prototype = new Popup();
 				innerContainer.appendChild(node);
 			}
 		}
-		this.show(innerContainer, pos, fixed);
+		this.show(innerContainer);
 	};
 
 function GearPopup(enchantElement) { this.init(enchantElement); }
@@ -2828,21 +2856,29 @@ var Util = {
 		try
 		{
 			var style = document.defaultView.getComputedStyle(e, null);
-			if (style.position == "fixed") return true;
+			if (style.position == "fixed") 
+			{
+				console.log(e);
+				return true;
+			}
 			if (e.parentNode == null) return false;
 			return this.isFixedElement(e.parentNode);
 		} catch(e) { return false; }
 	},
 	getElementPagePos: function Util_getElementPagePos(e)
 	{	//要素の絶対座標を求める
-		var pos = {pageX: 0, pageY: 0};
-		while(e != null)
+		rect = e.getBoundingClientRect();
+		rect.pageX = Math.round(rect.left);
+		rect.pageY = Math.round(rect.top);
+		rect.fixed = this.isFixedElement(e);
+		if (!rect.fixed)
 		{
-			pos.pageX += e.offsetLeft;
-			pos.pageY += e.offsetTop;
-			e = e.offsetParent;
+			rect.pageX += window.scrollX;
+			rect.pageY += window.scrollY;
 		}
-		return pos;
+		return {pageX: rect.pageX, pageY: rect.pageY,
+		        width: Math.round(rect.right - rect.left), height: Math.round(rect.bottom - rect.top),
+		        fixed: rect.fixed};
 	},
 	notifyRefreshInternal: function Util_notifyRefreshInternal(e)
 	{

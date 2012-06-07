@@ -427,6 +427,11 @@ article article
 	left: -10000px;
 	top:  -10000px;
 }
+.popup[data-fixed-popup="y"]
+{
+	position: fixed;
+	border-left: 12px solid rgba(255,192,255,0.95);
+}
 .popup > div
 {
 	float: left;
