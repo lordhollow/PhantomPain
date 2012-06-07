@@ -533,8 +533,8 @@ var MessageMenu = {
 		}
 	},
 	ExtractRef: function MessageMenu_ExtractRef(event)
-	{	//場所指定が泥臭いなぁ
-		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+	{
+		Finder.enterExpressMode();
 		$("fform").q.value = "[resto:{0}]".format(this._menu.parentNode.dataset.no);
 		Finder.express();
 	},
@@ -694,7 +694,7 @@ var Menu = {
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
-		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+		Finder.enterExpressMode();
 		$("fform").q.value = "";
 		$("fform").p.checked = true;
 		Finder.express();
@@ -737,11 +737,11 @@ var Menu = {
 	{
 		if (Finder.showing())
 		{
-			Finder.closeFinderPopup();
+			Finder.leaveExpressMode();
 		}
 		else
 		{
-			Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+			Finder.enterExpressMode();
 		}
 	},
 	ShowViewer: function Menu_ShowViewer()
@@ -2382,41 +2382,36 @@ var Finder = {
 			'<span id="fformerr"></span>' +
 			'</form>' ;
 	},
-	
-	popupFinderForm: function Finder_popupFinderForm(pos, fixed)
-	{
-		var content = this.form;
-		var p = new Popup();
-		p.offsetX = 8; p.offsetY = 16;
-		p.closeOnMouseLeave = false;
-		p.show(this.form, pos, fixed);
-		$("fform").q.value = document.getSelection()
-		p.container.dataset.finder = "y";
-		this.popup = p;
-		this.enterExpressMode();
-	},
-	closeFinderPopup: function Finder_closeFinderPopup()
-	{
-		if (this.popup)
-		{
-			this.popup.close();
-			this.popup = null;
-			this.leaveExpressMode();
-		}
-	},
 	showing: function Finder_showing()
 	{
 		return (this.popup != null);
 	},
 	enterExpressMode: function Finder_enterExpressMode()
 	{
-		this.pageY = window.scrollY;
-		document.body.dataset.expressMode="y";
+		if (document.body.dataset.expressMode != "y")
+		{
+			var content = this.form;
+			var p = new Popup();
+			p.closeOnMouseLeave = false;
+			p._init("Menu.Finder");
+			p.show(this.form);
+			$("fform").q.value = document.getSelection()
+			p.container.dataset.finder = "y";
+			this.popup = p;
+
+			this.pageY = window.scrollY;
+			document.body.dataset.expressMode="y";
+		}
 	},
 	leaveExpressMode: function Finder_leaveExpressMode()
 	{
 		document.body.dataset.expressMode="n";
 		window.scrollTo(0,this.pageY);
+		if (this.popup)
+		{
+			this.popup.close();
+			this.popup = null;
+		}
 	},
 	express: function Finder_express()
 	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
@@ -2856,11 +2851,7 @@ var Util = {
 		try
 		{
 			var style = document.defaultView.getComputedStyle(e, null);
-			if (style.position == "fixed") 
-			{
-				console.log(e);
-				return true;
-			}
+			if (style.position == "fixed") return true;
 			if (e.parentNode == null) return false;
 			return this.isFixedElement(e.parentNode);
 		} catch(e) { return false; }
