@@ -1,3 +1,114 @@
+*ポップアップ改造
+・全てのポップアップに基準要素を持たせ、その要素の左下隅を基準オフセットとする
+・スクロールのあるポップアップからさらにポップアップする場合、変なところに出るのを修正する
+
+★レスポップアップ
+305
+				new ResPopup(t);
+
+
+
+★アウトリンク
+309
+			var p = OutlinkPlugins.getOutlinkPlugin(t);
+			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
+
+
+★ID
+341
+					var pp = new ResPopup(null);
+					pp.offsetX = 32; pp.offsetY = 16;
+					pp.popupNumbers(ids, Util.getElementPagePos(t) , Util.isFixedElement(t));
+					t.__idpopup = pp;
+
+
+★逆参照
+525
+			node.dataset.popupRefShowing = "y";
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
+			pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
+			pp.popupNumbers(MessageStructure.nodesReplyFrom[this._menu.dataset.binding], Util.getElementPagePos($("RMenu.Ref")) , Util.isFixedElement(node));
+			node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
+
+★逆参照抽出→検索フォーム
+539
+		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+
+
+★ギア
+622
+			var pp = new GearPopup(e);
+			pp.offsetX = 8; pp.offsetY = 16;
+			pp.showPopup(parseInt(this._menu.dataset.binding), Util.getElementPagePos(e), false);
+
+★トラッキング
+642
+			var ids = tracking.getTrackingNumbers();
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
+			pp.popupNumbers(ids, Util.getElementPagePos($("RMenu.TrPop")) , Util.isFixedElement(event.target));
+			this.popTrack = pp;
+
+★テンプレート
+			var pp = new ResPopup(null);
+			pp.offsetX = 8; pp.offsetY = 16;
+			MessageLoader.load(1, Preference.TemplateLength);
+			var tids = [];
+			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+			pp.popupNumbers(tids, Util.getElementPagePos(e), true);
+
+★テンプレートギア
+				var pp = new GearPopup(e);
+				pp.offsetX = 8; pp.offsetY = 16;
+				pp.showPopup(1, Util.getElementPagePos(e), true);
+
+★ピックアップ
+697
+		var pp = new ResPopup(null);
+		pp.offsetX = 8; pp.offsetY = 16;
+		MessageLoader.load(Pickup.pickups);
+		pp.popupNumbers(Pickup.pickups, Util.getElementPagePos($("Menu.Pickup")), true);
+
+
+★ピックアップ抽出→検索フォーム
+704
+		Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+
+
+
+★検索フォーム
+751
+			Finder.popupFinderForm(Util.getElementPagePos($("Menu.Finder")), true);
+
+
+★（アウトリンクポップアップ）
+1843
+			var p = new Popup();
+			pos = Util.getElementPagePos(anchor);
+			pos.pageX += anchor.offsetWidth;
+			var c = plugin.getPreview(anchor.href, p.adjust.bind(p, pos));
+			if (c)
+			{
+				anchor.dataset.previewShowing = "y";
+				var innerCont = document.createElement("DIV");
+				innerCont.appendChild(c);
+				p.offsetX = 0;
+				p.show(innerCont, pos, fixed);
+				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
+			}
+
+★（検索）
+		var p = new Popup();
+		p.offsetX = 8; p.offsetY = 16;
+		p.closeOnMouseLeave = false;
+		p.show(this.form, pos, fixed);
+		$("fform").q.value = document.getSelection()
+		p.container.dataset.finder = "y";
+
+
+
+
 *Ticket
 設定の変更, 保存
 メディアビュアーのピックアップ限定
