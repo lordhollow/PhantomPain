@@ -126,6 +126,11 @@ var SkinPref = {
 
 };
 
+function PP3ResetPreference()
+{	//ブックマークレットとして javascript:PP3ResetPreference(); を登録しておくと、リセットすることができます。
+	console.log("設定をクリアしました");
+}
+
 /* ■共通の設定■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var CommonPref = {
 
