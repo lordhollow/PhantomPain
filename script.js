@@ -2215,7 +2215,7 @@ Popup.prototype = {
 	{
 		if (!pos) pos = this.getPopupPos();
 		this.container.style.left = "-10000px";	//調整前に一度外に追い出さないと折り返した幅になってる
-		var px = pos.pageX + this.offsetX, py = pos.pageY + this.offsetY;
+		var px = pos.pageX, py = pos.pageY;
 		var x = px + this.container.firstChild.offsetWidth - document.body.offsetWidth;
 		this.container.style.left = px + "px";
 		this.container.style.top  = py + "px";
