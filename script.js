@@ -2421,6 +2421,11 @@ var Finder = {
 			this.expressReffer(parseInt(RegExp.$1));
 			return;
 		}
+		if (cond == "[tracked]")
+		{
+			this.expressTracked();
+			return;
+		}
 		if (!reg) cond = this.escape(cond);
 		var flag = icase ? "i" : "";
 		var exp = null;
@@ -2445,6 +2450,12 @@ var Finder = {
 		ThreadMessages.foreach(function(node){
 			node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
 		}, false);
+	},
+	expressTracked: function Finder_expressTracked()
+	{
+		ThreadMessages.foreach(function(node){
+			node.dataset.express = Tracker.getMarkerClass(node) != "" ? "y" : "n";
+		},false);
 	},
 	escape: function Finder_escape(str)
 	{
