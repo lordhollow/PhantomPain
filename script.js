@@ -24,6 +24,7 @@ var _Preference =
 	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
 	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
+	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	NoticeLength: 10,			//表示するお知らせの数
 };
 var Preference = clone(_Preference);
@@ -917,6 +918,11 @@ var ThreadMessages = {
 			this.processMessage(e.children[i]);
 		}
 		this.updateDeployedInfo();
+		//自動展開
+		if (Preference.AutoPreviewOutlinks)
+		{	
+			Menu.PreviewOutlinks();
+		}
 	},
 	updateDeployedInfo: function ThreadMessages_updateDeployedInfo(e)
 	{
@@ -1021,6 +1027,10 @@ var ThreadMessages = {
 		if (nn < this.deployedMin) this.deployedMin = nn;
 		if ((this.deployedMin == 2) && this.isDeployed(1)) this.deployedMin = 1;
 		if (nn > this.deployedMax) this.deployedMax = nn;
+		if (Preference.AutoPreviewOutlinks)
+		{
+			OutlinkPlugins.preview(node);
+		}
 	},
 	
 	findDeployedNextSibling: function ThreadMessages_findDeployedNextSibing(no)
@@ -2978,6 +2988,7 @@ function init()
 	document.title = ThreadInfo.Title + " - {0}({1})".format(ownerApp, skinName);				//タイトル修正
 	if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
 	//TODO::なければブックマークへジャンプとかするかも
+
 
 	EventHandlers.init();
 
