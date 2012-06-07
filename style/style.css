@@ -430,7 +430,6 @@ article article
 .popup[data-fixed-popup="y"]
 {
 	position: fixed;
-	border-left: 12px solid rgba(255,192,255,0.95);
 }
 .popup > div
 {
