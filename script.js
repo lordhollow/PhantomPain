@@ -1821,7 +1821,7 @@ var OutlinkPlugins = {
 	{	//Outlinkのプレビューをポップアップする
 		if (anchor != null)
 		{
-			var tid = setTimeout(this.popup.bind(this, plugin, anchor, Util.isFixedElement(anchor)), Preference.ResPopupDelay);
+			var tid = setTimeout(this.popup.bind(this, plugin, anchor), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
 				function(){
 					clearTimeout(tid);
@@ -1829,21 +1829,19 @@ var OutlinkPlugins = {
 				},false);
 		}
 	},
-	popup: function OutlinkPlugins_popup(plugin, anchor, fixed)
+	popup: function OutlinkPlugins_popup(plugin, anchor)
 	{
 		if (anchor.dataset.previewShowing!="y")
 		{
 			var p = new Popup();
-			pos = Util.getElementPagePos(anchor);
-			pos.pageX += anchor.offsetWidth;
-			var c = plugin.getPreview(anchor.href, p.adjust.bind(p, pos));
+			p._init(anchor);
+			var c = plugin.getPreview(anchor.href, p.adjust.bind(p));
 			if (c)
 			{
 				anchor.dataset.previewShowing = "y";
 				var innerCont = document.createElement("DIV");
 				innerCont.appendChild(c);
-				p.offsetX = 0;
-				p.show(innerCont, pos, fixed);
+				p.show(innerCont);
 				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
 			}
 		}
