@@ -9,8 +9,6 @@ var _Preference =
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
 	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
-	PopupOffsetX: 0,			//ポップアップのオフセット(基準要素右上からのオフセットで、ヒゲが指す位置）
-	PopupOffsetY: 0,			//ポップアップのオフセット
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
@@ -2124,8 +2122,6 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function Popup() { }
 Popup.prototype = {
-	offsetX: Preference.PopupOffsetX,	//[!Obsolated]
-	offsetY: Preference.PopupOffsetY,	//[!Obsolated]
 	closeOnMouseLeave: true,
 	
 	_init: function Popup_init(e)
@@ -2209,7 +2205,7 @@ Popup.prototype = {
 		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
 		var maxWidth = window.innerWidth *0.8;
 		var poy = (this.fixed) ? 0 : window.pageYOffset;	//固定の時はスクロール位置を気にしない
-		var maxHeight = window.innerHeight - (pos.pageY + Preference.PopupOffsetY - poy) - 40;
+		var maxHeight = window.innerHeight - (pos.pageY - poy) - 40;
 		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
 		e.style.maxWidth = maxWidth + "px";
 		e.style.maxHeight = maxHeight + "px";
