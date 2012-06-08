@@ -329,7 +329,7 @@ var EventHandlers = {
 			if(t.textContent.match(/(\d+)/))
 			{
 				var id = parseInt(RegExp.$1);
-				MessageUtil.focus(id);
+				NodeUtil.focus(id);
 			}
 			cancel = true;
 		}
@@ -430,7 +430,7 @@ var EventHandlers = {
 				this.LoadOnWheelDelta = 0;
 				var focusTo = ThreadMessages.deployedMin - 1;
 				Thread.deploy(-Preference.LoadOnWheelWidth);
-				MessageUtil.focus(focusTo);
+				NodeUtil.focus(focusTo);
 			}
 			e.preventDefault();
 		}
@@ -444,7 +444,7 @@ var EventHandlers = {
 				this.LoadOnWheelDelta = 0;
 				var focusTo = ThreadMessages.deployedMax + 1;
 				Thread.deploy(Preference.LoadOnWheelWidth);
-				MessageUtil.focus(focusTo);
+				NodeUtil.focus(focusTo);
 			}
 		}
 		else
@@ -585,10 +585,7 @@ var MessageMenu = {
 	},
 	ResTo: function MessageMenu_ResTo(event)
 	{	//これにレス
-		var resTo = this._menu.dataset.binding;
-		var url = Preference.PostScheme + ThreadInfo.Url;
-		if(resTo) url += resTo;
-		window.location.href = url;
+		NodeUtil.resTo(this._menu.dataset.binding);
 	},
 	PopupRef: function MessageMenu_PopupRef(event)
 	{
@@ -608,79 +605,40 @@ var MessageMenu = {
 	},
 	ExtractRef: function MessageMenu_ExtractRef(event)
 	{
-		Finder.enterExpressMode();
-		$("fform").q.value = "[resto:{0}]".format(this._menu.parentNode.dataset.no);
-		Finder.express();
+		NodeUtil.expressReffer(this._menu.dataset.binding);
 	},
 	CreateRefTree: function MessageMenu_CreateRefTree(event)
 	{	//参照ツリーを構築する
-		this.DeleteRefTree(event);	//一回削除
-		
-		var current = this._menu.dataset.binding;
-		if (current == 0) return;
-		var node = this._menu.parentNode;
-		if (node == null) return;
-		node.dataset.treed = "y";
-		this._createNodeTree(current, node);
+		NodeUtil.openRefTree(this._menu.parentNode);
 	},
 	
 	DeleteRefTree: function MessageMenu_DeleteRefTree(event)
 	{	//既存のツリーを削除
-		var node = this._menu.parentNode;
-		if (node == null) return;
-		node.dataset.treed = "n";
-		
-		var nodes = $A(node.childNodes).filter(function(x){ return x.tagName == "ARTICLE"; });
-		for(var i=0,j=nodes.length; i<j; i++)
-		{
-			node.removeChild(nodes[i]);
-		}
-	},
-	_createNodeTree: function MessageMenu__createNodeTree(from, c)
-	{	//使ったノードを削除するかどうかは、議論が分かれるところ。とりあえず残しておく。
-		if (MessageStructure.nodesReplyFrom[from])
-		{	//fromにレスしているコメントがある・・・
-			var rf = MessageStructure.nodesReplyFrom[from];
-			for(var i=0, j = rf.length; i < j; i++)
-			{
-				var node = ThreadMessages.getNode(rf[i], true);	//ARTICLE
-				if (rf[i] > from)
-				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
-					this._createNodeTree(rf[i], node);
-				}
-				c.appendChild(node);
-			}
-		}
+		NodeUtil.closeRefTree(this._menu.parentNode);
 	},
 	
 	SetBookmark: function MessageMenu_SetBookmark(event)
 	{
-		Bookmark.add(this._menu.dataset.binding);
+		NodeUtil.setBookmark(this._menu.dataset.binding);
 	},
 	ResetBookmark: function MessageMenu_ResetBookmark(event)
 	{
-		Bookmark.del(this._menu.dataset.binding);
+		NodeUtil.resetBookmark(this._menu.dataset.binding);
 	},
 	SetPickup: function MessageMenu_SetPickup(event)
 	{
-		if (this._menu.dataset.binding != 0)
-		{
-			Pickup.add(this._menu.dataset.binding);
-		}
+		NodeUtil.setPickup(this._menu.dataset.binding);
 	},
 	ResetPickup: function MessageMenu_ResetPickup(event)
 	{
-		if (this._menu.dataset.binding != 0)
-		{
-			Pickup.del(this._menu.dataset.binding);
-		}
+		NodeUtil.resetPickup(this._menu.dataset.binding);
 	},
 	ToggleHiding: function MessageMenu_ToggleHiding(event)
 	{
 	},
 	ExtractImages: function MessageMenu_ExtractImages(event)
 	{
-		OutlinkPlugins.preview(this._menu.parentNode);
+		NodeUtil.previewLinks(this._menu.parentNode);
 	},
 	BeginGear: function MessageMenu_BeginGear(event)
 	{
@@ -698,11 +656,11 @@ var MessageMenu = {
 	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
-		Tracker.add(this._menu.dataset.binding);
+		NodeUtil..beginTracking(this._menu.dataset.binding);
 	},
 	EndTracking: function MessageMenu_EndTracking(event)
 	{	//トラッキングの終了
-		Tracker.del(this._menu.dataset.binding);
+		NodeUtil.beginTracking(this._menu.dataset.binding);
 	},
 	PopupTracked: function MessageMenu_PopupTracked(event)
 	{
@@ -748,7 +706,7 @@ var Menu = {
 	JumpToNewMark: function Menu_JumpToNewMark()
 	{
 		var nn = ThreadInfo.Fetched + 1;
-		MessageUtil.focus(nn);
+		NodeUtil.focus(nn);
 	},
 	
 	JumpToBookmark: function Menu_JumpToBookmark()
@@ -783,7 +741,7 @@ var Menu = {
 		{
 			var focusTo = ThreadMessages.deployedMax+1;
 			Thread.deploy(Preference.MoreWidth);
-			MessageUtil.focus(focusTo);
+			NodeUtil.focus(focusTo);
 		}
 	},
 	MoreBack: function Menu_MoreBack()
@@ -791,7 +749,7 @@ var Menu = {
 		console.log("moreback");
 		var focusTo = ThreadMessages.deployedMin-1;
 		Thread.deploy(-Preference.MoreWidth);
-		MessageUtil.focus(focusTo);
+		NodeUtil.focus(focusTo);
 	},
 	ToggleAutoMore: function Menu_ToggleAutoMore()
 	{
@@ -899,7 +857,7 @@ var Thread = {
 					ThreadInfo.Fetched = obj.total - obj.new;
 					ThreadInfo.Status = obj.status;
 					this.deployTo(ThreadInfo.Total);
-					MessageUtil.focus(obj.Total - obj.new + 1)
+					NodeUtil.focus(obj.Total - obj.new + 1)
 				}
 				Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", Util.timestamp()));
 				return true;
@@ -1476,7 +1434,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	Bookmark.focus = function Bookmark_focus()
 	{
 		Thread.deployTo(this.no);
-		MessageUtil.focus(this.no)
+		NodeUtil.focus(this.no)
 	}
 
 /* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -2996,8 +2954,140 @@ var MessageUtil = {
 		}
 		return r;
 	},
+}
+
+//ノードに対する処理を行なう。
+var NodeUtil = {
+	resTo: function NodeUtil_resTo(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		var url = Preference.PostScheme + ThreadInfo.Url + no
+		window.location.href = url;
+	},
+	expressReffer: function NodeUtil_expressReffer(nodeOrNo)
+	{
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		Finder.enterExpressMode();
+		$("fform").q.value = "[resto:{0}]".format(no);
+		Finder.express();
+	},
+	closeRefTree: function NodeUtil_closeRefTree(node)
+	{
+		if (!node)return;
+		if (node.tagName != "ARTICLE")return;
+		var nodes = $A(node.childNodes).filter(function(x){ return x.tagName == "ARTICLE"; });
+		for(var i=0,j=nodes.length; i<j; i++)
+		{
+			node.removeChild(nodes[i]);
+		}
+		node.dataset.treed = "";
+	},
+	openRefTree: function NodeUtil_openRefTree(node)
+	{
+		if (!node)return;
+		if (node.tagName != "ARTICLE")return;
+		this.closeRefTree(node);	//一度閉じる
+		var current = parseInt(node.dataset.no);
+		this._openRefTreeEx(current, node);
+	},
+	_openRefTreeEx: function NodeUtil__openRefTreeEx(from, c)
+	{
+		node.dataset.treed = "y";
+		if(MessageStructure.nodesReplyFrom[from])
+		{
+			var rf = MessageStructure.nodesReplyFrom[from];
+			for(var i=0, j = rf.length; i < j; i++)
+			{
+				var node = ThreadMessages.getNode(rf[i], true);	//ARTICLE
+				if (rf[i] > from)
+				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
+					this._openRefTreeEx(rf[i], node);
+				}
+				c.appendChild(node);
+			}
+		}
+	},
+	toggleBookmark: function NodeUtil_toggleBookmark(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		no = parseInt(no);
+		if (Bookmark.no == no)
+		{
+			Bookmark.del(no);
+		}
+		else
+		{
+			Bookmark.add(no);
+		}
+	},
+	setBookmark: function NodeUtil_setBookmark(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		no = parseInt(no);
+		Bookmark.add(no);
+	},
+	resetBookmark: function NodeUtil_resetBookmark(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		no = parseInt(no);
+		Bookmark.del(no);
+	},
+	togglePickup: function NodeUtil_togglePickup(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		no = parseInt(no);
+		if (Pickup.pickups.include(no))
+		{
+			Pickup.del(no);
+		}
+		else
+		{
+			Pickup.add(no);
+		}
+	},
+	setPickup: function NodeUtil_setPickup(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		no = parseInt(no);
+		Pickup.add(no);
+	},
+	resetPickup: function NodeUtil_resetPickup(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		Pickup.del(no);
+	},
+	previewLinks: function NodeUtil_previewLinks(node)
+	{
+		if (!node) return;
+		if (node.tagName != "ARTICLE")return;
+		OutlinkPlugins.preview(node);
+	},
+	toggleTracking: function NodeUtil_toggleTracking(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+	},
+	beginTracking: function NodeUtil_beginTracking(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		Tracker.add(no);
+	},
+	endTracking: function NodeUtil_endTracking(nodeOrNo)
+	{
+		if (!nodeOrNo) return;
+		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
+		Tracker.del(no);
+	},
 	
-	focus: function MessageUtil_focus(no)
+	focus: function NodeUtil_focus(no)
 	{
 		if (ThreadMessages.isDeployed(no))
 		{
@@ -3009,8 +3099,7 @@ var MessageUtil = {
 			setTimeout(function(){ node.dataset.focus = "no"; }, 1000)
 		}
 	},
-}
-
+};
 
 
 
