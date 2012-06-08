@@ -26,7 +26,14 @@ var _Preference =
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	NoticeLength: 10,			//表示するお知らせの数
+
+	//レスをダブルクリックしたらどうなる？
+	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
+	OnResDblClick: ["pickup", "closepopup", "bookmark", "track", "resto", "preview", "preview", "tree"],
+	//中身は none(これがデフォルト), bookmark, res, resto, pickup, tree, track, preview, closepopup, setbookmark
+ 
 };
+
 var Preference = clone(_Preference);
 
 /* ■prototype.js■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -203,6 +210,7 @@ var EventHandlers = {
 		document.addEventListener("keydown", this.keydown.bind(this),false);
 		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
+		document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
 		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
 		document.addEventListener("animationstart", this.animationStart.bind(this),false);
@@ -353,6 +361,19 @@ var EventHandlers = {
 			aEvent.stopPropagation();
 		}
 	},
+	mouseDblClick: function EventHandlers_mouseDblClick(e)
+	{
+		if (e.target.tagName == "ARTICLE")
+		{
+			var flg = 0;
+			if (e.shiftKey) flg += 1;
+			if (e.ctrlKey) flg += 2;
+			if (e.altKey) flg += 4;
+			var method = Preference.OnResDblClick[flg];
+			var handler= this.dblClickMethod[method];
+			if (handler) handler(e.target)
+		}
+	},
 	LoadOnWheelDelta: 0,
 	mouseWheel: function EventHandlers_mouseWheel(e)
 	{
@@ -449,6 +470,60 @@ var EventHandlers = {
 	},
 	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
 	{
+	},
+};
+
+EventHandlers.dblClickMethod = {
+	bookmark: function ResDblClickHandler_bookmark(node)
+	{
+		if (Bookmark.getMarkerClass(node) == "y")
+		{
+			Bookmark.add(0);
+		}
+		else
+		{
+			Bookmark.add(parseInt(node.dataset.no));
+		}
+	},
+	res: function ResDblClickHandler_res(node)
+	{
+		var url = Preference.PostScheme + ThreadInfo.Url;
+		window.location.href = url;
+	},
+	resto: function ResDblClickHandler_resto(node)
+	{
+		var url = Preference.PostScheme + ThreadInfo.Url + node.dataset.no;
+		window.location.href = url;
+	},
+	pickup: function ResDblClickHandler_pickup(node)
+	{
+		if (Pickup.getMarkerClass(node) == "y")
+		{
+			Pickup.del(parseInt(node.dataset.no));
+		}
+		else
+		{
+			Pickup.add(parseInt(node.dataset.no));
+		}
+	},
+	tree: function ResDblClickHandler_tree(node)
+	{
+	},
+	track: function ResDblClickHandler_track(node)
+	{
+		
+	},
+	preview: function ResDblClickHandler_preview(node)
+	{
+		
+	},
+	closepopup: function ResDblClickHandler_closepopup(node)
+	{
+		
+	},
+	setbookmark: function ResDblClickHandler_setbookmark(node)
+	{
+		Bookmark.add(parseInt(node.dataset.no));
 	},
 };
 
