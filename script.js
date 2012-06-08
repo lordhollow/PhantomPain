@@ -2989,11 +2989,11 @@ var NodeUtil = {
 		if (node.tagName != "ARTICLE")return;
 		this.closeRefTree(node);	//一度閉じる
 		var current = parseInt(node.dataset.no);
+		node.dataset.treed = "y";
 		this._openRefTreeEx(current, node);
 	},
 	_openRefTreeEx: function NodeUtil__openRefTreeEx(from, c)
 	{
-		node.dataset.treed = "y";
 		if(MessageStructure.nodesReplyFrom[from])
 		{
 			var rf = MessageStructure.nodesReplyFrom[from];
@@ -3004,6 +3004,7 @@ var NodeUtil = {
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
 					this._openRefTreeEx(rf[i], node);
 				}
+				node.dataset.treed = "y";
 				c.appendChild(node);
 			}
 		}
