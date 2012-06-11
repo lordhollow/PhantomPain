@@ -339,22 +339,7 @@ var EventHandlers = {
 		}
 		else if(t.className == "id")
 		{	//IDポップアップ
-			if (t.__idpopup)
-			{
-				t.__idpopup.close();
-			}
-			else
-			{
-				var ids = MessageStructure.nodesById[t.textContent];
-				if (ids)
-				{
-					ids = ids.sort(function(a,b){return a-b;});
-					var pp = new ResPopup(null);
-					pp.popup(ids, t);
-					t.__idpopup = pp;
-					pp.onClose = function(){ t.__idpopup = null; } ;
-				}
-			}
+			NodeUtil.toggleIdPopup(Util.getDecendantNode(t, "ARTICLE") , t);
 		}
 		else if (t.id == "footer")
 		{
@@ -2987,6 +2972,28 @@ var NodeUtil = {
 				var pp = new ResPopup(null);
 				node.__refPopup = pp;
 				pp.onClose = function(){ node.__refPopup = null; };
+				pp.popup(ids, t);
+			}
+		}
+	},
+	toggleIdPopup: function NodeUtil_toggleIdPopup(node, t)
+	{
+		if (!node)return;
+		if (node.tagName != "ARTICLE")return;
+		if (node.__idpopup)
+		{
+			node.__idpopup.close();
+		}
+		else
+		{
+			var ids = MessageStructure.nodesById[t.textContent];
+			if (ids)
+			{
+				ids = ($A(ids)).sort(function(a,b){return a-b;});
+				if (!t) t = node.children[1].children[2];
+				var pp = new ResPopup(null);
+				node.__idpopup = pp;
+				pp.onClose = function(){ node.__idpopup = null; } ;
 				pp.popup(ids, t);
 			}
 		}
