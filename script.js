@@ -333,6 +333,10 @@ var EventHandlers = {
 			}
 			cancel = true;
 		}
+		else if(t.className == "no")
+		{
+			NodeUtil.toggleRefferPopup(Util.getDecendantNode(t, "ARTICLE"), t);
+		}
 		else if(t.className == "id")
 		{	//IDポップアップ
 			if (t.__idpopup)
@@ -2964,6 +2968,28 @@ var NodeUtil = {
 		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
 		var url = Preference.PostScheme + ThreadInfo.Url + no
 		window.location.href = url;
+	},
+	toggleRefferPopup: function NodeUtil_toggleRefferPopup(node, t)
+	{
+		if (!node)return;
+		if (node.tagName != "ARTICLE")return;
+		if (node.__refPopup)
+		{
+			node.__refPopup.close();
+		}
+		else
+		{
+			var ids = MessageStructure.nodesReplyFrom[node.dataset.no];
+			if (ids)
+			{
+				ids = ($A(ids)).sort(function(a,b){return a-b;});
+				if (!t) t = node.children[1].children[0];
+				var pp = new ResPopup(null);
+				node.__refPopup = pp;
+				pp.onClose = function(){ node.__refPopup = null; };
+				pp.popup(ids, t);
+			}
+		}
 	},
 	expressReffer: function NodeUtil_expressReffer(nodeOrNo)
 	{
