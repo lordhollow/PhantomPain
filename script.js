@@ -200,323 +200,6 @@ var CommonPref = {
 	},
 };
 
-/* ■イベントハンドラ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
-var EventHandlers = {
-	//インスタンスが複数あるものについては、ここでハンドラを登録。
-	//ひとつしかないものは、HTMLやらにnodeに直接登録してしまえばOK。
-	init: function EventHandlers_init()
-	{
-		this.mode = "thread";
-		document.addEventListener("keydown", this.keydown.bind(this),false);
-		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
-		document.addEventListener("click",     this.mouseClick.bind(this), false);
-		document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
-		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
-		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
-		document.addEventListener("animationstart", this.animationStart.bind(this),false);
-		document.addEventListener("animationend", this.animationEnd.bind(this),false);
-	},
-	enter: function EventHandlers_enter(mode)
-	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
-		this.mode = mode;
-	},
-	leave: function EventHandlers_leave(mode)
-	{
-		this.mode = "thread";
-	},
-	keydown: function EventHandlers_keydown(e)
-	{	//本当はdownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
-		var p = true;
-		if (this.mode == "thread")
-		{
-			p = this.invokeThreadKeyHandler(e);
-		}
-		else if (this.mode == "viewer")
-		{
-			p = this.invokeViewerKeyHandler(e);
-		}
-		if (p) e.preventDefault();
-	},
-	invokeThreadKeyHandler: function EventHandlers_invokeThreadKeyHandler(e)
-	{
-		switch(e.keyCode)
-		{
-			case 13:	//Enter
-				if (document.body.dataset.expressMode=="y")
-				{	//抽出モードではEnter無効。modeでやったほうがよくね？
-					return true;
-				}
-				else
-				{
-					var url = Preference.PostScheme + ThreadInfo.Url;
-					window.location.href = url;
-				}
-				break;
-			default:
-				return false;
-				break;
-		}
-		return true;
-	},
-	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
-	{
-		switch(e.keyCode)
-		{
-		case 27:
-			Viewer.leaveViewerMode();
-			break;
-		case 33:	//PageUp
-		case 37:	//←
-			Viewer.prev();
-			break;
-		case 13:	//Enter
-		case 32:	//Sp
-		case 34:	//PageDown
-		case 39:	//→
-			Viewer.next();
-			break;
-		case 35:	//End
-		case 40:	//↓
-			Viewer.last();
-			break;
-		case 36:	//Home
-		case 38:	//↑
-			Viewer.first();
-			break;
-		default:
-			return false;
-			break;
-		}
-		return true;
-	},
-	mouseOver: function EventHandlers_mouseOver(aEvent)
-	{
-		var t = aEvent.target;
-		if (Util.isDecendantOf(t, "resMenu"))
-		{	//レスメニューにポイント → 何もしない
-			//(resMenuがArticleの子要素になるので、これがないと干渉してしまう
-			return;
-		}
-		var res = Util.getDecendantNode(t, "ARTICLE");
-		if (res != null)
-		{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
-			var tid = setTimeout(MessageMenu.attach.bind(MessageMenu, res), Preference.ResMenuAttachDelay);
-			res.addEventListener("mouseout",
-				function(){
-					clearTimeout(tid);
-					res.removeEventListener("mouseout", arguments.callee, false);
-			}, false);
-		}
-		if (t.className=="resPointer")
-		{	//レスアンカーにポイント → レスポップアップ
-			new ResPopup(t);
-		}
-		else if (t.className == "outLink")
-		{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
-			var p = OutlinkPlugins.getOutlinkPlugin(t);
-			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
-		}
-		//スレURLにポイント → スレタイのポップアップ
-		//名前が数字 → ポップアップ
-	},
-	mouseClick: function EventHandlers_mouseClick(aEvent)
-	{
-		var t = aEvent.target;
-		var cancel = false;
-		if (t.className == "resPointer")
-		{
-			//jumpTo
-			if(t.textContent.match(/(\d+)/))
-			{
-				var id = parseInt(RegExp.$1);
-				NodeUtil.focus(id);
-			}
-			cancel = true;
-		}
-		else if(t.className == "no")
-		{
-			NodeUtil.toggleRefferPopup(Util.getDecendantNode(t, "ARTICLE"), t);
-		}
-		else if(t.className == "id")
-		{	//IDポップアップ
-			NodeUtil.toggleIdPopup(Util.getDecendantNode(t, "ARTICLE") , t);
-		}
-		else if (t.id == "footer")
-		{
-			if (Notice.container) Util.notifyRefreshInternal(Notice.container);
-		}
-		if(cancel){
-			aEvent.preventDefault();
-			aEvent.stopPropagation();
-		}
-	},
-	mouseDblClick: function EventHandlers_mouseDblClick(e)
-	{
-		if (e.target.tagName == "ARTICLE")
-		{
-			var flg = 0;
-			if (e.shiftKey) flg += 1;
-			if (e.ctrlKey) flg += 2;
-			if (e.altKey) flg += 4;
-			var method = Preference.OnResDblClick[flg];
-			var handler= this.dblClickMethod[method];
-			if (handler) handler(e.target)
-		}
-	},
-	LoadOnWheelDelta: 0,
-	mouseWheel: function EventHandlers_mouseWheel(e)
-	{
-		if (e.target.id == "RMenu_Gear")
-		{
-			if (e.target.enchantedGear)
-			{
-				if (e.target.enchantedGear.origin != parseInt(MessageMenu._menu.dataset.binding))
-				{	//adjust
-					e.target.enchantedGear.changePos(e.target);
-					e.target.enchantedGear.changeOrigin(parseInt(MessageMenu._menu.dataset.binding));
-					e.preventDefault();
-					return;
-				}
-			}
-			else
-			{
-				MessageMenu.BeginGear();
-				e.preventDefault();
-				return;
-			}
-		}
-		var t = Util.getDecendantNodeByData(e.target, "gearEnchanted", "y");
-		if (t)
-		{
-			t.enchantedGear.step(e.detail < 0 ? -1 : 1);
-			e.preventDefault();
-			return;
-		}
-		t = Util.getDecendantNodeByData(e.target, "popupEnchanted", "y");
-		if (t)
-		{
-			t = t.childNodes[0];
-			if(((e.detail<0)&&(t.scrollTop==0))||
-			   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
-				e.preventDefault();
-				return;
-			}
-		}
-		else if (this.mode=="thread")
-		{
-			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
-		}
-	},
-	resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
-	{
-		if (Preference.LoadBackwardOnTopWheel 
-			&& (window.scrollY == 0)
-			&& (e.detail < 0)
-			&& (ThreadMessages.deployedMin != 1))
-		{
-			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
-			{
-				this.LoadOnWheelDelta = 0;
-				var focusTo = ThreadMessages.deployedMin - 1;
-				Thread.deploy(-Preference.LoadOnWheelWidth);
-				NodeUtil.focus(focusTo);
-			}
-			e.preventDefault();
-		}
-		else if (Preference.LoadForwardOnBottomWheel
-			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
-			 && (e.detail > 0)
-			 && (ThreadMessages.deployedMax != ThreadInfo.Total))
-		{
-			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
-			{
-				this.LoadOnWheelDelta = 0;
-				var focusTo = ThreadMessages.deployedMax + 1;
-				Thread.deploy(Preference.LoadOnWheelWidth);
-				NodeUtil.focus(focusTo);
-			}
-		}
-		else
-		{
-			this.LoadOnWheelDelta = 0;
-		}
-	},
-	animationStart: function EventHandlers_animationStart(aEvent)
-	{
-		//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
-		if (aEvent.animationName.match(/AndClose$/))
-		{
-			aEvent.target.style.display = "";
-		}
-	},
-	animationEnd: function EventHandlers_animationEnd(aEvent)
-	{
-		//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
-		if (aEvent.animationName.match(/AndClose$/))
-		{
-			aEvent.target.style.display = "none";
-		}
-	},
-	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
-	{
-	},
-};
-
-EventHandlers.dblClickMethod = {
-	bookmark: function ResDblClickHandler_bookmark(node)
-	{
-		if (Bookmark.getMarkerClass(node) == "y")
-		{
-			Bookmark.add(0);
-		}
-		else
-		{
-			Bookmark.add(parseInt(node.dataset.no));
-		}
-	},
-	res: function ResDblClickHandler_res(node)
-	{
-		var url = Preference.PostScheme + ThreadInfo.Url;
-		window.location.href = url;
-	},
-	resto: function ResDblClickHandler_resto(node)
-	{
-		var url = Preference.PostScheme + ThreadInfo.Url + node.dataset.no;
-		window.location.href = url;
-	},
-	pickup: function ResDblClickHandler_pickup(node)
-	{
-		if (Pickup.getMarkerClass(node) == "y")
-		{
-			Pickup.del(parseInt(node.dataset.no));
-		}
-		else
-		{
-			Pickup.add(parseInt(node.dataset.no));
-		}
-	},
-	tree: function ResDblClickHandler_tree(node)
-	{
-	},
-	track: function ResDblClickHandler_track(node)
-	{
-		
-	},
-	preview: function ResDblClickHandler_preview(node)
-	{
-		
-	},
-	closepopup: function ResDblClickHandler_closepopup(node)
-	{
-		
-	},
-	setbookmark: function ResDblClickHandler_setbookmark(node)
-	{
-		Bookmark.add(parseInt(node.dataset.no));
-	},
-};
-
-
 /* ■板一覧ペイン■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var BoardPane = {
 	init: function BoardPane_init()
@@ -793,6 +476,12 @@ var Thread = {
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
+	},
+	openWriteDialog: function Thread_openWriteDialog(to)
+	{
+		if (!to) to = "";
+		var url = Preference.PostScheme + ThreadInfo.Url + to
+		window.location.href = url;
 	},
 	check: function Thread_check()
 	{	//新着レスの確認を開始
@@ -2951,8 +2640,7 @@ var NodeUtil = {
 	{
 		if (!nodeOrNo) return;
 		var no = nodeOrNo.dataset ? nodeOrNo.dataset.no : nodeOrNo;
-		var url = Preference.PostScheme + ThreadInfo.Url + no
-		window.location.href = url;
+		Thread.openWriteDialog(no);
 	},
 	toggleRefferPopup: function NodeUtil_toggleRefferPopup(node, t)
 	{
@@ -3015,6 +2703,19 @@ var NodeUtil = {
 			node.removeChild(nodes[i]);
 		}
 		node.dataset.treed = "";
+	},
+	toggleRefTree: function NodeUtil_toggleRefTree(node)
+	{
+		if (!node)return;
+		if (node.tagName != "ARTICLE")return;
+		if (node.dataset.treed == "y")
+		{
+			this.closeRefTree(node);
+		}
+		else
+		{
+			this.openRefTree(node);
+		}
 	},
 	openRefTree: function NodeUtil_openRefTree(node)
 	{
@@ -3133,13 +2834,294 @@ var NodeUtil = {
 			setTimeout(function(){ node.dataset.focus = "no"; }, 1000)
 		}
 	},
+	closeIfPopup: function NodeUtil_closeIfPopup(node)
+	{
+		while(node)
+		{
+			if (node.popup)
+			{
+				node.popup.close();
+			}
+			node = node.parentNode;
+		}
+	},
 };
 
 
+/* ■イベントハンドラ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var EventHandlers = {
+	//インスタンスが複数あるものについては、ここでハンドラを登録。
+	//ひとつしかないものは、HTMLやらにnodeに直接登録してしまえばOK。
+	init: function EventHandlers_init()
+	{
+		this.mode = "thread";
+		document.addEventListener("keydown", this.keydown.bind(this),false);
+		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
+		document.addEventListener("click",     this.mouseClick.bind(this), false);
+		document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
+		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
+		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
+		document.addEventListener("animationstart", this.animationStart.bind(this),false);
+		document.addEventListener("animationend", this.animationEnd.bind(this),false);
+	},
+	enter: function EventHandlers_enter(mode)
+	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
+		this.mode = mode;
+	},
+	leave: function EventHandlers_leave(mode)
+	{
+		this.mode = "thread";
+	},
+	keydown: function EventHandlers_keydown(e)
+	{	//本当はdownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
+		var p = true;
+		if (this.mode == "thread")
+		{
+			p = this.invokeThreadKeyHandler(e);
+		}
+		else if (this.mode == "viewer")
+		{
+			p = this.invokeViewerKeyHandler(e);
+		}
+		if (p) e.preventDefault();
+	},
+	invokeThreadKeyHandler: function EventHandlers_invokeThreadKeyHandler(e)
+	{
+		switch(e.keyCode)
+		{
+			case 13:	//Enter
+				if (document.body.dataset.expressMode=="y")
+				{	//抽出モードではEnter無効。modeでやったほうがよくね？
+					return true;
+				}
+				else
+				{
+					Thread.openWriteDialog();
+				}
+				break;
+			default:
+				return false;
+				break;
+		}
+		return true;
+	},
+	invokeViewerKeyHandler: function EventHandlers_invokeViewerKeyHandler(e)
+	{
+		switch(e.keyCode)
+		{
+		case 27:
+			Viewer.leaveViewerMode();
+			break;
+		case 33:	//PageUp
+		case 37:	//←
+			Viewer.prev();
+			break;
+		case 13:	//Enter
+		case 32:	//Sp
+		case 34:	//PageDown
+		case 39:	//→
+			Viewer.next();
+			break;
+		case 35:	//End
+		case 40:	//↓
+			Viewer.last();
+			break;
+		case 36:	//Home
+		case 38:	//↑
+			Viewer.first();
+			break;
+		default:
+			return false;
+			break;
+		}
+		return true;
+	},
+	mouseOver: function EventHandlers_mouseOver(aEvent)
+	{
+		var t = aEvent.target;
+		if (Util.isDecendantOf(t, "resMenu"))
+		{	//レスメニューにポイント → 何もしない
+			//(resMenuがArticleの子要素になるので、これがないと干渉してしまう
+			return;
+		}
+		var res = Util.getDecendantNode(t, "ARTICLE");
+		if (res != null)
+		{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
+			var tid = setTimeout(MessageMenu.attach.bind(MessageMenu, res), Preference.ResMenuAttachDelay);
+			res.addEventListener("mouseout",
+				function(){
+					clearTimeout(tid);
+					res.removeEventListener("mouseout", arguments.callee, false);
+			}, false);
+		}
+		if (t.className=="resPointer")
+		{	//レスアンカーにポイント → レスポップアップ
+			new ResPopup(t);
+		}
+		else if (t.className == "outLink")
+		{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
+			var p = OutlinkPlugins.getOutlinkPlugin(t);
+			if (p) OutlinkPlugins.popupPreview(p, t, aEvent);
+		}
+		//スレURLにポイント → スレタイのポップアップ
+		//名前が数字 → ポップアップ
+	},
+	mouseClick: function EventHandlers_mouseClick(aEvent)
+	{
+		var t = aEvent.target;
+		var cancel = false;
+		if (t.className == "resPointer")
+		{
+			//jumpTo
+			if(t.textContent.match(/(\d+)/))
+			{
+				var id = parseInt(RegExp.$1);
+				NodeUtil.focus(id);
+			}
+			cancel = true;
+		}
+		else if(t.className == "no")
+		{
+			NodeUtil.toggleRefferPopup(Util.getDecendantNode(t, "ARTICLE"), t);
+		}
+		else if(t.className == "id")
+		{	//IDポップアップ
+			NodeUtil.toggleIdPopup(Util.getDecendantNode(t, "ARTICLE") , t);
+		}
+		else if (t.id == "footer")
+		{
+			if (Notice.container) Util.notifyRefreshInternal(Notice.container);
+		}
+		if(cancel){
+			aEvent.preventDefault();
+			aEvent.stopPropagation();
+		}
+	},
+	mouseDblClick: function EventHandlers_mouseDblClick(e)
+	{
+		if (e.target.tagName == "ARTICLE")
+		{
+			var flg = 0;
+			if (e.shiftKey) flg += 1;
+			if (e.ctrlKey) flg += 2;
+			if (e.altKey) flg += 4;
+			var method = Preference.OnResDblClick[flg];
+			var handler= this.dblClickMethod[method];
+			if (handler) handler(e.target)
+		}
+	},
+	LoadOnWheelDelta: 0,
+	mouseWheel: function EventHandlers_mouseWheel(e)
+	{
+		if (e.target.id == "RMenu_Gear")
+		{
+			if (e.target.enchantedGear)
+			{
+				if (e.target.enchantedGear.origin != parseInt(MessageMenu._menu.dataset.binding))
+				{	//adjust
+					e.target.enchantedGear.changePos(e.target);
+					e.target.enchantedGear.changeOrigin(parseInt(MessageMenu._menu.dataset.binding));
+					e.preventDefault();
+					return;
+				}
+			}
+			else
+			{
+				MessageMenu.BeginGear();
+				e.preventDefault();
+				return;
+			}
+		}
+		var t = Util.getDecendantNodeByData(e.target, "gearEnchanted", "y");
+		if (t)
+		{
+			t.enchantedGear.step(e.detail < 0 ? -1 : 1);
+			e.preventDefault();
+			return;
+		}
+		t = Util.getDecendantNodeByData(e.target, "popupEnchanted", "y");
+		if (t)
+		{
+			t = t.childNodes[0];
+			if(((e.detail<0)&&(t.scrollTop==0))||
+			   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
+				e.preventDefault();
+				return;
+			}
+		}
+		else if (this.mode=="thread")
+		{
+			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
+		}
+	},
+	resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
+	{
+		if (Preference.LoadBackwardOnTopWheel 
+			&& (window.scrollY == 0)
+			&& (e.detail < 0)
+			&& (ThreadMessages.deployedMin != 1))
+		{
+			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				var focusTo = ThreadMessages.deployedMin - 1;
+				Thread.deploy(-Preference.LoadOnWheelWidth);
+				NodeUtil.focus(focusTo);
+			}
+			e.preventDefault();
+		}
+		else if (Preference.LoadForwardOnBottomWheel
+			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
+			 && (e.detail > 0)
+			 && (ThreadMessages.deployedMax != ThreadInfo.Total))
+		{
+			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				var focusTo = ThreadMessages.deployedMax + 1;
+				Thread.deploy(Preference.LoadOnWheelWidth);
+				NodeUtil.focus(focusTo);
+			}
+		}
+		else
+		{
+			this.LoadOnWheelDelta = 0;
+		}
+	},
+	animationStart: function EventHandlers_animationStart(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "";
+		}
+	},
+	animationEnd: function EventHandlers_animationEnd(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "none";
+		}
+	},
+	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
+	{
+	},
+};
 
-
-
-
+/* ■ダブルクリックハンドラ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+EventHandlers.dblClickMethod = {
+	//必ずしもbind必要でないものもあるが全部bindしといたほうが安全だろう
+	bookmark:    NodeUtil.toggleBookmark.bind(NodeUtil),
+	resto:       NodeUtil.resTo.bind(NodeUtil),
+	pickup:      NodeUtil.togglePickup.bind(NodeUtil),
+	tree:        NodeUtil.toggleRefTree.bind(NodeUtil),
+	track:       NodeUtil.toggleTracking.bind(NodeUtil),
+	preview:     NodeUtil.previewLinks.bind(NodeUtil),
+	closepopup:  NodeUtil.closeIfPopup.bind(NodeUtil),
+	setbookmark: NodeUtil.setBookmark.bind(NodeUtil),
+	res:         Thread.openWriteDialog.bind(Thread, null),
+};
 
 
 
