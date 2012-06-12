@@ -642,6 +642,9 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	{
 		background-color: #FCC;
 	}
+	.navprevthread, .navnextthread{ display: none; }
+	body[data-next-thread^="h"] .navnextthread { display: block; }
+	body[data-prev-thread^="h"] .navprevthread { display: block; }
 
 
 /* ’Ê’m—Ìˆæ */

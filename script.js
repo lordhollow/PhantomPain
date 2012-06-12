@@ -26,7 +26,8 @@ var _Preference =
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	ChapterWidth: 100,			//Naviのチャプター幅
-	NextThreadCheckBeginsAt: 5,	//次スレ検索開始レス番号
+	EnableNextThreadSearch: true,	//次スレ検索有効？
+	NextThreadSearchBeginsAt: 5,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
@@ -184,7 +185,7 @@ var CommonPref = {
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
 		this._storage.setItem(pn, str);
 	},
-	readThreadObject: function CommonPref_readThreadObject(objName,eval)
+	readThreadObject: function CommonPref_readThreadObject(objName)
 	{
 		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
 		return this._storage.getItem(pn);
@@ -198,6 +199,17 @@ var CommonPref = {
 	{
 		var pn = "bbs2chSkin.common." + objName;
 		return this._storage.getItem(pn);
+	},
+	foreach: function CommonPref_foreach(objName, proc)
+	{
+		var ex = new RegExp("^bbs2chSkin\.common\." + objName + "\.");
+		for(var key in this._storage)
+		{
+			if (ex.test(key))
+			{
+				proc(key, this._storage.getItem(key));
+			}
+		}
 	},
 };
 
@@ -485,9 +497,8 @@ var Thread = {
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
 		
-		//次スレ情報
+		//次スレ/前スレ情報
 		this.nextThread = this.loadNextThreadInfo();
-		console.log(this.nextThread);
 		this.prevThread = this.searchPrevThread();
 	},
 	openWriteDialog: function Thread_openWriteDialog(to)
@@ -653,6 +664,7 @@ var Thread = {
 			//その他
 			html += '<h1>Etc.</h1><ul>';
 			html += '<li><a class="navboardlist">スレ一覧</a></li>';
+			html += '<li><a class="navprevthread">前スレ</a></li>';
 			html += '<li><a class="navnextthread">次スレ</a></li>';
 			html += '</ul>';
 
@@ -670,6 +682,7 @@ var Thread = {
 			case "navnextchapter":
 			case "navbacklog":
 			case "navboardlist":
+			case "navprevthread":
 			case "navnextthread":
 				return true;
 			default:
@@ -694,12 +707,14 @@ var Thread = {
 			case "navboardlist":
 				this.transitToThreadList();
 				break;
+			case "navprevthread":
+				this.transitToPrevThread();
+				break;
 			case "navnextthread":
 				this.transitToNextThread();
 				break;
-				return true;
 			default:
-				return false;
+				return;
 		}
 	},
 	reload: function Thread_reload(range)
@@ -730,6 +745,7 @@ var Thread = {
 	},
 	transitToPrevThread: function Thread_transitToPrevThread()
 	{	//前スレ表示
+		console.log(this.prevThread);
 		if (this.prevThread.url)
 		{
 			window.location.href = ThreadInfo.Server + this.prevThread.url + "l" + Preference.ChapterWidth;
@@ -745,6 +761,7 @@ var Thread = {
 	textNextThread: function Thread_textNextThread(anchor, node)
 	{	//次スレURLか確認・・・
 		if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
+		if (!Preference.EnableNextThreadSearch) return;		//機能無効
 		if (!anchor)return;
 		if (!node) node = Util.getDecendantNode(anchor, "ARTICLE");
 		var nodeNo = parseInt(node.dataset.no);
@@ -752,7 +769,7 @@ var Thread = {
 		if (url.maybeThread
 		 && (url.boardId == this.boardId)					//同じ板
 		 && (nodeNo >= this.nextThread.linkedNode) 			//前に決めた番号より後のレス
-		 && (nodeNo >= Preference.NextThreadCheckBeginsAt))	//次スレアドレスチェック番号以降のレス
+		 && (nodeNo >= Preference.NextThreadSearchBeginsAt))	//次スレアドレスチェック番号以降のレス
 		{
 			this.setNextThread(anchor.href, false, nodeNo);
 		}
@@ -763,17 +780,18 @@ var Thread = {
 		ud = ud ? true : false;	//真偽値の正規化
 		var nextThread = { url: href, id: url.threadId, userDecided: ud, linkedNode: nodeNo};
 		this.nextThread = nextThread;
-		document.body.dataset.nextThread = nextThread.url;
+		this.saveNextThreadInfo(nextThread);	//TODO::ここで毎回呼ぶと負荷が掛かる場合があるかも？次回以降大丈夫だろうけど。
+		document.body.dataset.nextThread = nextThread.url || "";
 	},
 	saveNextThreadInfo: function Thread_saveNextThreadInfo(nextThread)
-	{	//TODO::注意！！今これはどこからも呼ばれてない
+	{
 		var saveStr = '{url: "{0}", id: "{1}", userDecided: {2}, linkedNode: {3} }'
 		              .format(nextThread.url, nextThread.id, nextThread.userDecided, nextThread.linkedNode);
 		CommonPref.writeThreadObject("nextThread", saveStr);
 	},
-	loadNextThreadInfo: function Thread_loadNextThreadInfo()
+	loadNextThreadInfo: function Thread_loadNextThreadInfo(objStr)
 	{
-		var objStr = CommonPref.readThreadObject("nextThread");
+		objStr = objStr ? objStr : CommonPref.readThreadObject("nextThread");
 		try
 		{
 			if (objStr)
@@ -787,7 +805,23 @@ var Thread = {
 	},
 	searchPrevThread: function Thread_searchPrevThread()
 	{
-		return {url: null, id: null};
+		var This = this;
+		var ret = {url: null};
+		CommonPref.foreach("nextThread", function(key, dat)
+		{
+			var info = This.loadNextThreadInfo(dat);
+			if (info.id == This.threadId)
+			{	//URL => 今のアドレスの数字のところをkeyの末尾の数字で置き換えたもの
+				if (key.match(/(\d+)$/))
+				{
+					var num = RegExp.$1;
+					var url = ThreadInfo.Url.replace(/\/(\d+)\/$/, function(a,b,c){	return "/" + num + "/"; });
+					ret = {url: url};
+				}
+			}
+		});
+		document.body.dataset.prevThread = ret.url || "";	//これがここでええのんかな？
+		return ret;
 	},
 };
 
