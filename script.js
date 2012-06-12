@@ -27,7 +27,7 @@ var _Preference =
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	ChapterWidth: 100,			//Naviのチャプター幅
 	EnableNextThreadSearch: true,	//次スレ検索有効？
-	NextThreadSearchBeginsAt: 5,	//次スレ検索開始レス番号
+	NextThreadSearchBeginsAt: 900,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
