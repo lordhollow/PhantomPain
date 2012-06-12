@@ -441,6 +441,10 @@ article article
 	box-shadow: 3px 5px 5px 0px #000;
 	overflow: auto;
 }
+.popup > nav
+{
+	padding: 6px 2px;
+}
 .ithumbcontainer
 {
 }
