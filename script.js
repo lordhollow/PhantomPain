@@ -341,11 +341,11 @@ var MessageMenu = {
 	BeginTracking: function MessageMenu_BeginTracking(event)
 	{	//トラッキングの開始。指定レスのIDと同じレスを全部強調表示する。
 		//IDとtripで個人特定し、連鎖的に強調表示。
-		NodeUtil..beginTracking(this._menu.dataset.binding);
+		NodeUtil.beginTracking(this._menu.dataset.binding);
 	},
 	EndTracking: function MessageMenu_EndTracking(event)
 	{	//トラッキングの終了
-		NodeUtil.beginTracking(this._menu.dataset.binding);
+		NodeUtil.endTracking(this._menu.dataset.binding);
 	},
 	PopupTracked: function MessageMenu_PopupTracked(event)
 	{
