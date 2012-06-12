@@ -791,7 +791,7 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 .icon_write     { background-image: -moz-image-rect(url(buttons.png), 80, 16, 96,  0); }
 .icon_config    { background-image: -moz-image-rect(url(buttons.png), 80, 32, 96, 16); }
 .icon_find      { background-image: -moz-image-rect(url(buttons.png), 80, 48, 96, 32); }
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 64, 96, 48); } */
+.icon_navi      { background-image: -moz-image-rect(url(buttons.png), 80, 64, 96, 48); } */
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 80, 96, 64); } */
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); } */
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80,112, 96, 96); } */
