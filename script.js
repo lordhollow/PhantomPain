@@ -405,9 +405,20 @@ var Menu = {
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
-		var pp = new ResPopup(null);
-		MessageLoader.load(Pickup.pickups);
-		pp.popup(Pickup.pickups, "Menu.Pickup");
+		var e = $("Menu.Pickup");
+		if (e.__popup)
+		{
+			e.__popup.close();
+		}
+		else
+		{
+			var p = new ResPopup(null);
+			p.closeOnMouseLeave = false;
+			MessageLoader.load(Pickup.pickups);
+			p.popup(Pickup.pickups, "Menu.Pickup");
+			p.onClose = function(){ e.__popup = null; }
+			e.__popup = p;
+		}
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
@@ -473,7 +484,6 @@ var Menu = {
 		}
 		else
 		{
-			var content = this.form;
 			var p = new Popup();
 			p.closeOnMouseLeave = false;
 			p._init(e);
