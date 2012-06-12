@@ -25,6 +25,7 @@ var _Preference =
 	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
+	ChapterWidth: 100,			//Naviのチャプター幅
 	NoticeLength: 10,			//表示するお知らせの数
 
 	//レスをダブルクリックしたらどうなる？
@@ -452,6 +453,24 @@ var Menu = {
 	{
 		Viewer.show();
 	},
+	ToggleNavigationPopup: function Menu_ToggleNavigationPopup()
+	{
+		var e = $("Menu_Navi");
+		if (e.__popup)
+		{
+			e.__popup.close();
+		}
+		else
+		{
+			var content = this.form;
+			var p = new Popup();
+			p.closeOnMouseLeave = false;
+			p._init(e);
+			p.show(Thread.getNavigation());
+			p.onClose = function(){ e.__popup = null; }
+			e.__popup = p;
+		}
+	},
 };
 
 var Thread = {
@@ -609,6 +628,125 @@ var Thread = {
 		//console.log("deployTo: {0}->{1}".format(min,max));
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
+	},
+	getNavigation: function Thread_getNavigation()
+	{
+		if (!this._navi)
+		{
+			navi = document.createElement("NAV");
+			navi.id = "navigation";
+			var html = "";
+			
+			//Chapter
+			html += '<h1>CHAPTER</h1><ul>';
+			var w = Preference.ChapterWidth;
+			var m = ThreadInfo.Total;
+			for (var i=0; i< (m/w); i++)
+			{
+				html+= '<li><a class="navchapter">{0}-{1}</a></li>'.format(i*w+1, (i+1)*w);
+			}
+			html += '<li><a class="navprevchapter">prev.</a></li>';
+			html += '<li><a class="navnextchapter">next.</a></li>';
+			html += '</ul>';
+			
+			//BacklogWidth
+			html += '<h1>BACKLOG</h1><ul>';
+			var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750", "*ALL*" ];
+			for (var i=0; i<backlogWidths.length; i++)
+			{
+				html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
+			}
+			//その他
+			html += '<h1>Etc.</h1><ul>';
+			html += '<li><a class="navboardlist">スレ一覧</a></li>';
+			html += '<li><a class="navnextthread">次スレ</a></li>';
+			html += '</ul>';
+
+			navi.innerHTML = html;
+			this._navi = navi;
+		}
+		return this._navi.cloneNode(true);
+	},
+	isNavigationElement: function Thread_isNavigationElement(e)
+	{
+		switch(e.className)
+		{
+			case "navchapter":
+			case "navprevchapter":
+			case "navnextchapter":
+			case "navbacklog":
+			case "navboardlist":
+			case "navnextthread":
+				return true;
+			default:
+				return false;
+		}
+	},
+	invokeNavigation: function Thread_invokeNavigation(e)
+	{	//altkeyの状態とか取り込んで、別ウィンドウ表示とか実装すべきか？
+		var c = e.textContent;
+		switch(e.className)
+		{
+			case "navchapter":
+			case "navbacklog":
+				this.reload(c == "*ALL*" ? "" : c);
+				break;
+			case "navprevchapter":
+				this.reloadToPrevChapter();
+				break;
+			case "navnextchapter":
+				this.reloadToNextChapter();
+				break;
+			case "navboardlist":
+				this.transitToThreadList();
+				break;
+			case "navnextthread":
+				this.transitToNextThread();
+				break;
+				return true;
+			default:
+				return false;
+		}
+	},
+	reload: function Thread_reload(range)
+	{
+		window.location.href = ThreadInfo.Server + ThreadInfo.Url + range;
+	},
+	reloadToPrevChapter: function Thread_reloadToPrevChapter(w)
+	{
+		if (!w) w = Preference.ChapterWidth;
+		var max = ThreadMessages.deployedMin - 1;
+		var min = max - w - 1;
+		if (min < 0) min = 1;
+		if (max < min) max = min;
+		this.reload(min + "-" + max);
+	},
+	reloadToNextChapter: function Thread_reloadToNextChapter(w)
+	{
+		if (!w) w = Preference.ChapterWidth;
+		var min = ThreadMessages.deployedMax +1;
+		var max = min + w - 1;
+		if (min < 0) min = 1;
+		if (max < min) max = min;
+		this.reload(min + "-" + max);
+	},
+	transitToThreadList: function Thread_transitToThreadList()
+	{	//スレ一覧
+		window.location.href = "bbs2ch:board:" + ThreadInfo.Board;
+	},
+	transitToPrevThread: function Thread_transitToPrevThread()
+	{	//前スレ表示
+		if (this.prevThread)
+		{
+			window.location.href = ThreadInfo.Server + this.prevThread + "l" + Preference.ChapterWidth;
+		}
+	},
+	transitToNextThread: function Thread_transitToNextThread()
+	{	//次スレ表示
+		if (this.nextThread)
+		{
+			window.location.href = ThreadInfo.Server + this.nextThread + "l" + Preference.ChapterWidth;
+		}
 	},
 
 };
@@ -2999,6 +3137,10 @@ var EventHandlers = {
 		else if (t.id == "footer")
 		{
 			if (Notice.container) Util.notifyRefreshInternal(Notice.container);
+		}
+		else if (Thread.isNavigationElement(t))
+		{
+			Thread.invokeNavigation(t);
 		}
 		if(cancel){
 			aEvent.preventDefault();

@@ -432,7 +432,7 @@ article article
 {
 	position: fixed;
 }
-.popup > div
+.popup > div, .popup > nav
 {
 	float: left;
 	background: rgba(255,255,192,0.95);
@@ -615,6 +615,34 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	#viewerHomeCtrl>button[name="auto"] { background-image: url("viewerAutoPlay-g.png"); margin-left: 8px; }
 	#viewerHomeCtrl>button[name="auto"]:hover { background-image: url("viewerAutoPlay.png"); }
 	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerAutoPlay-g.png"); }
+
+/* ナビゲーション */
+#navigation
+{
+	font-size: 70%;
+}
+	#navigation h1
+	{
+		font-size: 100%;
+		border-radius: 4px;
+		background-color: #CCF;
+		width: 8em;
+		text-align: center;
+	}
+	#navigation ul
+	{
+		list-style-type: none;
+	}
+	#navigation li
+	{
+		border-radius: 4px;
+		text-align: center;
+	}
+	#navigation li:hover
+	{
+		background-color: #FCC;
+	}
+
 
 /* 通知領域 */
 #noticeContainer
