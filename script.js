@@ -431,7 +431,6 @@ var Menu = {
 	},
 	MoreBack: function Menu_MoreBack()
 	{
-		console.log("moreback");
 		var focusTo = ThreadMessages.deployedMin-1;
 		Thread.deploy(-Preference.MoreWidth);
 		NodeUtil.focus(focusTo);
@@ -745,7 +744,6 @@ var Thread = {
 	},
 	transitToPrevThread: function Thread_transitToPrevThread()
 	{	//‘OƒXƒŒ•\Ž¦
-		console.log(this.prevThread);
 		if (this.prevThread.url)
 		{
 			window.location.href = ThreadInfo.Server + this.prevThread.url + "l" + Preference.ChapterWidth;
