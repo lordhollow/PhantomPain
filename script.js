@@ -478,20 +478,9 @@ var Thread = {
 	{
 		//identifier設定
 		var url = new URL(ThreadInfo.Url);
-		if (url.type == "2CH")
-		{
-			this.boardId = "";
-		}
-		else if (url.type == "MACHI")
-		{
-			this.boardId = "machi.";
-		}
-		else
-		{
-			this.boardId = url.domain + ".";
-		}
-		this.boardId = (this.boardId + url.boardId).toLowerCase();
-		this.threadId = this.boardId + "." + url.threadId;
+		this.boardId  = url.boardId;
+		this.threadId = url.threadId;
+
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
@@ -1623,13 +1612,14 @@ URL.prototype = {
 			this.type = "WWW";
 		}
 		
-		//スレッドなら、板とスレッドと表示範囲の指定を取得
+		//スレッドなら
 		if (this.maybeThread)
 		{
+			//板とスレッドと表示範囲の指定を取得
 			if (url.match(/\/read.cgi\/([^\/]+)\/([^\/]+)(\/(.+))?/))
 			{
-				this.boardId = RegExp.$1;
-				this.threadId= RegExp.$2;
+				this.boardName = RegExp.$1;
+				this.threadNo  = RegExp.$2;
 				if (RegExp.$4)
 				{
 					this.range = RegExp.$4;
@@ -1639,6 +1629,21 @@ URL.prototype = {
 					this.range = "";
 				}
 			}
+			//identifier
+			switch (this.type)
+			{
+				case "2CH":
+					this.boardId = "";
+					break;
+				case "MACHI":
+					this.boardId = "machi.";
+					break;
+				default:
+					this.boardId = this.domain + ".";
+					break;
+			}
+			this.boardId  =(this.boardId + this.boardName).toLowerCase();
+			this.threadId = this.boardId + "." + this.threadNo;
 		}
 		//console.log(this);
 	},
