@@ -671,7 +671,7 @@ var Thread = {
 				html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
 			}
 			//その他
-			html += '<h1>Etc.</h1><ul>';
+			html += '<h1>etc.</h1><ul>';
 			html += '<li><a class="navboardlist">スレ一覧</a></li>';
 			html += '<li><a class="navprevthread">前スレ</a></li>';
 			html += '<li><a class="navnextthread">次スレ</a></li>';
