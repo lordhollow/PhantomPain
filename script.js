@@ -838,6 +838,14 @@ var ThreadMessages = {
 			if (nodes[i]) func(nodes[i]);
 		}
 	},
+	apply: function ThreadMessages_apply(func, filter, includePopup)
+	{
+		var nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
+		for (var i=0, j=nodes.length; i<j; i++)
+		{
+			if (nodes[i] && filter(nodes[i])) func(nodes[i]);
+		}
+	},
 	getDeployMode: function ThreadMessages_getDeployMode(no)
 	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
 		if (no <= 0)
@@ -3106,6 +3114,16 @@ var EventHandlers = {
 	},
 	aboneImmidiate: function EventHandlers_aboneImmidiate(aEvent)
 	{
+		var q   = aEvent.sourceEvent.type;	//クエリ
+		var filter = [
+			function(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
+			function(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
+			function(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
+			function(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
+		];
+		ThreadMessages.apply(function(node){
+			node.dataset.ng = "y";
+		}, filter[aEvent.detail], true);
 	},
 };
 
