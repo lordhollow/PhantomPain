@@ -26,8 +26,8 @@ var _Preference =
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	ChapterWidth: 100,			//Naviのチャプター幅
+	NextThreadCheckBeginsAt: 5,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
-
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
 	OnResDblClick: ["pickup", "closepopup", "bookmark", "track", "resto", "preview", "preview", "tree"],
@@ -484,6 +484,11 @@ var Thread = {
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
 		if (e) e.dataset.board = this.boardId;
+		
+		//次スレ情報
+		this.nextThread = this.loadNextThreadInfo();
+		console.log(this.nextThread);
+		this.prevThread = this.searchPrevThread();
 	},
 	openWriteDialog: function Thread_openWriteDialog(to)
 	{
@@ -725,19 +730,65 @@ var Thread = {
 	},
 	transitToPrevThread: function Thread_transitToPrevThread()
 	{	//前スレ表示
-		if (this.prevThread)
+		if (this.prevThread.url)
 		{
-			window.location.href = ThreadInfo.Server + this.prevThread + "l" + Preference.ChapterWidth;
+			window.location.href = ThreadInfo.Server + this.prevThread.url + "l" + Preference.ChapterWidth;
 		}
 	},
 	transitToNextThread: function Thread_transitToNextThread()
 	{	//次スレ表示
-		if (this.nextThread)
+		if (this.nextThread.url)
 		{
-			window.location.href = ThreadInfo.Server + this.nextThread + "l" + Preference.ChapterWidth;
+			window.location.href = ThreadInfo.Server + this.nextThread.url + "l" + Preference.ChapterWidth;
 		}
 	},
-
+	textNextThread: function Thread_textNextThread(anchor, node)
+	{	//次スレURLか確認・・・
+		if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
+		if (!anchor)return;
+		if (!node) node = Util.getDecendantNode(anchor, "ARTICLE");
+		var nodeNo = parseInt(node.dataset.no);
+		var url = new URL(anchor.href);
+		if (url.maybeThread
+		 && (url.boardId == this.boardId)					//同じ板
+		 && (nodeNo >= this.nextThread.linkedNode) 			//前に決めた番号より後のレス
+		 && (nodeNo >= Preference.NextThreadCheckBeginsAt))	//次スレアドレスチェック番号以降のレス
+		{
+			this.setNextThread(anchor.href, false, nodeNo);
+		}
+	},
+	setNextThread: function Thread_setNextThread(href, ud, nodeNo)
+	{	//ud: ユーザーが決めたか？ trueのとき、勝手に上書きされない状態で出てくる。
+		var url = new URL(href);
+		ud = ud ? true : false;	//真偽値の正規化
+		var nextThread = { url: href, id: url.threadId, userDecided: ud, linkedNode: nodeNo};
+		this.nextThread = nextThread;
+		document.body.dataset.nextThread = nextThread.url;
+	},
+	saveNextThreadInfo: function Thread_saveNextThreadInfo(nextThread)
+	{	//TODO::注意！！今これはどこからも呼ばれてない
+		var saveStr = '{url: "{0}", id: "{1}", userDecided: {2}, linkedNode: {3} }'
+		              .format(nextThread.url, nextThread.id, nextThread.userDecided, nextThread.linkedNode);
+		CommonPref.writeThreadObject("nextThread", saveStr);
+	},
+	loadNextThreadInfo: function Thread_loadNextThreadInfo()
+	{
+		var objStr = CommonPref.readThreadObject("nextThread");
+		try
+		{
+			if (objStr)
+			{
+				var n;
+				eval("n="+objStr);
+				return n;
+			}
+		}catch(e){}
+		return {url: null, id: null, userDecided: false, linkedNode: 0};	//デフォルト
+	},
+	searchPrevThread: function Thread_searchPrevThread()
+	{
+		return {url: null, id: null};
+	},
 };
 
 /* ■レスの処理■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -905,6 +956,7 @@ var ThreadMessages = {
 				{
 					e.parentNode.dataset.hasImage = "y";
 				}
+				Thread.textNextThread(a);
 			}
 			//長すぎるoutLinkを適当に刈り込み
 			//else if(a.textContent.length>ml){
