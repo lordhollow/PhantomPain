@@ -2983,6 +2983,10 @@ var NodeUtil = {
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
 					this._openRefTreeEx(rf[i], node);
 				}
+				else
+				{
+					node.dataset.backward = "y";
+				}
 				node.dataset.treed = "y";
 				c.appendChild(node);
 			}

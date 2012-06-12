@@ -221,6 +221,10 @@ span.space
 	{
 		font-size: 75%;
 	}
+	article[data-backward="y"]
+	{
+		background-color: #DDD;
+	}
 
 /* ƒŒƒXƒwƒbƒ_ */
 h2
