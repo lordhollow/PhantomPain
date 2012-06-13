@@ -903,26 +903,13 @@ var ThreadMessages = {
 	updateDeployedInfo: function ThreadMessages_updateDeployedInfo(e)
 	{
 		if(!e) e = $("resContainer");
-		var first = parseInt(e.firstElementChild.dataset.no);
-		if (e.children.length != 1)
+		var min = parseInt(e.firstElementChild.dataset.no);
+		if ((e.children.length != 1) && (min == 1))
 		{
 			var second = parseInt(e.children[1].dataset.no);
-			if (first == 1)
-			{
-				if (second == 2)
-				{
-					this.deployedMin = 1;
-				}
-				else
-				{
-					this.deployedMin = second;
-				}
-			}
-			else
-			{
-				this.deployedMin = first;
-			}
+			min = (second == 2) ? 1 : second;
 		}
+		this.deployedMin = min;
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
 	},
 	deploy: function ThreadMessages_deploy(min, max)
