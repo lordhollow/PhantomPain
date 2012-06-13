@@ -508,7 +508,7 @@ var Menu = {
 	},
 	More: function Menu_More()
 	{
-		if (ThreadMessages.deployedMax == ThreadInfo.Total)
+		if (ThreadMessages.deployedAll)
 		{
 			Thread.check();
 		}
@@ -959,6 +959,9 @@ var ThreadMessages = {
 		}
 		this.deployedMin = min;
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
+		this.deployedAll = this.deployedMax == ThreadInfo.Total;
+		document.body.dataset.deployedAll = this.deployedAll ? "y" : "";
+		
 	},
 	deploy: function ThreadMessages_deploy(min, max)
 	{	//min‚©‚çmax‚Ü‚Å‚ğdeployNode‚·‚éB
