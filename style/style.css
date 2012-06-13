@@ -645,10 +645,15 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	{
 		border-radius: 4px;
 		text-align: center;
+		font-family: monospace;
 	}
 	#navigation li:hover
 	{
 		background-color: #FCC;
+	}
+	#navigation input
+	{
+		padding: 0;
 	}
 	.navprevthread, .navnextthread{ display: none; }
 	body[data-next-thread^="h"] .navnextthread { display: block; }

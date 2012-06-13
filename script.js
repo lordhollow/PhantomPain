@@ -674,6 +674,19 @@ var Thread = {
 		MessageLoader.load(min, max);
 		ThreadMessages.deploy(min, max);
 	},
+	loadFocus: function Thread_loadFocus(_no)
+	{
+		var no = parseInt(_no);
+		if ((no>=1) && (no<=ThreadInfo.Total))
+		{
+			this.deployTo(no);
+			NodeUtil.focus(no);
+		}
+		else
+		{
+			Notice.add("cannot jump to {0}".format(no));
+		}
+	},
 	getNavigation: function Thread_getNavigation()
 	{
 		if (!this._navi)
@@ -703,6 +716,7 @@ var Thread = {
 			}
 			//その他
 			html += '<h1>etc.</h1><ul>';
+			html += '<li><form onsubmit="Thread.loadFocus(jumpto.value);return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
 			html += '<li><a class="navboardlist">スレ一覧</a></li>';
 			html += '<li><a class="navprevthread">前スレ</a></li>';
 			html += '<li><a class="navnextthread">次スレ</a></li>';
@@ -3154,6 +3168,8 @@ var EventHandlers = {
 	},
 	keydown: function EventHandlers_keydown(e)
 	{	//本当はdownで覚える→{keyup(esc)で覚えた分は消える}→keyupで押したキー覚えていれば発火とかがいいんだろうけど面倒すぎる
+		//Input上にあるときはなにもしないのが吉だろ
+		if (e.target.tagName == "INPUT") return
 		var p = true;
 		if (this.mode == "thread")
 		{
@@ -3170,14 +3186,7 @@ var EventHandlers = {
 		switch(e.keyCode)
 		{
 			case 13:	//Enter
-				if (document.body.dataset.expressMode=="y")
-				{	//抽出モードではEnter無効。modeでやったほうがよくね？
-					return true;
-				}
-				else
-				{
-					Thread.openWriteDialog();
-				}
+				Thread.openWriteDialog();
 				break;
 			default:
 				return false;
