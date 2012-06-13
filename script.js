@@ -3289,6 +3289,13 @@ var EventHandlers = {
 			var handler= this.dblClickMethod[method];
 			if (handler) handler(e.target)
 		}
+		else if (e.target.className == "resPointer")
+		{
+			if(e.target.textContent.match(/(\d+)/))
+			{
+				Thread.loadFocus(RegExp.$1);
+			}
+		}
 	},
 	LoadOnWheelDelta: 0,
 	mouseWheel: function EventHandlers_mouseWheel(e)
