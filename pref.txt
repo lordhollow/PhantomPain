@@ -1,0 +1,21 @@
+<div id="configulator">
+	<form id="prefpagelist" onsubmit="Configulator.page(event);return false;">
+	<input type="submit" value="" name="template1" title="テンプレート1">
+	<input type="submit" value="" name="template2" title="テンプレート2">
+	<input type="submit" value="" name="template3" title="テンプレート3">
+	</form>
+	<div id="prefpages">
+		<div class="prefpage" data-key="template1">
+		TEMPLATE1
+		</div>
+
+		<div class="prefpage" data-key="template2">
+		TEMPLATE2
+		</div>
+
+		<div class="prefpage" data-key="template3">
+		TEMPLATE3
+		</div>
+
+	</div>
+</div>

@@ -659,6 +659,18 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 	body[data-next-thread^="h"] .navnextthread { display: block; }
 	body[data-prev-thread^="h"] .navprevthread { display: block; }
 
+/* コンフィギュレータ */
+#configulator
+{
+	padding-top: 4px;
+}
+	#prefpagelist > input[type="submit"]
+	{
+		border: none;
+		content: "";
+		width: 32px;
+		height: 32px;
+	}
 
 /* 通知領域 */
 #noticeContainer

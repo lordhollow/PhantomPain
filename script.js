@@ -220,13 +220,33 @@ var Configulator = {
 		if (!t) return;
 		if (!t.tagName) t = $(t);
 		if (!t) return;
-		if (!this.level1)
+		if (!this.editor)
 		{	//初期化
 			var cont = document.createElement("DIV");
 			cont.id = "prefMenu";
 			var html = "";	//TODO::外部ファイルから読み込み
+			{
+				var loardUrlStr = ThreadInfo.Skin + "pref.txt";
+				var req = new XMLHttpRequest();
+				req.open('GET', loardUrlStr, false);	//sync
+				req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+				req.send(null);	
+				if ((req.readyState==4)&&(req.status==200))
+				{
+					html = req.responseText;
+				}
+			}
 			cont.innerHTML = html;
-			this.level1 = cont;
+			this.editor = cont.firstChild;
+			cont.removeChild(this.editor);
+			var pages = this.editor.children[1];
+			this.editor.removeChild(pages);
+			this.pages = {};
+			for(var i=0; i<pages.children.length; i++)
+			{
+				var page = pages.children[i];
+				this.pages[page.dataset.key] = page;
+			}
 		}
 		if (t.__popup)
 		{
@@ -237,11 +257,39 @@ var Configulator = {
 			var p = new Popup();
 			p.closeOnMouseLeave = false;
 			p._init(t);
-			p.show(this.level1.cloneNode(true));
+			p.show(this.editor.cloneNode(true));
 			p.onClose = function(){ t.__popup = null; }
 			t.__popup = p;
 		}
-	}
+	},
+	page: function Configulator_page(aEvent)
+	{
+		var name = aEvent.explicitOriginalTarget.name;
+		var page = this.pages[name];
+		if (!page) return false;
+		if (page.__popup)
+		{
+			var p = page.__popup;
+			if (p.isTopLevelPopup("prefpage"))
+			{
+				p.close();
+			}
+			else
+			{
+				p.toTop();
+			}
+		}
+		else
+		{
+			var p = new Popup();
+			p.closeOnMouseLeave = false;
+			p._init(aEvent.explicitOriginalTarget);
+			p.show(page);
+			p.onClose = function(){ page.__popup = null;}
+			page.__popup = p;
+		}
+		return false;
+	},
 };
 
 /* ■板一覧ペイン■■■■■■■■■■■■■■■■■■■■■■■■■■ */
@@ -2241,6 +2289,25 @@ Popup.prototype = {
 	{
 		if (!this.childPopups) this.childPopups = new Array();
 		this.childPopups.push(popup);
+	},
+	isTopLevelPopup: function Popup_isTopLevelPopup(cls)
+	{
+		var container = $("popupContainer");
+		var topLevelPopup = "";
+		for(var i=0; i<container.children.length; i++)
+		{
+			var popup = container.children[i];
+			if (popup.firstChild && (popup.firstChild.className == cls))
+			{	//本当はかぶってるかどうかで判定したほうが良い？
+				topLevelPopup = popup;
+			}
+		}
+		return topLevelPopup == this.container;
+	},
+	toTop: function Popup_toTop()
+	{	//一回抜いてまた入れるだけ
+		$("popupContainer").removeChild(this.container);
+		$("popupContainer").appendChild(this.container);
 	},
 };
 
