@@ -213,6 +213,37 @@ var CommonPref = {
 	},
 };
 
+/* ■コンフィギュレータ（設定フォーム）■■■■■■■■■■■■■■■ */
+var Configulator = {
+	toggle: function Configulator_toggle(t)
+	{
+		if (!t) return;
+		if (!t.tagName) t = $(t);
+		if (!t) return;
+		if (!this.level1)
+		{	//初期化
+			var cont = document.createElement("DIV");
+			cont.id = "prefMenu";
+			var html = "";	//TODO::外部ファイルから読み込み
+			cont.innerHTML = html;
+			this.level1 = cont;
+		}
+		if (t.__popup)
+		{
+			t.__popup.close();
+		}
+		else
+		{
+			var p = new Popup();
+			p.closeOnMouseLeave = false;
+			p._init(t);
+			p.show(this.level1.cloneNode(true));
+			p.onClose = function(){ t.__popup = null; }
+			t.__popup = p;
+		}
+	}
+};
+
 /* ■板一覧ペイン■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var BoardPane = {
 	init: function BoardPane_init()
