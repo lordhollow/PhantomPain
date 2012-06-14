@@ -2181,6 +2181,7 @@ Popup.prototype = {
 				this.childPopups[i].close();
 			}
 		}
+		if (this.parentPopup) this.parentPopup.unregistorChild(this);
 	},
 	//ÉTÉCÉYêßå¿
 	limitSize: function Popup_limitSize(pos)
@@ -2218,6 +2219,7 @@ Popup.prototype = {
 		this.container.style.left = this.floatingRect.pageX + "px";
 		this.container.style.top  = this.floatingRect.pageY + "px";
 		this.container.firstChild.style.marginLeft = "0px";
+		if (this.parentPopup) this.parentPopup.unregistorChild(this);
 		this.floating = true;
 	},
 	offsetFloat: function Popup_float(dx, dy)
@@ -2249,6 +2251,15 @@ Popup.prototype = {
 	{
 		if (!this.childPopups) this.childPopups = new Array();
 		this.childPopups.push(popup);
+		popup.parentPopup = this;
+	},
+	unregistorChild: function Popup_unregistorChild(popup)
+	{
+		if (popup && (popup.parentPopup == this))
+		{
+			this.childPopups = this.childPopups.filter(function(x){ return x != popup; });
+			popup.parentPopup = null;
+		}
 	},
 	isTopLevelPopup: function Popup_isTopLevelPopup(cls)
 	{
