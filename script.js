@@ -452,20 +452,7 @@ var Menu = {
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
-		var e = $("Menu.Pickup");
-		if (e.__popup)
-		{
-			e.__popup.close();
-		}
-		else
-		{
-			var p = new ResPopup(null);
-			p.closeOnMouseLeave = false;
-			MessageLoader.load(Pickup.pickups);
-			p.popup(Pickup.pickups, "Menu.Pickup");
-			p.onClose = function(){ e.__popup = null; }
-			e.__popup = p;
-		}
+		PopupUtil.toggleResPopup($("Menu.Pickup"), Pickup.pickups, false);
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
@@ -2403,11 +2390,32 @@ var PopupUtil = {
 			var p = new Popup();
 			p.closeOnMouseLeave = closeOnMouseLeave;
 			p._init(target);
-			p.onClose = function PopupUtil_toggle_onClose(){ target.__popup = null; }
+			p.onClose = this._onCloseHandler.bind(target);
 			target.__popup = p;
 			p.show(content);
 		}
-	}
+	},
+	toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave)
+	{
+		if (target.__popup)
+		{
+			target.__popup.close();
+		}
+		else if (ids)
+		{
+			ids = ($A(ids)).sort(function(a,b){return a-b;});
+			MessageLoader.load(ids);
+			var p = new ResPopup();
+			p.closeOnMouseLeave = closeOnMouseLeave;
+			p.onClose = this._onCloseHandler.bind(target);
+			target.__popup = p;
+			p.popup(ids, target);
+		}
+	},
+	_onCloseHandler: function PopupUtil__onCloseHandler()
+	{
+		this.__popup = null;
+	},
 };
 
 /* Å°åüçıÅEíäèo Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å°Å° */
@@ -2975,45 +2983,15 @@ var NodeUtil = {
 	{
 		if (!node)return;
 		if (node.tagName != "ARTICLE")return;
-		if (node.__refPopup)
-		{
-			node.__refPopup.close();
-		}
-		else
-		{
-			var ids = MessageStructure.nodesReplyFrom[node.dataset.no];
-			if (ids)
-			{
-				ids = ($A(ids)).sort(function(a,b){return a-b;});
-				if (!t) t = node.children[1].children[0];
-				var pp = new ResPopup(null);
-				node.__refPopup = pp;
-				pp.onClose = function(){ node.__refPopup = null; };
-				pp.popup(ids, t);
-			}
-		}
+		if (!t) t = node.children[1].children[0];
+		PopupUtil.toggleResPopup(t, MessageStructure.nodesReplyFrom[node.dataset.no],true);
 	},
 	toggleIdPopup: function NodeUtil_toggleIdPopup(node, t)
 	{
 		if (!node)return;
 		if (node.tagName != "ARTICLE")return;
-		if (node.__idpopup)
-		{
-			node.__idpopup.close();
-		}
-		else
-		{
-			var ids = MessageStructure.nodesById[t.textContent];
-			if (ids)
-			{
-				ids = ($A(ids)).sort(function(a,b){return a-b;});
-				if (!t) t = node.children[1].children[2];
-				var pp = new ResPopup(null);
-				node.__idpopup = pp;
-				pp.onClose = function(){ node.__idpopup = null; } ;
-				pp.popup(ids, t);
-			}
-		}
+		if (!t) t = node.children[1].children[2];
+		PopupUtil.toggleResPopup(t, MessageStructure.nodesById[t.textContent],true);
 	},
 	expressReffer: function NodeUtil_expressReffer(nodeOrNo)
 	{
