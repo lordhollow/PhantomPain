@@ -248,46 +248,14 @@ var Configulator = {
 				this.pages[page.dataset.key] = page;
 			}
 		}
-		if (t.__popup)
-		{
-			t.__popup.close();
-		}
-		else
-		{
-			var p = new Popup();
-			p.closeOnMouseLeave = false;
-			p._init(t);
-			p.show(this.editor.cloneNode(true));
-			p.onClose = function(){ t.__popup = null; }
-			t.__popup = p;
-		}
+		PopupUtil.toggle(t, this.editor, false);
 	},
 	page: function Configulator_page(aEvent)
 	{
 		var name = aEvent.explicitOriginalTarget.name;
 		var page = this.pages[name];
 		if (!page) return false;
-		if (page.__popup)
-		{
-			var p = page.__popup;
-			if (p.isTopLevelPopup("prefpage"))
-			{
-				p.close();
-			}
-			else
-			{
-				p.toTop();
-			}
-		}
-		else
-		{
-			var p = new Popup();
-			p.closeOnMouseLeave = false;
-			p._init(aEvent.explicitOriginalTarget);
-			p.show(page);
-			p.onClose = function(){ page.__popup = null;}
-			page.__popup = p;
-		}
+		PopupUtil.toggle(aEvent.explicitOriginalTarget, page, false, true, "prefpage");
 		return false;
 	},
 };
@@ -556,20 +524,7 @@ var Menu = {
 	},
 	ToggleNavigationPopup: function Menu_ToggleNavigationPopup()
 	{
-		var e = $("Menu_Navi");
-		if (e.__popup)
-		{
-			e.__popup.close();
-		}
-		else
-		{
-			var p = new Popup();
-			p.closeOnMouseLeave = false;
-			p._init(e);
-			p.show(Thread.getNavigation());
-			p.onClose = function(){ e.__popup = null; }
-			e.__popup = p;
-		}
+		PopupUtil.toggle($("Menu_Navi"), Thread.getNavigation(), false);
 	},
 };
 
@@ -2427,6 +2382,33 @@ GearPopup.prototype = new Popup();
 		this.no = no;
 		return ThreadMessages.getNode(no, true);
 	};
+
+var PopupUtil = {
+	toggle: function PopupUtil_toggle(target, content, closeOnMouseLeave, toTopBeforeHide, category)
+	{
+		if (target.__popup)
+		{
+			var p = target.__popup;
+			if (!toTopBeforeHide || (p.isTopLevelPopup(category)))
+			{	//トップレベルに一度出さないか、トップレベルのときクローズ
+				p.close();
+			}
+			else
+			{	//トップレベルに一度出す
+				p.toTop();
+			}
+		}
+		else
+		{
+			var p = new Popup();
+			p.closeOnMouseLeave = closeOnMouseLeave;
+			p._init(target);
+			p.onClose = function PopupUtil_toggle_onClose(){ target.__popup = null; }
+			target.__popup = p;
+			p.show(content);
+		}
+	}
+};
 
 /* ■検索・抽出 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Finder = {
