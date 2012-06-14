@@ -2360,6 +2360,7 @@ GearPopup.prototype = new Popup();
 		this.show(this.content);
 		var c = this.container;
 		c.dataset.gearEnchanted = "y";
+		c.dataset.popupCaption = "GEAR>>" + n.dataset.no;
 		c.enchantedGear = this;
 	};
 	GearPopup.prototype.to = function GearPopup_to(no)
@@ -2370,9 +2371,9 @@ GearPopup.prototype = new Popup();
 		if (n)
 		{
 			this.content.innerHTML = "";
-			this.container.dataset.popupCaption = ">>" + no;
+			this.container.dataset.popupCaption = "GEAR>>" + n.dataset.no;
 			this.content.appendChild(n);
-			this.adjust();
+			if (!this.floating) this.adjust();
 		}
 		this.stepping = false;
 	};
