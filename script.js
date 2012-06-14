@@ -415,11 +415,9 @@ var Menu = {
 		if (!e) e = $("Menu.Template");
 		if (Preference.TemplateLength)
 		{
-			var pp = new ResPopup(null);
-			MessageLoader.load(1, Preference.TemplateLength);
 			var tids = [];
 			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-			pp.popup(tids, e);
+			PopupUtil.toggleResPopup(e, tids, true);
 		}
 		else 
 		{	//TemplateLength = 0Ý’èŽž‚ÍƒMƒA‚Æ‚µ‚Äo‚·
