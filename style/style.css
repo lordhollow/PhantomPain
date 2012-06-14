@@ -490,6 +490,23 @@ article article
 	display: none;
 }
 
+/* フローティングポップアップ */
+.popup[data-floating-popup="y"]
+{
+	opacity: 0.2;
+	border: none;
+	border-top: solid 12px #CCF;
+}
+.popup[data-floating-popup="y"]:hover
+{
+	opacity: 1;
+}
+.popup[data-floating-popup="y"] > div
+{
+	background-color: #FCC;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+}
 /* Outlink展開 */
 .outLinkPreview
 {

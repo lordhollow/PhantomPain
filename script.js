@@ -2211,6 +2211,25 @@ Popup.prototype = {
 		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
 		this.container.firstChild.style.marginLeft = x + "px";
 	},
+	float: function Popup_float()
+	{
+		if (this.floating) return;
+		this.closeOnMouseLeave = false;
+		this.floatingRect = Util.getElementPagePos(this.container.firstChild);
+		this.container.dataset.floatingPopup = "y";
+		this.container.style.left = (this.floatingRect.pageX-Preference.PopupLeft) + "px";
+		this.container.style.top  = this.floatingRect.pageY + "px";
+		this.container.firstChild.style.marginLeft = "0px";
+		this.floating = true;
+	},
+	offsetFloat: function Popup_float(dx, dy)
+	{
+		if (!this.floating) return;
+		this.floatingRect.pageX += dx;
+		this.floatingRect.pageY += dy;
+		this.container.style.left = this.floatingRect.pageX + "px";
+		this.container.style.top  = this.floatingRect.pageY + "px";
+	},
 	getPopupPos: function Popup_getPopupPos()
 	{
 		//位置計算(アレンジされているようその下辺中央を指すように)
@@ -3156,6 +3175,42 @@ var NodeUtil = {
 	},
 };
 
+/* ■ドラッグドロップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function PopupDragDrop(popupContainer, aEvent){ this.init(popupContainer, aEvent);}
+PopupDragDrop.prototype = {
+	init: function PopupDragDrop_init(popupContainer, aEvent)
+	{
+		this.popupContainer = popupContainer;
+		this.popup = popupContainer.popup;
+		this.which = aEvent.button;
+		this.origin = {clientX: aEvent.clientX, clientY: aEvent.clientY, pageX: aEvent.pageX, pageY: aEvent.pageY};
+	},
+	drag: function PopupDragDrop_drag(aEvent)
+	{
+		var dx = aEvent.clientX - this.origin.clientX;
+		var dy = aEvent.clientY - this.origin.clientY;
+		if (!this.procceed)
+		{
+			var d2 = dx*dx + dy*dy;
+			if (d2 >= 3*3)
+			{	//半径3ピクセルより大きく動かすとドラッグ開始
+				this.procceed = true;
+				this.popup.float();
+			}
+		}
+		else
+		{
+			this.popup.offsetFloat(dx, dy);
+			this.origin = {clientX: aEvent.clientX, clientY: aEvent.clientY, pageX: aEvent.pageX, pageY: aEvent.pageY};
+		}
+	},
+	drop: function PopupDragDrop_drop(aEvent)
+	{
+		this.proceed = false;
+	},
+	
+}
+
 
 /* ■イベントハンドラ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var EventHandlers = {
@@ -3166,6 +3221,9 @@ var EventHandlers = {
 		this.mode = "thread";
 		document.addEventListener("keydown", this.keydown.bind(this),false);
 		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
+		document.addEventListener("mousedown", this.mouseDown.bind(this), false);
+		document.addEventListener("mouseup", this.mouseUp.bind(this), false);
+		document.addEventListener("mousemove", this.mouseMove.bind(this), false);
 		document.addEventListener("click",     this.mouseClick.bind(this), false);
 		document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
 		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
@@ -3239,6 +3297,33 @@ var EventHandlers = {
 			break;
 		}
 		return true;
+	},
+	mouseDown: function EventHandlers_mouseDown(aEvent)
+	{
+		if (this._dragDrop)return;
+		var t = aEvent.target;
+		if ((t.className == "popup") && (!t.popup.fixed))
+		{	//固定でないポップアップはヒゲのところをドラッグできる
+			this._dragDrop = new PopupDragDrop(t, aEvent);
+			aEvent.preventDefault();
+		}
+	},
+	mouseUp: function EventHandlers_mouseDown(aEvent)
+	{
+		if (this._dragDrop && (this._dragDrop.which == aEvent.button))
+		{
+			this._dragDrop.drop(aEvent);
+			this._dragDrop = null;
+		}
+	},
+	mouseMove: function EventHandlers_mosueMove(aEvent)
+	{
+		if (this._dragDrop)
+		{
+			this._dragDrop.drag(aEvent);
+			aEvent.preventDefault();
+			return;
+		}
 	},
 	mouseOver: function EventHandlers_mouseOver(aEvent)
 	{
