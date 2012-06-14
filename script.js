@@ -2292,25 +2292,28 @@ ResPopup.prototype = new Popup();
 		}
 	};
 	
-	ResPopup.prototype.popup =  function ResPopup_popup(obj, e)
+	ResPopup.prototype.popup =  function ResPopup_popup(obj, e, caption)
 	{
 		var ids;
 		if (!e) e = obj;
+		this._init(e);
 		if (obj.tagName)
 		{	//要素。アンカーだと信じる
 			ids = MessageUtil.splitResNumbers(obj.textContent);
 			MessageLoader.loadByAnchorStr(obj.textContent);
+			this.container.dataset.popupCaption = (caption||"") + obj.textContent;
 		}
 		else if (obj.length)
 		{	//配列・・・だといいなぁ
 			ids = obj;
+			this.container.dataset.popupCaption = caption;
 		}
 		else
 		{	//その他・・・適当に
 			ids = [obj];
+			this.container.dataset.popupCaption = caption;
 		}
 		
-		this._init(e);
 		var innerContainer = document.createElement("DIV");
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
@@ -2371,6 +2374,7 @@ GearPopup.prototype = new Popup();
 		if (n)
 		{
 			this.content.innerHTML = "";
+			this.container.dataset.popupCaption = ">>" + no;
 			this.content.appendChild(n);
 			this.adjust();
 		}
@@ -2414,7 +2418,7 @@ var PopupUtil = {
 			p.show(content);
 		}
 	},
-	toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave)
+	toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave, caption)
 	{
 		if (target.__popup)
 		{
@@ -2428,7 +2432,7 @@ var PopupUtil = {
 			p.closeOnMouseLeave = closeOnMouseLeave;
 			p.onClose = this._onCloseHandler.bind(target);
 			target.__popup = p;
-			p.popup(ids, target);
+			p.popup(ids, target, caption);
 		}
 	},
 	_onCloseHandler: function PopupUtil__onCloseHandler()
@@ -3003,14 +3007,14 @@ var NodeUtil = {
 		if (!node)return;
 		if (node.tagName != "ARTICLE")return;
 		if (!t) t = node.children[1].children[0];
-		PopupUtil.toggleResPopup(t, MessageStructure.nodesReplyFrom[node.dataset.no],true);
+		PopupUtil.toggleResPopup(t, MessageStructure.nodesReplyFrom[node.dataset.no],true, "ResTo>>"+node.dataset.no);
 	},
 	toggleIdPopup: function NodeUtil_toggleIdPopup(node, t)
 	{
 		if (!node)return;
 		if (node.tagName != "ARTICLE")return;
 		if (!t) t = node.children[1].children[2];
-		PopupUtil.toggleResPopup(t, MessageStructure.nodesById[t.textContent],true);
+		PopupUtil.toggleResPopup(t, MessageStructure.nodesById[t.textContent],true, "ID>>" + t.textContent);
 	},
 	expressReffer: function NodeUtil_expressReffer(nodeOrNo)
 	{

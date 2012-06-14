@@ -498,6 +498,15 @@ article article
 	border-top: solid 12px #CCF;
 	box-shadow: 8px 8px 4px 0px #000;
 }
+.popup[data-floating-popup="y"]:after
+{
+	content: attr(data-popup-caption);
+	position:absolute;
+	left: 4px;
+	top: -11px;
+	font-size: 10px;
+}
+
 .popup[data-floating-popup="y"]:hover
 {
 	opacity: 1;
