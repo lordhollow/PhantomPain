@@ -3307,7 +3307,8 @@ var EventHandlers = {
 	},
 	mouseDblClick: function EventHandlers_mouseDblClick(e)
 	{
-		if (e.target.tagName == "ARTICLE")
+		var t = e.target;
+		if (t.tagName == "ARTICLE")
 		{
 			var flg = 0;
 			if (e.shiftKey) flg += 1;
@@ -3315,14 +3316,18 @@ var EventHandlers = {
 			if (e.altKey) flg += 4;
 			var method = Preference.OnResDblClick[flg];
 			var handler= this.dblClickMethod[method];
-			if (handler) handler(e.target)
+			if (handler) handler(t)
 		}
-		else if (e.target.className == "resPointer")
+		else if (t.className == "resPointer")
 		{
-			if(e.target.textContent.match(/(\d+)/))
+			if(t.textContent.match(/(\d+)/))
 			{
 				Thread.loadFocus(RegExp.$1);
 			}
+		}
+		else if (t.className == "popup")
+		{	//ポップアップのヒゲのとこ
+			t.popup.close();
 		}
 	},
 	LoadOnWheelDelta: 0,
