@@ -496,6 +496,7 @@ article article
 	opacity: 0.2;
 	border: none;
 	border-top: solid 12px #CCF;
+	box-shadow: 8px 8px 4px 0px #000;
 }
 .popup[data-floating-popup="y"]:hover
 {
@@ -503,7 +504,6 @@ article article
 }
 .popup[data-floating-popup="y"] > div
 {
-	background-color: #FCC;
 	border-top-left-radius: 0px;
 	border-top-right-radius: 0px;
 }
