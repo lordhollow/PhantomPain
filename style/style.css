@@ -800,8 +800,10 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 .icon_endautomore   { background-image: -moz-image-rect(url(buttons.png),  0, 64, 16, 48); }
 .icon_backward      { background-image: -moz-image-rect(url(buttons.png),  0, 80, 16, 64); }
 .icon_gear          { background-image: -moz-image-rect(url(buttons.png),  0, 96, 16, 80); }
-/* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); } */
-/* .icon_blank      { background-image: -moz-image-rect(url(buttons.png),  0,128, 16,112); } */
+.icon_morenew       { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); }
+.icon_istop         { background-image: -moz-image-rect(url(buttons.png),  0,128, 16,112); }
+body[data-deployed-all="y"] .icon_more { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); }
+body[data-deployed-first="y"] .icon_backward { display:none; }
 
 .icon_bookmark  { background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
 .icon_bookmarkb { background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }

@@ -895,9 +895,10 @@ var ThreadMessages = {
 		}
 		this.deployedMin = min;
 		this.deployedMax = parseInt(e.lastElementChild.dataset.no);
+		this.deployedFirst = this.deployedMin == 1;
 		this.deployedAll = this.deployedMax == ThreadInfo.Total;
+		document.body.dataset.deployedFirst=this.deployedFirst?"y" : "";
 		document.body.dataset.deployedAll = this.deployedAll ? "y" : "";
-		
 	},
 	deploy: function ThreadMessages_deploy(min, max)
 	{	//min‚©‚çmax‚Ü‚Å‚ğdeployNode‚·‚éB
@@ -906,6 +907,7 @@ var ThreadMessages = {
 		{
 			this.deployNode(this.domobj[i]);
 		}
+		this.updateDeployedInfo();
 	},
 	
 	push: function ThreadMessages_push(nodes)
