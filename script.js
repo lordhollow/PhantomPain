@@ -446,7 +446,7 @@ var Menu = {
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
-		PopupUtil.toggleResPopup($("Menu.Pickup"), Pickup.pickups, false, "Pickup");
+		PopupUtil.toggleResPopup($("Menu.Pickup"), Pickup.pickups, true, "Pickup");
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
@@ -505,7 +505,7 @@ var Menu = {
 	},
 	ToggleNavigationPopup: function Menu_ToggleNavigationPopup()
 	{
-		PopupUtil.toggle($("Menu_Navi"), Thread.getNavigation(), false);
+		PopupUtil.toggle($("Menu_Navi"), Thread.getNavigation(), true, "Navigation");
 	},
 };
 
