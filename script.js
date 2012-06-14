@@ -2210,17 +2210,20 @@ Popup.prototype = {
 	},
 	float: function Popup_float()
 	{
-		if (this.floating) return;
-		this.closeOnMouseLeave = false;
-		this.floatingRect = Util.getElementPagePos(this.container.firstChild);
-		this.floatingRect.pageX -= Preference.PopupLeft;
-		this.floatingRect.pageY -= 4;
-		this.container.dataset.floatingPopup = "y";
-		this.container.style.left = this.floatingRect.pageX + "px";
-		this.container.style.top  = this.floatingRect.pageY + "px";
-		this.container.firstChild.style.marginLeft = "0px";
-		if (this.parentPopup) this.parentPopup.unregistorChild(this);
-		this.floating = true;
+		if (!this.floating)
+		{
+			this.closeOnMouseLeave = false;
+			this.floatingRect = Util.getElementPagePos(this.container.firstChild);
+			this.floatingRect.pageX -= Preference.PopupLeft;
+			this.floatingRect.pageY -= 4;
+			this.container.dataset.floatingPopup = "y";
+			this.container.style.left = this.floatingRect.pageX + "px";
+			this.container.style.top  = this.floatingRect.pageY + "px";
+			this.container.firstChild.style.marginLeft = "0px";
+			if (this.parentPopup) this.parentPopup.unregistorChild(this);
+			this.floating = true;
+		}
+		this.toTop();
 	},
 	offsetFloat: function Popup_float(dx, dy)
 	{
