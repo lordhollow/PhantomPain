@@ -396,14 +396,10 @@ var MessageMenu = {
 	},
 	PopupTracked: function MessageMenu_PopupTracked(event)
 	{
-		if (this.popTrack)return;	//すでに表示されている
 		var tracking = Tracker.getTracker(this._menu.dataset.binding);
 		if (tracking)
 		{
-			var ids = tracking.getTrackingNumbers();
-			var pp = new ResPopup(null);
-			pp.popup(ids, "RMenu.TrPop");
-			this.popTrack = pp;
+			PopupUtil.toggleResPopup($("RMenu.TrPop"), tracking.getTrackingNumbers(), true, "追跡");
 		}
 	}
 };
@@ -417,7 +413,7 @@ var Menu = {
 		{
 			var tids = [];
 			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-			PopupUtil.toggleResPopup(e, tids, true);
+			PopupUtil.toggleResPopup(e, tids, true, "テンプレ");
 		}
 		else 
 		{	//TemplateLength = 0設定時はギアとして出す
@@ -450,7 +446,7 @@ var Menu = {
 	},
 	PopupPickups: function Menu_PopupPickups()
 	{
-		PopupUtil.toggleResPopup($("Menu.Pickup"), Pickup.pickups, false);
+		PopupUtil.toggleResPopup($("Menu.Pickup"), Pickup.pickups, false, "Pickup");
 	},
 	ExpressPickups: function Menu_ExpressPickups()
 	{
