@@ -2271,7 +2271,7 @@ Popup.prototype = {
 		for(var i=0; i<container.children.length; i++)
 		{
 			var popup = container.children[i];
-			if (popup.firstChild && (popup.firstChild.className == cls))
+			if (popup.firstChild && (!cls || (popup.firstChild.className == cls)))
 			{	//–{“–‚Í‚©‚Ô‚Á‚Ä‚é‚©‚Ç‚¤‚©‚Å”»’è‚µ‚½‚Ù‚¤‚ª—Ç‚¢H
 				topLevelPopup = popup;
 			}
@@ -2449,6 +2449,19 @@ var PopupUtil = {
 	_onCloseHandler: function PopupUtil__onCloseHandler()
 	{
 		this.__popup = null;
+	},
+	isPopup: function PopupUtil_isPopup(e)
+	{
+		return this.getPopup(e) != null;
+	},
+	getPopup: function PopupUtil_getPopup(e)
+	{
+		while (e)
+		{
+			if (e.popup) return e.popup;
+			e = e.parentNode;
+		}
+		return null;
 	},
 };
 
@@ -3401,6 +3414,14 @@ var EventHandlers = {
 		else if (Thread.isNavigationElement(t))
 		{
 			Thread.invokeNavigation(t);
+		}
+		else if (PopupUtil.isPopup(t))
+		{
+			var popup = PopupUtil.getPopup(t);
+			if (popup.floating && !popup.isTopLevelPopup())
+			{
+				popup.toTop();
+			}
 		}
 		if(cancel){
 			aEvent.preventDefault();
