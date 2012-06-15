@@ -1957,7 +1957,7 @@ var OutlinkPluginFor2ch = {
 			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginFor2ch.setToNextThread(event)" title="次スレに指定">';
 		}
 		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : "(スレタイ未取得)";
-		var b = "ここに板名";	//TODO::板名設定
+		var b = BoardList.getBoardName(url.boardId);
 		html = html.format(href, t, b);
 		var preview = document.createElement("DIV");
 		preview.className = "threadtitlePopup";
