@@ -5,8 +5,6 @@
 		.popup           1250
 		.overlay         1500
 */
-@import url("boardname.css");
-
 body
 {
 	margin: 0;
@@ -152,7 +150,12 @@ span.space
 			width: 16px;
 			height: 16px;
 		}
-
+		#threadName:after
+		{
+			font-size: 70%;
+			color: #DDD;
+			content: "["  attr(data-board-name) "]";
+		}
 		/* <a> */
 		/* #bpHandle */
 

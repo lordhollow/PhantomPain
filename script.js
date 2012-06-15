@@ -488,17 +488,67 @@ var Menu = {
 	},
 };
 
+/* ■板一覧■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var BoardList = {
+	init: function BoardList_init()
+	{
+		this.prepareBoardNames();
+	},
+	prepareBoardNames: function BoardList_prepareBoardNames()
+	{	
+		var sys = Util.eval("[" + (CommonPref.readGlobalObject("BoardNames") || "") + "]", [])[0];
+		var usr = Util.eval("[" + (CommonPref.readGlobalObject("UserBoardNames") || "{}") + "]", [{}])[0]; 
+		if (!sys)
+		{
+			sys = this.boardNameLoadFromFile() || {};
+			this.save(sys, "BoardNames");
+		}
+		
+		this.boardNameListSys = sys;
+		this.boardNameListUsr = usr;
+	},
+	save: function BoardList_save(list, prefName)
+	{
+	},
+	boardNameLoadFromFile: function BoardList_boardNameLoadFromFile()
+	{
+		var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
+		return Util.eval("[" + (boardnameTxt|| "") + "]", [])[0];
+	},
+	getBoardName: function BoardList_getBoardName(boardId)
+	{
+		if (this.boardNameListSys && this.boardNameListSys[boardId])
+		{
+			return  this.boardNameListSys[boardId];
+		}
+		else if (this.boardNameListUsr && this.boardNameListUsr[boardId])
+		{
+			return  this.boardNameListUsr[boardId];
+		}
+		return "その他の掲示板";
+	},
+};
+
+/* ■スレッド■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Thread = {
 	init: function Thread_init()
 	{
+		BoardList.init();	//そのうちいろんなものの初期化をここに持ってくるかも
+
 		//identifier設定
 		var url = new URL(ThreadInfo.Url);
 		this.boardId  = url.boardId;
 		this.threadId = url.threadId;
+		//板名
+		this.boardName = BoardList.getBoardName(this.boardId);
 
 		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
 		var e = $("threadName");
-		if (e) e.dataset.board = this.boardId;
+		if (e)
+		{
+			 e.dataset.board = this.boardId;
+			 e.dataset.boardName = this.boardName;
+		}
 		
 		//次スレ/前スレ情報
 		this.nextThread = this.loadNextThreadInfo();
@@ -2958,7 +3008,19 @@ var Util = {
 		}
 		return str;
 	},
-	
+	eval: function Util_eval(str, def)
+	{
+		try
+		{
+			return eval(str);
+		}
+		catch(e)
+		{
+			console.log(str);
+			console.log(e);
+		}
+		return def;
+	},
 	isDecendantOf: function Util_isDecendantOf(e, id)
 	{
 		if (e.id == id) return e;
