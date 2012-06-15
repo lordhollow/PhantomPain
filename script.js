@@ -509,6 +509,13 @@ var BoardList = {
 	},
 	save: function BoardList_save(list, prefName)
 	{
+		var json = "{";
+		for(var key in list)
+		{
+			json += '"{0}": "{1}",'.format(key, list[key]);
+		}
+		json += "}";
+		CommonPref.writeGlobalObject(prefName, json);
 	},
 	boardNameLoadFromFile: function BoardList_boardNameLoadFromFile()
 	{
