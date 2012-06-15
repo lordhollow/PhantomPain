@@ -498,12 +498,7 @@ var BoardList = {
 	{	
 		var sys = Util.eval("[" + (CommonPref.readGlobalObject("BoardNames") || "") + "]", [])[0];
 		var usr = Util.eval("[" + (CommonPref.readGlobalObject("UserBoardNames") || "{}") + "]", [{}])[0]; 
-		if (!sys)
-		{
-			sys = this.boardNameLoadFromFile() || {};
-			this.save(sys, "BoardNames");
-		}
-		
+		if (!sys) sys = this.reloadBoardNameTxt();
 		this.boardNameListSys = sys;
 		this.boardNameListUsr = usr;
 	},
@@ -517,10 +512,12 @@ var BoardList = {
 		json += "}";
 		CommonPref.writeGlobalObject(prefName, json);
 	},
-	boardNameLoadFromFile: function BoardList_boardNameLoadFromFile()
+	reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
 	{
 		var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
-		return Util.eval("[" + (boardnameTxt|| "") + "]", [])[0];
+		var sys =  Util.eval("[" + (boardnameTxt|| "") + "]", [])[0] || {};
+		this.save(sys, "BoardNames");
+		return sys;
 	},
 	getBoardName: function BoardList_getBoardName(boardId)
 	{
@@ -560,6 +557,7 @@ var Thread = {
 		//次スレ/前スレ情報
 		this.nextThread = this.loadNextThreadInfo();
 		this.prevThread = this.searchPrevThread();
+		
 	},
 	openWriteDialog: function Thread_openWriteDialog(to)
 	{
@@ -1991,6 +1989,8 @@ var OutlinkPluginFor2ch = {
 	},
 	setToNextThread: function OutlinkPluginFor2ch_setToNextThread(aEvent)
 	{
+		Thread.setNextThread(aEvent.target.dataset.ref, true, 0);
+		Notice.add("次スレを {0} に設定しました。".format(aEvent.target.dataset.ref));
 	},
 	_titleBuffer: {},
 };
