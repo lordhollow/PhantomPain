@@ -904,7 +904,7 @@ var Thread = {
 				if (key.match(/(\d+)$/))
 				{
 					var num = RegExp.$1;
-					var url = ThreadInfo.Url.replace(/\/(\d+)\/$/, function(a,b,c){	return "/" + num + "/"; });
+					var url = ThreadInfo.Url.replace(/\/(\d+)\/$/, function(a,$1){	return "/" + num + "/"; });
 					ret = {url: url};
 				}
 			}
@@ -1086,9 +1086,9 @@ var ThreadMessages = {
 		//‘SŠpƒAƒ“ƒJ[‚ğE‚¤("‚O-‚X"‚ÍFx3‚¾‚Æ\d‚¾‚¯‚ÅE‚¦‚È‚©‚Á‚½‚©‚ç’Ç‰Á)
 		var res=e.innerHTML;
 		if(this._dblSizeAnchorRegExp.test(res)){
-			res=res.replace(this._dblSizeAnchorRegExp,function (a,b,c){
-				c=Util.toNarrowString(c);
-				return "<a href='#"+c+"' class='resPointer'>&gt;&gt;"+c+"</a>";});
+			res=res.replace(this._dblSizeAnchorRegExp,function (a,$1,$2){
+				$2=Util.toNarrowString($2);
+				return "<a href='#"+$2+"' class='resPointer'>&gt;&gt;"+$2+"</a>";});
 			e.innerHTML=res;
 		}
 	},
