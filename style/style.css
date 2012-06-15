@@ -440,7 +440,7 @@ article article
 {
 	float: left;
 	background: rgba(255,255,192,0.95);
-	padding: 0 12px 12px 12px;
+	padding: 0 12px 0px 12px;
 	border-radius: 8px;
 	box-shadow: 3px 5px 5px 0px #000;
 	overflow: auto;
@@ -452,9 +452,13 @@ article article
 /* スレタイのポップアップ */
 .threadtitlePopup
 {
+	font-size: 16px;
+	margin: 0px;
 }
 	.threadtitlePopup:before
 	{
+		font-size: 16px;
+		color: red;
 		content: "[" attr(data-board) "]" attr(data-thread);
 	}
 	.threadtitlePopup > input
@@ -462,14 +466,15 @@ article article
 		width: 16px;
 		height: 16px;
 		border: none;
-		margine-left: 2px;
+		margin-left: 4px;
 	}
+	
 .ithumbcontainer
 {
 }
 	.popup .ithumbcontainer
 	{
-		margin-top: 12px;
+		margin: 6px;
 	}
 	.ithumbcontainer[data-state="loading"]
 	{
