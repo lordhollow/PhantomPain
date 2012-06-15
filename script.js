@@ -1850,6 +1850,7 @@ var OutlinkPlugins = {
 		{
 			var p = new Popup();
 			p._init(anchor);
+			p.dontLimitSize = true;	//モノによって変更できるようにしたいかも
 			var c = plugin.getPreview(anchor.href, p.adjust.bind(p), true);
 			if (c)
 			{
@@ -2177,7 +2178,7 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 function Popup() { }
 Popup.prototype = {
 	closeOnMouseLeave: true,
-	
+	dontLimitSize: false,
 	_init: function Popup_init(e)
 	{	//eはなにからポップアップさせようとしているか。要素または要素のIDを指定する。
 		if (!e.tagName) e = $(e);
@@ -2255,6 +2256,7 @@ Popup.prototype = {
 	//サイズ制限
 	limitSize: function Popup_limitSize(pos)
 	{
+		if (this.dontLimitSize) return;
 		var e = this.container.firstChild;
 		//幅・・・画面幅の80%
 		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
