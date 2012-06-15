@@ -203,18 +203,12 @@ var Configulator = {
 		{	//初期化
 			var cont = document.createElement("DIV");
 			cont.id = "prefMenu";
-			var html = "";	//TODO::外部ファイルから読み込み
-			{
-				var loardUrlStr = ThreadInfo.Skin + "pref.txt";
-				var req = new XMLHttpRequest();
-				req.open('GET', loardUrlStr, false);	//sync
-				req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
-				req.send(null);	
-				if ((req.readyState==4)&&(req.status==200))
-				{
-					html = req.responseText;
-				}
-			}
+			var html = TextLoadManager.syncGet(ThreadInfo.Skin + "pref.txt") || "";
+			this.htmlTemplate = html;
+			//テンプレートエンジン発動！
+			//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
+			//ここでしか変更されない値はどうでもいいけど。
+			html = html.replace(/\$\((.+?)\)/g, function(all,$1){ return eval($1);});
 			cont.innerHTML = html;
 			this.editor = cont.firstChild;
 			cont.removeChild(this.editor);
@@ -530,6 +524,30 @@ var BoardList = {
 			return  this.boardNameListSys[boardId];
 		}
 		return "その他の掲示板";
+	},
+	setBoardName: function BoardList_setBoardName(id, name)
+	{
+		if (!id) id = Thread.boardId;	//俺だよ、俺俺
+		if (!name || name == "")
+		{	//定義を消す
+			if (this.boardNameListUsr && this.boardNameListUsr[id])
+			{
+				delete this.boardNameListUsr[id];
+			}
+		}
+		else
+		{
+			if (!this.boardNameListUsr) this.boardNameListUsr = {};
+			this.boardNameListUsr[id] = name;
+			this.save(this.boardNameListUsr, "UserBoardNames");
+		}
+		if (id == Thread.boardId)
+		{	//TODO::イベントを投げて板名変化を通知し、反映するように変更
+			//特に、２箇所以上に影響が及ぶ場合はそのときに必ず実施。
+			Thread.boardName = this.getBoardName(Thread.boardId);
+			var e = $("threadName");
+			if (e) e.dataset.boardName = Thread.boardName;
+		}
 	},
 };
 
@@ -1185,19 +1203,16 @@ var MessageLoader = {
 		if ((tmin <= tmax) && (tmin != 0))
 		{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
 			var loardUrlStr = ThreadInfo.Server + ThreadInfo.Url + tmin + "-" + tmax;
-			var req = new XMLHttpRequest();
-			req.open('GET', loardUrlStr, false);	//sync
-			req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
-			req.send(null);	
-			if ((req.readyState==4)&&(req.status==200)){
-				var html = req.responseText;
-				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-				{
-					var nc = document.createElement("DIV");
-					nc.innerHTML = RegExp.$1;
-					ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
-					return true;
-				}
+			var html = TextLoadManager.syncGet(loardUrlStr) || "";
+			if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+			{
+				var nc = document.createElement("DIV");
+				nc.innerHTML = RegExp.$1;
+				ThreadMessages.push($A(nc.getElementsByTagName("ARTICLE")));
+				return true;
+			}
+			else
+			{
 				return false;
 			}
 		}

@@ -14,8 +14,10 @@
 		</div>
 
 		<div class="prefpage" data-key="template3">
-		TEMPLATE3
+		<form name="page3">
+		この板の名前: <input type="text" value="$(Thread.boardName)" name="boardName">
+		<input type="button" onclick="BoardList.setBoardName(null, document.forms.page3.boardName.value);" value="変更">
+		</form>
 		</div>
-
 	</div>
 </div>
