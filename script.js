@@ -1857,6 +1857,7 @@ var OutlinkPlugins = {
 				anchor.dataset.previewShowing = "y";
 				var innerCont = document.createElement("DIV");
 				innerCont.appendChild(c);
+				p.container.dataset.popupCaption = anchor.href;
 				p.show(innerCont);
 				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
 			}

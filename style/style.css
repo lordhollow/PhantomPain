@@ -461,7 +461,6 @@ article article
 	.threadtitlePopup:before
 	{
 		font-size: 16px;
-		color: red;
 		content: "[" attr(data-board) "]" attr(data-thread);
 	}
 	.threadtitlePopup > input
@@ -528,6 +527,8 @@ article article
 	left: 4px;
 	top: -11px;
 	font-size: 10px;
+	white-space:nowrap;
+	overflow: hidden;
 }
 
 .popup[data-floating-popup="y"]:hover
