@@ -521,13 +521,13 @@ var BoardList = {
 	},
 	getBoardName: function BoardList_getBoardName(boardId)
 	{
-		if (this.boardNameListSys && this.boardNameListSys[boardId])
-		{
-			return  this.boardNameListSys[boardId];
-		}
-		else if (this.boardNameListUsr && this.boardNameListUsr[boardId])
+		if (this.boardNameListUsr && this.boardNameListUsr[boardId])
 		{
 			return  this.boardNameListUsr[boardId];
+		}
+		else if (this.boardNameListSys && this.boardNameListSys[boardId])
+		{
+			return  this.boardNameListSys[boardId];
 		}
 		return "‚»‚Ì‘¼‚ÌŒfŽ¦”Â";
 	},
