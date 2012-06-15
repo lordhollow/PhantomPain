@@ -143,33 +143,12 @@ function PP3ResetPreference()
 var CommonPref = {
 
 	_identifier: new String("UNKNOWN"),
-	
 	_storage: localStorage,
-	
-	_resolvePrefName: function CommonPref__resolvePrefName(aPrefName){
-		return "bbs2chSkin.common." + aPrefName + this._identifier;
-	},
-	
+
 	setIdentifier: function CommonPref_setIdentifier(aThreadURL) {
-		if (aThreadURL.match(/machi\.to/)) {
-			//まちBBS
-			var _bbskey ="";
-			var _thread = "";
-			if (document.location.href.match(/BBS=([^&]+)/i)) {
-				_bbskey = RegExp.$1;
-			}
-			if (document.location.href.match(/KEY=([0-9]+)/i)) {
-				_thread = RegExp.$1;
-			}
-			this._identifier = "machi." + _bbskey + "." + _thread;
-		} else {
-			//2ch
-			if (aThreadURL.match(/([^\/]+)\/([^\/]+)\/$/)) {
-				this._identifier = RegExp.$1 + "." + RegExp.$2;
-			}
-		}
+		var url = new URL(aThreadURL);
+		this._identifier = url.threadId;
 	},
-	
 	getThreadObjectKey: function(objName)
 	{
 		return "bbs2chSkin.common." + objName + "." + this._identifier;
@@ -795,7 +774,7 @@ var Thread = {
 			window.location.href = ThreadInfo.Server + this.nextThread.url + "l" + Preference.ChapterWidth;
 		}
 	},
-	textNextThread: function Thread_textNextThread(anchor, node)
+	testNextThread: function Thread_testNextThread(anchor, node)
 	{	//次スレURLか確認・・・
 		if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
 		if (!Preference.EnableNextThreadSearch) return;		//機能無効
@@ -1019,7 +998,7 @@ var ThreadMessages = {
 				{
 					e.parentNode.dataset.hasImage = "y";
 				}
-				Thread.textNextThread(a);
+				Thread.testNextThread(a);
 			}
 			//長すぎるoutLinkを適当に刈り込み
 			//else if(a.textContent.length>ml){
@@ -1731,13 +1710,14 @@ URL.prototype = {
 		if (this.maybeThread)
 		{
 			//板とスレッドと表示範囲の指定を取得
-			if (url.match(/\/read.cgi\/([^\/]+)\/([^\/]+)(\/(.+))?/))
+			if (url.match(/^(.+\/read.cgi\/([^\/]+)\/([^\/]+))(\/(.+))?/))
 			{
-				this.boardName = RegExp.$1;
-				this.threadNo  = RegExp.$2;
-				if (RegExp.$4)
+				this.threadUrl = RegExp.$1 + "/";
+				this.boardName = RegExp.$2;
+				this.threadNo  = RegExp.$3;
+				if (RegExp.$5)
 				{
-					this.range = RegExp.$4;
+					this.range = RegExp.$5;
 				}
 				else
 				{
@@ -1820,7 +1800,7 @@ var OutlinkPlugins = {
 		{
 			var p = new Popup();
 			p._init(anchor);
-			var c = plugin.getPreview(anchor.href, p.adjust.bind(p));
+			var c = plugin.getPreview(anchor.href, p.adjust.bind(p), true);
 			if (c)
 			{
 				anchor.dataset.previewShowing = "y";
@@ -1843,7 +1823,7 @@ var OutlinkPlugins = {
 			for(var i=0,j=outlinks.length; i<j; i++)
 			{
 				var plugin = this.getOutlinkPlugin(outlinks[i]);
-				var c = plugin.getPreview(outlinks[i].href);
+				var c = plugin.getPreview(outlinks[i].href, null, false);
 				if (c) container.appendChild(c);
 			}
 		}
@@ -1865,7 +1845,7 @@ var OutlinkPluginForImage = {
 		}
 		return 0;
 	},
-	getPreview: function OutlinkPluginForImage_getPreview(href, onload)
+	getPreview: function OutlinkPluginForImage_getPreview(href, onload, isPopup)
 	{
 		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize));
 		p.onload = onload;
@@ -1880,7 +1860,7 @@ var OutlinkPluginForMovie = {
 	{
 		return 0;
 	},
-	getPreview: function OutlinkPluginForMovie_getPreview(href, onload)
+	getPreview: function OutlinkPluginForMovie_getPreview(href, onload, isPopup)
 	{
 		return null;
 	},
@@ -1896,7 +1876,7 @@ var OutlinkPluginForNicoNico = {
 		}
 		return 0;
 	},
-	getPreview: function OutlinkPluginForNicoNico_getPreview(href, onload)
+	getPreview: function OutlinkPluginForNicoNico_getPreview(href, onload, isPopup)
 	{
 		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/(sm\d+)/i))
 		{
@@ -1913,28 +1893,47 @@ var OutlinkPluginFor2ch = {
 	type: OUTLINK_2CH,
 	posivility: function OutlinkPluginFor2ch_posivility(href)
 	{
-		return (this.is2ch(href)) ? 1 : 0;
+		//本来、URL.maybeThreadを確認すればよいが、無駄なアクションも多いので処理だけ抽出
+		return  href.match(/\/read.cgi\//) ? 1 : 0;
 	},
-	getPreview: function OutlinkPluginFor2ch_getPreview(href, onload)
+	getPreview: function OutlinkPluginFor2ch_getPreview(href, onload, isPopup)
 	{
-		return null;
+		if (!isPopup) return null;	//ポップアップにしか表示しない
+		var url = new URL(href);
+		href = url.threadUrl;
+		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onClick="OutlinkPluginFor2ch.getThreadTitle(event)" title="スレタイを取得。未読スレの場合、既読になります。">';
+		if (url.boardId == Thread.boardId)
+		{
+			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginFor2ch.setToNextThread(event)" title="次スレに指定">';
+		}
+		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : "(スレタイ未取得)";
+		var b = "ここに板名";	//TODO::板名設定
+		html = html.format(href, t, b);
+		var preview = document.createElement("DIV");
+		preview.className = "threadtitlePopup";
+		preview.dataset.board = b;
+		preview.dataset.thread = t;
+		preview.dataset.threadState = (this._titleBuffer[href]) ? "y" : "";
+		preview.innerHTML = html;
+		return preview;
 	},
-	//b2rで読めそうなアドレスだとtrueを返す
-	is2ch: function OutlinkPluginFor2ch_is2ch(url)
+	getThreadTitle: function OutlinkPluginFor2ch_getThreadTitle(aEvent)
 	{
-		return (url.match(/\/test\/read.cgi\//));
+		var href = aEvent.target.dataset.ref;
+		var html = TextLoadManager.syncGet(ThreadInfo.Server + href + "1");
+		if (html && (html.match(/<a id="threadName">(.+?)<\/a>/)))
+		{
+			this._titleBuffer[href]  = RegExp.$1;
+		}
+		var t = this._titleBuffer[href] || "(スレッドロードエラー)";
+		var preview = aEvent.target.parentNode;
+		preview.dataset.thread = t;
+		preview.dataset.titleState = (this._titleBuffer[href]) ? "y" : "e";
 	},
-	//2ch.net, bbspinkならtrue
-	isPure2ch: function OutlinkPluginFor2ch_isPure2ch(url)
+	setToNextThread: function OutlinkPluginFor2ch_setToNextThread(aEvent)
 	{
-		return (url.match(/(2ch.net|bbspink.com|machi.to)\//));
 	},
-	
-	//b2rで表示中？
-	isb2r: function OutlinkPluginFor2ch_isb2r(url)
-	{
-		return (url.match(/\/\/127.0.0.1:\d+\/thread\//));
-	},
+	_titleBuffer: {},
 };
 
 var OutlinkPluginForDefault = {
@@ -1995,6 +1994,24 @@ loadManager.prototype = {
 		}
 	},
 };
+var TextLoadManager = new loadManager();
+	TextLoadManager.syncGet = function TextLoadManager_syncGet(url, enableCache)
+	{
+		var req = new XMLHttpRequest();
+		req.open('GET', url, false);	//sync
+		if (!enableCache) req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+		try
+		{
+			req.send(null);	
+			if ((req.readyState==4)&&(req.status>=200)&&(req.status<300))
+			{
+				return req.responseText;
+			}
+		}
+		catch(e){}
+		return null;
+	}
+	
 var ImageLoadManager = new loadManager();
 	ImageLoadManager.request = function ImageLoadManager_request(obj)
 	{

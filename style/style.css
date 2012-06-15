@@ -449,6 +449,21 @@ article article
 {
 	padding: 6px 2px;
 }
+/* スレタイのポップアップ */
+.threadtitlePopup
+{
+}
+	.threadtitlePopup:before
+	{
+		content: "[" attr(data-board) "]" attr(data-thread);
+	}
+	.threadtitlePopup > input
+	{
+		width: 16px;
+		height: 16px;
+		border: none;
+		margine-left: 2px;
+	}
 .ithumbcontainer
 {
 }
@@ -805,14 +820,14 @@ body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display
 body[data-deployed-all="y"] .icon_more { background-image: -moz-image-rect(url(buttons.png),  0,112, 16, 96); }
 body[data-deployed-first="y"] .icon_backward { display:none; }
 
-.icon_bookmark  { background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
-.icon_bookmarkb { background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }
-.icon_bookmarka { background-image: -moz-image-rect(url(buttons.png), 16, 48, 32, 32); }
-.icon_bookmarkn { background-image: -moz-image-rect(url(buttons.png), 16, 64, 32, 48); }
-.icon_close     { background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); }
-.icon_error     { background-image: -moz-image-rect(url(buttons.png), 16, 96, 32, 80); }
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 16,112, 32, 96); } */
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 16,128, 32,112); } */
+.icon_bookmark       { background-image: -moz-image-rect(url(buttons.png), 16, 16, 32,  0); }
+.icon_bookmarkb      { background-image: -moz-image-rect(url(buttons.png), 16, 32, 32, 16); }
+.icon_bookmarka      { background-image: -moz-image-rect(url(buttons.png), 16, 48, 32, 32); }
+.icon_bookmarkn      { background-image: -moz-image-rect(url(buttons.png), 16, 64, 32, 48); }
+.icon_close          { background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); }
+.icon_error          { background-image: -moz-image-rect(url(buttons.png), 16, 96, 32, 80); }
+.icon_getthreadtitle { background-image: -moz-image-rect(url(buttons.png), 16,112, 32, 96); }
+.icon_settonextthread{ background-image: -moz-image-rect(url(buttons.png), 16,128, 32,112); }
 
 .icon_new      { background-image: -moz-image-rect(url(buttons.png), 32, 16, 48,  0); }
 .icon_nonew    { background-image: -moz-image-rect(url(buttons.png), 32, 32, 48, 16); }
