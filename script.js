@@ -208,7 +208,7 @@ var Configulator = {
 			//テンプレートエンジン発動！
 			//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
 			//ここでしか変更されない値はどうでもいいけど。
-			html = html.replace(/\$\((.+?)\)/g, function(all,$1){ return eval($1);});
+			html = html.replace(/@<([^@]+?)>@/g, function(all,$1){ return eval($1);});
 			cont.innerHTML = html;
 			this.editor = cont.firstChild;
 			cont.removeChild(this.editor);
