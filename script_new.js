@@ -97,10 +97,6 @@ var Skin = PP3 = {
 		_identifier: new String("UNKNOWN"),
 		_storage: localStorage,
 	
-		setIdentifier: function CommonPref_setIdentifier(aThreadURL) {
-			var url = new URL(aThreadURL);
-			this._identifier = url.threadId;
-		},
 		getThreadObjectKey: function(objName)
 		{
 			return "bbs2chSkin.common." + objName + "." + this._identifier;
@@ -215,9 +211,29 @@ var Skin = PP3 = {
 	Thread: {
 		init: function Thread_init()
 		{
-			//identifier
-			//boardName
-			//prev/next thread
+			//identifier設定
+			var url = new URL(this.Info.Url);
+			this.boardId  = url.boardId;
+			this.threadId = url.threadId;
+			
+			//スレッドのIDを共通設定に使わせる(これより前にスレッド個別設定を使用してはならない)
+			Skin.CommonPref._identifier = url.threadId;
+
+			//板名
+			this.boardName = Skin.BoardList.getBoardName(this.boardId);
+
+			//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+			var e = $("threadName");
+			if (e)
+			{
+				 e.dataset.board = this.boardId;
+				 e.dataset.boardName = this.boardName;
+			}
+
+			//次スレ前スレ
+			this.Navigator.init();
+
+			//メッセージの分析
 			this.Message.init();			//message
 		},
 		openWriteDialog: function Thread_openWriteDialog(to)
@@ -291,6 +307,12 @@ var Skin = PP3 = {
 			},
 		},
 		Navigator: {
+			init: function Navigator_init()
+			{
+				//次スレ/前スレ情報
+				this.nextThread = this.loadNextThreadInfo();
+				this.prevThread = this.searchPrevThread();
+			},
 			gotoPrevChapter: function Navigator_gotoPrevChapter()
 			{
 			},
@@ -310,13 +332,53 @@ var Skin = PP3 = {
 			{
 			},
 			setNextThread: function Navigator_setNextThread(href, ud, nodeNo)
-			{
+			{	//ud: ユーザーが決めたか？ trueのとき、勝手に上書きされない状態で出てくる。
+				var url = new URL(href);
+				ud = ud ? true : false;	//真偽値の正規化
+				var nextThread = { url: href, id: url.threadId, userDecided: ud, linkedNode: nodeNo};
+				this.nextThread = nextThread;
+				this.saveNextThreadInfo(nextThread);	//TODO::ここで毎回呼ぶと負荷が掛かる場合があるかも？次回以降大丈夫だろうけど。
+				document.body.dataset.nextThread = nextThread.url || "";
 			},
-			saveNextThreadInfo: function Navigator_saveNextThreadInfo()
+			saveNextThreadInfo: function Navigator_saveNextThreadInfo(nextThread)
 			{
+				var saveStr = '{url: "{0}", id: "{1}", userDecided: {2}, linkedNode: {3} }'
+				              .format(nextThread.url, nextThread.id, nextThread.userDecided, nextThread.linkedNode);
+				Skin.CommonPref.writeThreadObject("nextThread", saveStr);
 			},
-			loadNextThreadInfo: function Navigator_loadNextThreadInfo()
+			loadNextThreadInfo: function NavigatorloadNextThreadInfo(objStr)
 			{
+				objStr = objStr ? objStr : Skin.CommonPref.readThreadObject("nextThread");
+				try
+				{
+					if (objStr)
+					{
+						var n;
+						eval("n="+objStr);
+						return n;
+					}
+				}catch(e){}
+				return {url: null, id: null, userDecided: false, linkedNode: 0};	//デフォルト
+			},
+			searchPrevThread: function Navigator_searchPrevThread()
+			{
+				var This = this;
+				var ret = {url: null};
+				Skin.CommonPref.foreach("nextThread", function(key, dat)
+				{
+					var info = This.loadNextThreadInfo(dat);
+					if (info.id == Skin.Thread.threadId)
+					{	//URL => 今のアドレスの数字のところをkeyの末尾の数字で置き換えたもの
+						if (key.match(/(\d+)$/))
+						{
+							var num = RegExp.$1;
+							var url = Skin.Thread.Info.Url.replace(/\/(\d+)\/$/, function(a,$1){	return "/" + num + "/"; });
+							ret = {url: url};
+						}
+					}
+				});
+				document.body.dataset.prevThread = ret.url || "";	//これがここでええのんかな？
+				return ret;
 			},
 		},
 	},
@@ -371,14 +433,14 @@ function URL(url){ this.init(url); }
 URL.prototype = {
 	init: function URL_init(url)
 	{
-		try
+//		try
 		{
 			this.url = url;
 			//bbs2chreader/chaika スレッド表示URL
-			this.isReaderUrl = (this.startWith(ThreadInfo.Server));
-			if(this.isReaderUrl) url = url.substr(ThreadInfo.Server.length);
+			this.isReaderUrl = (this.startWith(Skin.Thread.Info.Server));
+			if(this.isReaderUrl) url = url.substr(Skin.Thread.Info.Server.length);
 			//bbs2chreader/chaika スキン
-			this.isReaderSkinUrl = (this.startWith(ThreadInfo.Skin));
+			this.isReaderSkinUrl = (this.startWith(Skin.Thread.Info.Skin));
 			//bbs2chreader/chaika 板一覧
 			var readerBoardScheme = "bbs2ch:board:";
 			this.isReaderBoardUrl = (this.startWith(readerBoardScheme));
@@ -451,10 +513,10 @@ URL.prototype = {
 				this.threadId = this.boardId + "." + this.threadNo;
 			}
 		}
-		catch(e)
-		{
-			this.invalidUrl = true;
-		}
+//		catch(e)
+//		{
+//			this.invalidUrl = true;
+//		}
 		
 		//console.log(this);
 	},
