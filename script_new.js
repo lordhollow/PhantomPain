@@ -542,8 +542,95 @@ var Skin = PP3 = {
 		Popup: {
 		},
 		String: {
+			toNarrowString: function StringUtil_toNarrowString(src)
+			{
+				var str=new String;
+				var len=src.length;
+				for(var i=0;i<len;i++){
+					var c=src.charCodeAt(i);
+					if(c>=65281&&c<=65374&&c!=65340){
+						str+=String.fromCharCode(c-65248);
+					}else{
+						str+=src.charAt(i);
+					} 
+				}
+				return str;
+			},
+			timestamp: function StringUtil_timestamp(d)
+			{
+				if (!d) d = new Date();
+				var h=d.getHours();
+				var m=d.getMinutes();
+				var s=d.getSeconds();
+				if(m<10)m="0"+m;
+				if(s<10)s="0"+s;
+				return h+":"+m+":"+s;
+			},
+			splitResNumbers: function StringUtil_splitResNumbers(str)
+			{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
+				str=str.replace(/>/g,"");
+				var e=str.split(",");
+				var r=new Array();
+				for(var i=0;i<e.length;i++){
+					if(e[i].match(/(\d+)-(\d+)/)){
+						for(var j=parseInt(RegExp.$1);j <= parseInt(RegExp.$2);j++){
+							r.push(j);
+						}
+					}else if(!isNaN(parseInt(e[i])))r.push(parseInt(e[i]));
+				}
+				return r;
+			},
 		},
 		Dom: {
+			isDecendantOf: function DOMUtil_isDecendantOf(e, id)
+			{
+				if (e.id == id) return e;
+				if (e.parentNode  == null) return null;
+				return this.isDecendantOf(e.parentNode, id);
+			},
+			getDecendantNode: function DOMUtil_getDecendantNode(e, tagName)
+			{
+				if (e.tagName == tagName) return e;
+				if (e.parentNode  == null) return null;
+				return this.getDecendantNode(e.parentNode, tagName);
+			},
+			getDecendantNodeByData: function  DOMUtil_getDecendantNodeByClass(e, x, v)
+			{	//特定追加データの値を持つ親を帰す。
+				if (e.dataset && (e.dataset[x] == v))return e;
+				if (e.parentNode == null) return null;
+				return this.getDecendantNodeByData(e.parentNode, x, v);
+			},
+			isFixedElement: function DOMUtil_isFixedElement(e)
+			{
+				try
+				{
+					var style = document.defaultView.getComputedStyle(e, null);
+					if (style.position == "fixed") return true;
+					if (e.parentNode == null) return false;
+					return this.isFixedElement(e.parentNode);
+				} catch(e) { return false; }
+			},
+			getElementPagePos: function DOMUtil_getElementPagePos(e)
+			{	//要素の絶対座標を求める
+				rect = e.getBoundingClientRect();
+				rect.pageX = Math.round(rect.left);
+				rect.pageY = Math.round(rect.top);
+				rect.fixed = this.isFixedElement(e);
+				if (!rect.fixed)
+				{
+					rect.pageX += window.scrollX;
+					rect.pageY += window.scrollY;
+				}
+				return {pageX: rect.pageX, pageY: rect.pageY,
+				        width: Math.round(rect.right - rect.left), height: Math.round(rect.bottom - rect.top),
+				        fixed: rect.fixed};
+			},
+			notifyRefreshInternal: function DOMUtil_notifyRefreshInternal(e)
+			{
+				var element = e;
+				element.dataset.refreshState = "refresh";
+				setTimeout(function(){element.dataset.refreshState = "";}, 15);
+			},
 		},
 	},
 	EventHandler: {
@@ -773,6 +860,9 @@ ResManipulator.prototype = {
 //MessageLoader_loadByAnchorStr(アンカー文字列からのThread.Message.prepare)
 
 //ショートカット
-Preference = Skin.Preference;
+var Preference = Skin.Preference;
+var PopupUtil = Skin.Util.Popup;
+var StringUtil = Skin.Util.String;
+var DOMUtil = Skin.Util.Dom;
 
 window.addEventListener("load", function(){ PP3.init(); });
