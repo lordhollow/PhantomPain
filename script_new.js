@@ -365,24 +365,104 @@ var Skin = PP3 = {
 	},
 };
 
-function MarkerService(){}
-function BookmarkService(){}
-function PickupServiece(){}
-function TrackerService(){}
-function TrackerEntry(){}
-function URL(){}
-function OutlinkPlugin(type){}
-	OutlinkPlugin.prototype.posivility = function OutlinkPlugin_posivility(href){}
-	OutlinkPlugin.prototype.getPreviewy = function OutlinkPlugin_getPreviewy(href, onload, isPopup){}
-	OutlinkPlugin.prototype.showPreview = function OutlinkPlugin_showPreview(){}
-	OutlinkPlugin.prototype.popupPreview = function OutlinkPlugin_popupPreview(){}
-var OutlinkPluginForImage = new OutlinkPlugin();
-	OutlinkPluginForImage.posivility = function OutlinkPluginForImage_posivility(href){}
-	OutlinkPluginForImage.getPreview = function OutlinkPluginForImage_getPreview(href, onload, isPopup){}
-var OutlinkPluginForMovie = new OutlinkPlugin();
-var OutlinkPluginForNicoNico = new OutlinkPlugin();
-var OutlinkPluginForThread = new OutlinkPlugin();
-var OutlinkPluginForDefault = new OutlinkPlugin();
+
+/* ■URL分析 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function URL(url){ this.init(url); }
+URL.prototype = {
+	init: function URL_init(url)
+	{
+		try
+		{
+			this.url = url;
+			//bbs2chreader/chaika スレッド表示URL
+			this.isReaderUrl = (this.startWith(ThreadInfo.Server));
+			if(this.isReaderUrl) url = url.substr(ThreadInfo.Server.length);
+			//bbs2chreader/chaika スキン
+			this.isReaderSkinUrl = (this.startWith(ThreadInfo.Skin));
+			//bbs2chreader/chaika 板一覧
+			var readerBoardScheme = "bbs2ch:board:";
+			this.isReaderBoardUrl = (this.startWith(readerBoardScheme));
+			if(this.isReaderBoardUrl) url = url.substr(readerBoardScheme.length);
+			readerBoardScheme = "chaika://board/";
+			this.isReaderBoardUrl = (this.startWith(readerBoardScheme));
+			if(this.isReaderBoardUrl) url = url.substr(readerBoardScheme.length);
+			
+			//ドメインとパスの切り分け
+			if (url.match(/([a-z]+):\/\/([^\/]+)(.*)/i))
+			{
+				this.scheme = RegExp.$1;
+				this.domain = RegExp.$2;
+				this.path   = RegExp.$3;
+			}
+			
+			//スレッド判定
+			this.maybeThread = url.match(/\/read.cgi\//) ? true : false;
+			
+			//4つ(2chか町BBSか2chのクローンかその他WWWか）に分類
+			if (this.domain.match(/(2ch.net|bbspink.com)$/))
+			{
+				this.type =  "2CH";
+			}
+			else if(this.domain.match(/(machi.to)$/))
+			{
+				this.type = "MACHI";
+			}
+			else if(this.maybeThread)
+			{
+				this.type = "CLONE";
+			}
+			else
+			{
+				this.type = "WWW";
+			}
+			
+			//スレッドなら
+			if (this.maybeThread)
+			{
+				//板とスレッドと表示範囲の指定を取得
+				if (url.match(/^(.+\/read.cgi\/([^\/]+)\/([^\/]+))(\/(.+))?/))
+				{
+					this.threadUrl = RegExp.$1 + "/";
+					this.boardName = RegExp.$2;
+					this.threadNo  = RegExp.$3;
+					if (RegExp.$5)
+					{
+						this.range = RegExp.$5;
+					}
+					else
+					{
+						this.range = "";
+					}
+				}
+				//identifier
+				switch (this.type)
+				{
+					case "2CH":
+						this.boardId = "";
+						break;
+					case "MACHI":
+						this.boardId = "machi.";
+						break;
+					default:
+						this.boardId = this.domain + ".";
+						break;
+				}
+				this.boardId  =(this.boardId + this.boardName).toLowerCase();
+				this.threadId = this.boardId + "." + this.threadNo;
+			}
+		}
+		catch(e)
+		{
+			this.invalidUrl = true;
+		}
+		
+		//console.log(this);
+	},
+	startWith: function URL_startWith(x)
+	{
+		return this.url.substr(0, x.length) == x;
+	},
+};
 
 /* ■ロードマネージャ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function loadManager(){ }
@@ -457,6 +537,23 @@ var ImageLoadManager = new loadManager();
 function ImageThumbnail(url, sz){}
 function ImageThumbnailOnClickOverlay(url, sz){this.thumbSize = sz; this.init(url);}
 function ImageThumbnailOnClickOverlayFrame(url, sz){this.thumbSize = sz; this.init(url);}
+function MarkerService(){}
+function BookmarkService(){}
+function PickupServiece(){}
+function TrackerService(){}
+function TrackerEntry(){}
+function OutlinkPlugin(type){}
+	OutlinkPlugin.prototype.posivility = function OutlinkPlugin_posivility(href){}
+	OutlinkPlugin.prototype.getPreviewy = function OutlinkPlugin_getPreviewy(href, onload, isPopup){}
+	OutlinkPlugin.prototype.showPreview = function OutlinkPlugin_showPreview(){}
+	OutlinkPlugin.prototype.popupPreview = function OutlinkPlugin_popupPreview(){}
+var OutlinkPluginForImage = new OutlinkPlugin();
+	OutlinkPluginForImage.posivility = function OutlinkPluginForImage_posivility(href){}
+	OutlinkPluginForImage.getPreview = function OutlinkPluginForImage_getPreview(href, onload, isPopup){}
+var OutlinkPluginForMovie = new OutlinkPlugin();
+var OutlinkPluginForNicoNico = new OutlinkPlugin();
+var OutlinkPluginForThread = new OutlinkPlugin();
+var OutlinkPluginForDefault = new OutlinkPlugin();
 function Popup(){}
 function ResPopup(anchor){ this.init(anchor); }
 function GearPopup(enchantElement) { this.init(enchantElement); }
