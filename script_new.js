@@ -296,10 +296,105 @@ var Skin = PP3 = {
 				this.onDeploy(nodes);
 			},
 			prepare: function Message_prepare(from, to)
-			{
+			{	//minにはidsまたはアンカーの文字列を指定可能。
+				//alert([min, max]);
+				if (min instanceof Array)
+				{
+					var b = true;
+					for(var i=0; i<min.length; i++)
+					{
+						b &= this.prepare(min[i],min[i]);
+					}
+					return b;
+				}
+				else if ((min+"").substr(1) == ">")
+				{
+					var str = min+"";
+					str=str.replace(/>/g,"");
+					var e=str.split(",");
+					var r=new Array();
+					for(var i=0;i<e.length;i++)
+					{
+						if(e[i].match(/(\d+)(-(\d+))?/))
+						{
+							var smin = parseInt(RegExp.$1);
+							var smax = parseInt(RegExp.$3);
+							if (!smax) smax = smin;
+							this.load(smin, smax);
+						}
+					}
+				}
+				var tmin = parseInt(min);
+				if (!tmin)return false;
+				var tmax = max;
+				if (tmax > Skin.Thread.Info.Total) tmax = Skin.Thread.Info.Total;	//絶対取れないところはとりに行かない。
+				for(; tmin <= tmax; tmin++)
+				{	//tmin位置が読み込み済みならtminを+1
+					if (!this.isReady(tmin))	break;
+				}
+				for(; tmax >= tmin; tmax--)
+				{	//tmax位置が読み込み済みならtmaxを-1
+					if (!this.isReady(tmax))	break;	
+				}
+				if ((tmin <= tmax) && (tmin != 0))
+				{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
+					var loardUrlStr = Skin.Thread.Info.Server + Skin.Thread.Info.Url + tmin + "-" + tmax;
+					var html = TextLoadManager.syncGet(loardUrlStr) || "";
+					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+					{
+						var nc = document.createElement("DIV");
+						nc.innerHTML = RegExp.$1;
+						this.onLoad($A(nc.getElementsByTagName("ARTICLE")));
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+				return true;
 			},
 			deploy: function Message_deploy(from, to)
 			{
+				var nodes = new Array();
+				for(var i = from; i< to; i++)
+				{
+					nodes.push(this.domobj[i]);
+					this._deployNode(this.domobj[i]);
+				}
+				this.onDeployed(nodes);
+			},
+			_deployNode: function Message_deployNode(node)
+			{
+				if (!node)return;	//ほぎゃ！
+				if (node.tagName != "ARTICLE") return;	//ほぎゃ！
+				if (this.isDeployed(node.dataset.no)) return;
+				if (node.parentNode)
+				{	//既存の親を除外。loadから来た仮のdivだと思われる。
+					node.parentNode.removeChild(node);
+				}
+				var rc = $("resContainer");
+				var nn =  parseInt(node.dataset.no);
+				var nextSibling = this._findDeployedNextSibling(nn);
+				if (nextSibling)
+				{
+					rc.insertBefore(node, nextSibling);
+				}
+				else
+				{
+					rc.appendChild(node);
+				}
+			},
+			_findDeployedNextSibling: function Message__findDeployedNextSibing(no)
+			{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
+				for(var i=no; i<=this.deployedMax; i++)
+				{
+					if(this.isDeployed(i))
+					{
+						return this.domobj[i];
+					}
+				}
+				return null;
 			},
 			getNode: function Message_getNode(no, clone)
 			{
