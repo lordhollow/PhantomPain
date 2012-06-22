@@ -134,6 +134,7 @@ var Skin = PP3 = {
 		//loadPref
 		this.BoardList.init();
 		this.Thread.init();		//ThreadInit
+		this.Services.Marker.init();
 		
 		this.EventHandler.init();
 	},
@@ -865,14 +866,42 @@ var Skin = PP3 = {
 	Services: {
 		Marker: {
 			service: new Array(),
-			push: function MarkerServices__push(service)
+			
+			init: function MarkerServices_init()
 			{
+				Bookmark.init();
+				Pickup.init();
+				Tracker.init();
+				this.push(Bookmark);
+				this.push(Pickup);
+				this.push(Tracker);
+			},
+			
+			push: function MarkerServices_push(service)
+			{
+				if(service)
+				{
+					this.service.push(service);
+					if(this.service.length==1)
+					{	//最初の一個登録時→ストレージイベントを追加
+						window.addEventListener("storage", this.onStorageChanged.bind(this), false);
+					}
+				}
 			},
 			nodeLoaded: function MarkerServices_nodeLoaded(node)
 			{
+				for(var i=0, j=this.service.length; i<j;i++)
+				{
+					var s = this.service[i].nodeLoaded(node);
+				}
 			},
 			onStorageChanged: function MarkerServices_onStorageChanged(ev)
 			{
+				if (e.newValue == e.oldValue) return;	//変化なしなら帰る（そんなことがあるかどうかは知らない）
+				for(var i=0, j=this.service.length; i<j;i++)
+				{
+					var s = this.service[i].onStorageChanged(ev);
+				}
 			},
 		},
 		OutLink: {
@@ -1482,11 +1511,415 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 }
 
 
-function MarkerService(){}
-function BookmarkService(){}
-function PickupServiece(){}
-function TrackerService(){}
-function TrackerEntry(){}
+/* ■マーカーサービス■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function MarkerService(g,k,m,ma){this.init(g,k,m,ma);}
+MarkerService.prototype = {
+	global: false,	//スレごとに覚えるマーカーはfalse, 全体で覚えるマーカーはtrueにする
+	storageKey: "_markerservice",	//ストレージのキー
+	mark: "mk",	//レスにマーキングする時のデータセットの名前。mkならnode.dataset.mk="y"(yの部分はMarkerService_getMarkerClassで取得)となる。
+	markAllNode: true,	//全ノードマーク？検索みたいな、domobjにしか影響ないものはfalseにしておくと若干速度アップするかも
+
+	init: function MarkerService_init(g,k,m,ma)
+	{
+		this.global = g;
+		this.storageKey = k;
+		this.mark = m;
+		this.markAllNode = ma;
+	},
+	onStorageChanged: function MarkerService_onStorageChanged(e)
+	{	//ストレージ内容が変化したときよびだされる。
+		//console.log("{0}:{1} => {2}".format(e.key, e.oldValue, e.newValue));
+		if (this.isMineStorageDataChanged(e.key))
+		{
+			this.refresh(e.newValue, e.oldValue);
+		}
+	},
+	isMineStorageDataChanged: function MarkerService_isMineStorageDataChanged(key)
+	{
+		if(this.global)
+		{
+			return (Skin.CommonPref.getGlobalObjectKey(this.storageKey) == key);
+		}
+		else
+		{
+			return (Skin.CommonPref.getThreadObjectKey(this.storageKey) == key);
+		}
+	},
+	save: function MarkserService_save()
+	{
+		var str = this.getSaveStr();
+		if (this.global)
+		{
+			Skin.CommonPref.writeGlobalObject(this.storageKey, str);
+		}
+		else
+		{
+			Skin.CommonPref.writeThreadObject(this.storageKey, str);
+		}
+	},
+	load: function MarkerService_load()
+	{
+		return (this.global) ?
+			Skin.CommonPref.readGlobalObject(this.storageKey) : Skin.CommonPref.readThreadObject(this.storageKey);
+	},
+	refresh: function MarkerService_refresh(newValue, oldValue)
+	{	//マーキングしたりされたりするごとにちゃんと保存しておけば、自分が書いたものとの差分によって処理できると見た！
+		
+	},
+	add: function MarkerService_set(no)
+	{	//こいつをマーキングしろ！という指示
+		if (this._add(no))
+		{
+			this.setMark();
+			this.save();
+		}
+	},
+	del: function MarkerService_del(no)
+	{	//こいつのマーキングを解除しろ！という指示
+		if (this._del(no))
+		{
+			this.setMark();
+			this.save();
+		}
+	},
+	isMarked: function MarkerService_isMarked(no)
+	{	//こいつはマーキングされていますか？
+		//逐次マーキングが反映されていれば、これでいいはず。
+		//検索はポップアップとかに及ばないけど、domobjには及ぶので。
+		//var node = ThreadMessages.domobj[no];
+		//return (node && (node.getAttribute("data-" + this.mark)=="y");
+		return false;
+	},
+	setMark: function MarkerService_mark()
+	{
+		var mark = this.mark;
+		var T = this;
+		Skin.Thread.Message.foreach(function(node){
+			node.dataset[mark] = T.getMarkerClass(node);
+		}, this.markAllNode);
+		if(this.marked) this.marked();	//マーク後処理
+	},
+	getMarkerClass: function MarkerService_getMarkerClass(node)
+	{
+		return "";
+	},
+	nodeLoaded: function MarkerService_nodeLoaded(node)
+	{	//markAllNodeがtrueのときは、ロードされたときにこれが発動する。
+		node.dataset[this.mark] = this.getMarkerClass(node);
+		if(this.marked) this.marked();	//マーク後処理
+	},
+};
+/* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Bookmark = new MarkerService(false, "bm", "bm", true);
+	Bookmark.init = function Bookmark_init()
+	{
+		this.no = 0;
+		var no = parseInt(this.load());
+		no = !no ? 0 : no;
+		this.refresh(no, no);
+	}
+	Bookmark.getSaveStr = function Bookmark_getSaveStr()
+	{
+		return this.no;
+	}
+	Bookmark._add = function Bookmark_add(no)
+	{
+		this.no = no;
+		return true;
+	}
+	Bookmark._del = function Bookmark_del(no)
+	{
+		if (this.no == no)
+		{
+			this.add(0);
+			return true;
+		}
+		return false;
+	}
+	Bookmark.refresh = function Bookmark_refresh(newValue, oldValue)
+	{
+		this.add(newValue);
+	}
+	Bookmark.getMarkerClass = function Bookmark_getMarkerClass(node)
+	{
+		return (node.dataset.no == this.no) ? "y" : "";
+	}
+	Bookmark.marked = function Bookmark_marked()
+	{
+		$("Menu_Bookmark").dataset.bm = this.getDeployMode(this.no);
+		$("Menu_Bookmark").dataset.bmn= this.no;
+	}
+	Bookmark.focus = function Bookmark_focus()
+	{
+		//★Thread.deployTo(this.no);
+		//★NodeUtil.focus(this.no)
+	}
+	Bookmark.getDeployMode =  function ThreadMessages_getDeployMode(no)
+	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
+		if (no <= 0)
+		{
+			return "n";
+		}
+		else if (no < Skin.Thread.Message.deployedMin)
+		{
+			return "yb";
+		}
+		else if (no > Skin.Thread.Message.deployedMax)
+		{
+			return "ya";
+		}
+		else
+		{
+			return "y";
+		}
+	}
+
+/* ■ピックアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Pickup = new MarkerService(false, "pk", "pickuped", true);
+	Pickup.init = function Pickup_init()
+	{
+		var pickups = this.load();
+		if (!pickups) pickups = "";
+		this.refresh(pickups, pickups);
+	}
+	Pickup.getSaveStr = function Pickup_getSaveStr()
+	{
+		return this.pickups + "";
+	}
+	Pickup._add = function Pickup_add(no)
+	{
+		if (!this.pickups.include(no))
+		{
+			this.pickups.push(no);
+			this.pickups.sort(function(a,b){return a-b;});
+			return true;
+		}
+		return false;
+	}
+	Pickup._del = function Pickup_del(no)
+	{
+		if (this.pickups.include(no))
+		{
+			this.pickups = this.pickups.filter(function(item, index, array){ return item != no });
+			return true;
+		}
+		return false;
+	}
+	Pickup.refresh = function Pickup_refresh(nV, oV)
+	{
+		this.pickups = eval("[" + nV + "]");
+		this.setMark();
+	}
+	Pickup.getMarkerClass = function Pickup_getMarkerClass(node)
+	{
+		return (this.pickups.include(node.dataset.no)) ? "y" : "";
+	}
+	Pickup.marked = function Pickup_marked()
+	{
+		$("Menu.Pickup").dataset.pk = this.pickups.length ? "y" : "n";
+		$("Menu.Pickup").dataset.pkc= this.pickups.length;
+	}
+
+/* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Tracker =  new MarkerService(true, "tracker", "track", true);
+	Tracker.init = function Tracker_init()
+	{
+		this._trackers = new Array();
+		var trackers = this.load();
+		if (!trackers) trackers = "";
+		this.refresh(trackers, "");
+	}
+	Tracker.getSaveStr = function Tracker_getSaveStr()
+	{
+		var tss = [];
+		for(var i=0,j=this._trackers.length; i<j; i++)
+		{
+			if(this._trackers[i])
+			{
+				tss.push(this._trackers[i].toString());
+			}
+		}
+		return "[{0}]".format(tss);
+	}
+	Tracker._add = function Tracker_add(no)
+	{
+		var node = Skin.Thread.Message.domobj[no];
+		if(!node) return false;
+		//トラック済みならトラッキングしない
+			//if (ThreadMessages.domobj[no].dataset.tracker != "") return false;	//←でいいのかも
+		for(var i=0, j=this._trackers.length; i<j; i++)
+		{
+			if (this._trackers[i].check(no)) return false;
+		}
+		//新規でトラック
+		var trip = new Array();
+		var aid = new Array();
+		if (node.dataset.aid.length > 5) aid.push(node.dataset.aid);
+		if (node.dataset.trip) trip.push(node.dataset.trip);
+		var tr = new TrackerEntry(this.findBlankIndex(), trip, aid);
+		tr.update();
+		this._trackers.push(tr);
+		return true;
+	}
+	Tracker._del = function Tracker_del(no)
+	{
+		var nt = new Array();
+		for(var i=0, j=this._trackers.length; i<j; i++)
+		{
+			var tracker = this._trackers[i];
+			if(tracker.check(no) == 0)
+			{
+				nt.push(tracker);
+			}
+		}
+		if (nt.length != this._trackers.length)
+		{
+			this._trackers = nt;
+			return true;
+		}
+		return false;
+	}
+	Tracker.refresh = function Tracker_refresh(nV, oV)
+	{
+		if (nV == oV) return;
+		var obj;
+		try
+		{
+			obj = eval(nV);
+		} catch(e){ obj = new Array(); }
+		var trackers = new Array();
+		for (var i=0, j=obj.length; i<j; i++)
+		{
+			var o = obj[i];
+			var tr = new TrackerEntry(o.index, o.trip, o.aid);
+			tr.update();	//他のスレからの分もあるので、今のスレで引っかかるものがないか更新かける
+			trackers.push(tr);
+		}
+		this._trackers = trackers;
+		this.save();
+		this.setMark();
+	}
+	Tracker.getMarkerClass = function Tracker_getMarkerClass(node)
+	{
+		var a = this._trackers;
+		for(var i=0, j=a.length; i<j; i++)
+		{
+			if (a[i].check(node.dataset.no))
+			{
+				return "m" + a[i].index;
+			}
+		}
+		return "";
+	}
+	Tracker.getTracker = function Tracker_getTracker(no)
+	{
+		var tr = Skin.Thread.Message.domobj[no].dataset.track + "";
+		if (tr.match(/^m(\d+)$/))
+		{
+			var index = RegExp.$1;
+			for(var i=0, j=this._trackers.length; i<j; i++)
+			{
+				if (this._trackers[i].index == index)
+				{
+					return this._trackers[i];
+				}
+			}
+		}
+	}
+	Tracker.findBlankIndex = function Tracker_findBlankIndex()
+	{
+		//空いてる番号を探す
+		for(var ni=0; ni<1001; ni++)
+		{
+			var used = false;
+			for(var i=0,j=this._trackers.length; i<j; i++)
+			{
+				if (this._trackers[i].index == ni)
+				{
+					used = true;
+					break;
+				}
+			}
+			if (!used) return ni;
+		}
+		return 0;
+	}
+
+function TrackerEntry(index, trip, aid){ this.init(index, trip, aid); };
+TrackerEntry.prototype = {
+	aid: null,
+	trip: null,
+	index: 0,
+	
+	init: function TrackerEntry_init(index, trip, aid)
+	{
+		this.aid = aid;
+		this.trip = trip;
+		this.index = index;
+	},
+	
+	toString: function TrackerEntry_toString()
+	{
+		return "{index: {0}, aid: [{1}], trip: [{2}]}".format(this.index, $qA(this.aid), $qA(this.trip));
+	},
+	update: function TrackerEntry_update()
+	{	//既存データがマッチしていれば再帰的に追加していく
+		var tr = this;
+		Skin.Thread.Message.foreach(function(node){
+			var m = tr.check(node.dataset.no);
+			if (m > 0)
+			{
+				if ((m & 1) && (node.dataset.aid.length > 5) && (!tr.containsId(node.dataset.aid)))
+				{	//トリップで引っかかってIDがあるけどID未登録→ID登録
+					tr.aid.push(node.dataset.aid);
+					tr.update();
+				}
+				else if ((m&2) && (node.dataset.trip) && (!tr.containsTrip(node.dataset.trip)))
+				{	//IDで引っかかって、トリップついてるけどそれが登録されていない→登録
+					tr.trip.push(node.dataset.trip);
+					tr.update();
+				}
+			}
+		},false);
+	},
+	check: function TrackerEntry_check(no)
+	{	//Tripだけひっかかったら1, IDだけひっかかったら2, 両方引っかかったら3
+		var m = 0;
+		if (!Skin.Thread.Message.isReady(no)) return 0;
+		var node = Skin.Thread.Message.domobj[no];
+		if (node.dataset.trip)
+		{
+			if (this.containsTrip(node.dataset.trip)) m += 1;
+		}
+		if (!m && (node.dataset.aid.length > 5))
+		{
+			if (this.containsId(node.dataset.aid)) m += 2;
+		}
+		return m;
+	},
+	containsId: function TrackerEntry_containsId(id)
+	{
+		return this.aid.include(id);
+	},
+	containsTrip: function TrackerEntry_containsTrip(trip)
+	{
+		return this.trip.include(trip);
+	},
+	getTrackingNumbers: function TrackerEntry_getTrackingNumbers()
+	{
+		var res = new Array();
+		var tr = this;
+		Skin.Thread.Message.foreach(function(node){
+			if (tr.check(node.dataset.no) > 0)
+		{
+				res.push(node.dataset.no);
+			}
+		}, false);
+		return res;
+	},
+
+};
+
 
 /* ■外部リンクプラグイン■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 
