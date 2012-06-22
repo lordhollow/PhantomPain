@@ -69,7 +69,7 @@ String.prototype.format = function StringPrototype_format()
 };
 
 function EVAL(str, def)
-{	//冷害が発生しないeval
+{	//例外が発生しないeval
 	try
 	{
 		return eval(str);
@@ -166,7 +166,7 @@ var Skin = PP3 = {
 		reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
 		{
 			var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
-			var sys =  Util.eval("[" + (boardnameTxt|| "") + "]", [])[0] || {};
+			var sys =  EVAL("[" + (boardnameTxt|| "") + "]", [])[0] || {};
 			this.save(sys, "BoardNames");
 			return sys;
 		},
@@ -444,7 +444,7 @@ var Skin = PP3 = {
 				if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
 				if (!Preference.EnableNextThreadSearch) return;		//機能無効
 				if (!anchor)return;
-				if (!node) node = Util.getDecendantNode(anchor, "ARTICLE");
+				if (!node) node = DOMUtil.getDecendantNode(anchor, "ARTICLE");
 				var nodeNo = parseInt(node.dataset.no);
 				var url = new URL(anchor.href);
 				if (url.maybeThread
