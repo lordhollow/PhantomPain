@@ -576,6 +576,24 @@ var Skin = PP3 = {
 	Viewer: {
 	},
 	Notice: {
+		init: function Notice_init()
+		{
+			this.container = document.createElement("DIV");
+			this.container.id = "noticeContainer";
+			document.body.appendChild(this.container);
+		},
+		add: function Notice_add(msg)
+		{
+			if (!this.container) this.init();
+			if (this.container.childNodes.length == Preference.NoticeLength)
+			{
+				this.container.removeChild(this.container.firstChild);
+			}
+			var e = document.createElement("P");
+			e.innerHTML = msg;
+			this.container.appendChild(e);
+			DOMUtil.notifyRefreshInternal(this.container);
+		},
 	},
 	Util: {
 		Popup: {
@@ -1015,6 +1033,7 @@ ResManipulator.prototype = {
 
 //ショートカット
 var Preference = Skin.Preference = clone(_Preference);
+var Notice = Skin.Notice;
 var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
