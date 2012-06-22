@@ -835,6 +835,23 @@ var TextLoadManager = new loadManager();
 		catch(e){}
 		return null;
 	}
+	TextLoadManager.request = function TextLoadManager_request(obj)
+	{
+		var req = new XMLHttpRequest();
+		req.onreadystatechange = this._loadCheck.bind(this, req, obj);
+		req.open('GET', obj.href , true);
+		if (!obj.enableCache) req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");
+		req.send(null);
+	}
+	TextLoadManager._loadCheck = function TextLoadManager__loadCheck(req, obj)
+	{
+		if (req.readyState==4)
+		{
+			obj.responseText = req.responseText;
+			obj.status = req.status;
+			this.response(obj, ((req.status >= 200) && (req.status<300)) ? "OK" : "NG");
+		}
+	}
 	
 var ImageLoadManager = new loadManager();
 	ImageLoadManager.request = function ImageLoadManager_request(obj)
