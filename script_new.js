@@ -285,9 +285,13 @@ var Skin = PP3 = {
 		{
 		},
 		Message: {
+			domobj: new Array(),	//DOMオブジェクト。indexはレス番号
+			outLinks: new Array(),	
+			deployedMin: 0,
+			deployedMax: 0,
 			init: function Message_init()
 			{
-				var nodes = $A($("resContainer"));
+				var nodes = $A($("resContainer").children);
 				this.onLoad(nodes);
 				this.onDeploy(nodes);
 			},
@@ -299,43 +303,184 @@ var Skin = PP3 = {
 			},
 			getNode: function Message_getNode(no, clone)
 			{
+				if (this.domobj[no] != null)
+				{
+					var obj = this.domobj[no];
+					if (clone)
+					{
+						obj = obj.cloneNode(true);
+						//objから、本来備わっていないもの(=レスメニューと展開済みツリー、展開済み画像）を削除する。
+						//article> { H , (div) , p , オマケたち } の順に並んでいるので、divとオマケを削除する。
+						if (obj.childNodes[1].tagName == "DIV")
+						{
+							obj.removeChild(obj.childNodes[1]);
+						}
+						while(obj.childNodes.length > 2)
+						{
+							obj.removeChild(obj.childNodes[2]);
+						}
+						//outlinkのpreviewShowingをすべてnにする
+						var outlinks = obj.getElementsByClassName("outLink");
+						for(var i=0, j=outlinks.length; i<j; i++)
+						{
+							outlinks[i].dataset.previewShowing = "n";
+						}
+					}
+					return obj;
+				}
+				return null;
 			},
 			getManipulator: function Message_getManipulator(NodeOrNo)
 			{	//旧NodeUtil相当のオブジェクトを返すよ
+				return new ResManipulator(NodeOrNo);
 			},
 			getDeployMode: function Message_getDeployMode(no)
 			{	//bmしか使ってないので廃止する
 			},
 			foreach: function Message_foreach(func, includeNotDeployed, includePopup)
 			{
+				if (includeNotDeployed)
+				{	//all loaded
+					nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
+				}
+				else
+				{	//only deployed
+					nodes = $A($("resContainer").children);
+					if (includePopup)
+					{
+						var pn = $A($("popupContainer").getElementsByTagName("ARTICLE"));
+						for(var i=0; i<pn.length; i++)
+						{
+							nodes.push(pn[i]);
+						}
+					}
+				}
+				for (var i=0, j=nodes.length; i<j; i++)
+				{
+					if (nodes[i]) func(nodes[i]);
+				}
 			},
 			apply: function Message_foreach(func, filter, includeNotDeployed, includePopup)
 			{
+				this.foreach(function message_apply_func(node){
+					if (filter(node)) func(node);
+				}, includeNotDeployed, includePopup);
 			},
 			isReady: function Message_isReady(no)
 			{
+				return (this.domobj[no]);
 			},
 			isDeployed: function Message_isDeployed(no)
 			{
+				if ( this.domobj[no])
+					if (this.domobj[no].parentNode)
+						if (this.domobj[no].parentNode.id == "resContainer")
+							return true;
+				return false;
 			},
 			onLoad: function Message_onLoad(nodes)
 			{
+				for(var i=0; i<nodes.length; i++)
+				{
+					var node = nodes[i];
+					if ((node.tagName == "ARTICLE") && (!this.isReady(node.dataset.no)))
+					{	//処理前のレスである場合…（本当は他スレじゃないか確認が要るのかも？）
+						var no = parseInt(node.dataset.no);
+						var msgNode = node.childNodes[1];
+						this._extendAnchor(msgNode);
+						this._replaceStr(msgNode);
+						this.domobj[no] = node;
+						this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
+						//新着判定
+						if(node.childNodes[0].className=="new")
+						{
+							document.body.dataset.hasNew = "y";
+						}
+						
+						//名前とトリップの抽出
+						var name = node.childNodes[0].childNodes[3].textContent;
+						node.dataset.author = name;
+						if (name.match(/◆([^\s]+)/))
+						{
+							node.dataset.trip = RegExp.$1;
+						}
+						if (name.match(/^(\d+)(◆.+)?/))
+						{
+							node.dataset.numberdName = "y";
+						}
+					}
+				}
+				//構造解析
+				this.Structure.analyze(nodes);
+				//マーカー登録
+				//★MarkerServices.nodeLoaded(nodes);
 			},
 			onDeploy: function Message_onDeploy(nodes)
 			{
-			},
-			_processMessage: function Message__processMessage(node)
-			{
+				for(var i=0; i<nodes.length; i++)
+				{
+					var node = nodes[i];
+					var n = parseInt(node.dataset.no);
+					if ((this.deployedMin == 0) || (n < this.deployedMin)) this.deployedMin = n;
+					if ((n==2) && (this.isDeployed(2))) this.deployedMin = 1;
+					if (this.deployedMax < n) this.deployedMax = n;
+					if (Preference.AutoPreviewOutLinks)
+					{
+						this.getManipulator(node).previewLinks();
+					}
+				}
 			},
 			_extendAnchor: function Message__extendAnchor(node)
 			{
+				var as=node.getElementsByTagName("A");
+				//var ml=Profiles.maxLinkContent.value;
+				for(var i=0;i<as.length;i++){
+					var a=as[i];
+					//コンマを拡張
+					if(a.className=="resPointer"){
+						var bro=a.nextSibling;
+						var n=bro.textContent;
+						if((n)&&(n.match(/^([0-9,\-]+)/))){
+							var c=RegExp.$1;
+							a.appendChild(document.createTextNode(c));
+							bro.data=n.substr(c.length);
+						}
+					}
+					else if (a.className=="outLink")
+					{	//あまりよろしくないけどここが一番効率的かも
+						if (OutlinkPluginForImage.posivility(a.href))
+						{
+							e.parentNode.dataset.hasImage = "y";
+						}
+						Skin.Thread.Navigator.checkNextThread(a);
+					}
+					//長すぎるoutLinkを適当に刈り込み
+					//else if(a.textContent.length>ml){
+					//	var t=a.textContent;
+					//	if(t.match(/(h?[ft]?tp:\/\/[^\/]+\/)/)){
+					//		a.textContent=RegExp.$1+Message.longUrl;
+					//		a.title=t;
+					//		classTokenPlus(a,"trimedURL")
+					//	}
+					//}
+				}
+				//全角アンカーを拾う("０-９"はFx3だと\dだけで拾えなかったから追加)
+				var res=node.innerHTML;
+				if(this._dblSizeAnchorRegExp.test(res)){
+					res=res.replace(this._dblSizeAnchorRegExp,function (a,$1,$2){
+						$2=StringUtil.toNarrowString($2);
+						return "<a href='#"+$2+"' class='resPointer'>&gt;&gt;"+$2+"</a>";});
+					node.innerHTML=res;
+				}
 			},
+			_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
 			_replaceStr: function Message__replaceStr(node)
 			{
 			},
 			Structure: {
 				analyze: function MessageStructure_analyze(nodes)
 				{
+					console.log("structure_analyze");
 				},
 				getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(node)
 				{	//指定したレス番号にレスしているレスのレス番号のリストを取得
@@ -1038,4 +1183,4 @@ var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
 
-window.addEventListener("load", function(){ PP3.init(); });
+window.addEventListener("load", function pp3initializer(){ PP3.init(); });
