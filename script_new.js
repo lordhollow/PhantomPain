@@ -31,6 +31,11 @@ var _Preference =
 	//中身は none(これがデフォルト), bookmark, res, resto, pickup, tree, track, preview, closepopup, setbookmark
  
 };
+const OUTLINK_NON   = 0;	//outlinkじゃない
+const OUTLINK_IMAGE = 1;	//画像
+const OUTLINK_MOVIE = 2;	//動画
+const OUTLINK_2CH   = 3;	//2ch
+const OUTLINK_ETC   = 4;	//その他
 
 function PP3ResetPreference()
 {	//ブックマークレットとして javascript:PP3ResetPreference(); を登録しておくと、リセットすることができます。
@@ -547,7 +552,7 @@ var Skin = PP3 = {
 					{	//あまりよろしくないけどここが一番効率的かも
 						if (OutlinkPluginForImage.posivility(a.href))
 						{
-							e.parentNode.dataset.hasImage = "y";
+							node.parentNode.dataset.hasImage = "y";
 						}
 						Skin.Thread.Navigator.checkNextThread(a);
 					}
@@ -872,7 +877,29 @@ var Skin = PP3 = {
 		},
 		OutLink: {
 			getOutlinkPlugin: function OutlinkServices_getOutlinkPlugin(node)
-			{
+			{	//適合するアウトリンクプラグインを求める。
+				//適合率1ならそれに決定。
+				//そうでなければ、より適合率の高そうなものが出るまで繰り返す。
+				if (node.className != "outLink") return null;
+				var mp = 0;
+				var mpt = null;
+				for(var i=0, j=this.plugins.length; i < j ; i++)
+				{
+					var p = this.plugins[i].posivility(node.href);
+					if (p >= 1)
+					{
+						return this.plugins[i];
+					}
+					else
+					{
+						if (mp < p)
+						{
+							mp = p;
+							mpt = this.plugins[i];
+						}
+					}
+				}
+				return mpt;
 			},
 		},
 	},
@@ -1120,6 +1147,11 @@ var Skin = PP3 = {
 			if (t.className=="resPointer")
 			{	//レスアンカーにポイント → レスポップアップ
 				new ResPopup(t);
+			}
+			else if (t.className == "outLink")
+			{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
+				var p = Skin.Services.OutLink.getOutlinkPlugin(t);
+				if (p) p.popupPreview(t, aEvent);
 			}
 		},
 		mouseClick: function EventHandler_mouseClick(aEvent)
@@ -1455,18 +1487,144 @@ function BookmarkService(){}
 function PickupServiece(){}
 function TrackerService(){}
 function TrackerEntry(){}
-function OutlinkPlugin(type){}
-	OutlinkPlugin.prototype.posivility = function OutlinkPlugin_posivility(href){}
-	OutlinkPlugin.prototype.getPreviewy = function OutlinkPlugin_getPreviewy(href, onload, isPopup){}
-	OutlinkPlugin.prototype.showPreview = function OutlinkPlugin_showPreview(){}
-	OutlinkPlugin.prototype.popupPreview = function OutlinkPlugin_popupPreview(){}
-var OutlinkPluginForImage = new OutlinkPlugin();
-	OutlinkPluginForImage.posivility = function OutlinkPluginForImage_posivility(href){}
-	OutlinkPluginForImage.getPreview = function OutlinkPluginForImage_getPreview(href, onload, isPopup){}
-var OutlinkPluginForMovie = new OutlinkPlugin();
-var OutlinkPluginForNicoNico = new OutlinkPlugin();
-var OutlinkPluginForThread = new OutlinkPlugin();
-var OutlinkPluginForDefault = new OutlinkPlugin();
+
+/* ■外部リンクプラグイン■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+
+function OutlinkPlugin(type){ this.type = type; }
+OutlinkPlugin.prototype = {
+	posivility:  function OutlinkPlugin_posivility(href){ return 0; },
+	getPreviewy: function OutlinkPlugin_getPreviewy(href, onload, isPopup){ return 0; },
+	popupPreview: function OutlinkPlugin_popupPreview(anchor, ev)
+	{
+		if (anchor != null)
+		{
+			var tid = setTimeout(this._popup.bind(this, anchor), Preference.ResPopupDelay);
+			anchor.addEventListener("mouseout", 
+				function(){
+					clearTimeout(tid);
+					anchor.removeEventListener("mouseout", arguments.callee, false);
+				},false);
+		}
+	},
+	_popup: function OutlinkPlugin__popup(anchor)
+	{
+		if (anchor.dataset.previewShowing!="y")
+		{
+			var p = new Popup();
+			p._init(anchor);
+			p.dontLimitSize = true;	//モノによって変更できるようにしたいかも
+			var c = this.getPreview(anchor.href, p.adjust.bind(p), true);
+			if (c)
+			{
+				anchor.dataset.previewShowing = "y";
+				var innerCont = document.createElement("DIV");
+				innerCont.appendChild(c);
+				p.container.dataset.popupCaption = anchor.href;
+				p.show(innerCont);
+				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
+			}
+		}
+	},
+};
+
+var OutlinkPluginForImage = new OutlinkPlugin(OUTLINK_IMAGE);
+	OutlinkPluginForImage.posivility = function OutlinkPluginForImage_posivility(href)
+	{
+		if (href.match(/\.jpg$|jpeg$|bmp$|png$|gif$/i))
+		{
+			return 1;
+		}
+		return 0;
+	}
+	OutlinkPluginForImage.getPreview = function OutlinkPluginForImage_getPreview(href, onload, isPopup)
+	{
+		var p = (new ImageThumbnailOnClickOverlay(href,Preference.ImagePopupSize));
+		p.onload = onload;
+		return p.container;
+	}
+
+var OutlinkPluginForMovie = new OutlinkPlugin(OUTLINK_MOVIE);
+var OutlinkPluginForNicoNico = new OutlinkPlugin(OUTLINK_MOVIE);
+	OutlinkPluginForNicoNico.posivility = function OutlinkPluginForNicoNico_posivility(href)
+	{	
+		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/sm\d+/i))
+		{
+			return 1;
+		}
+		return 0;
+	}
+	OutlinkPluginForNicoNico.getPreview = function OutlinkPluginForNicoNico_getPreview(href, onload, isPopup)
+	{
+		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/(sm\d+)/i))
+		{
+			var c = document.createElement("DIV");
+			var thurl = "http://ext.nicovideo.jp/thumb/" + RegExp.$1
+			c.innerHTML = '<iframe width="312" height="176" src="{0}" scrolling="no" style="border:solid 1px #CCC;margin-top:12px;" frameborder="0"></iframe>'.format(thurl);
+			return c;
+		}
+		return null;
+	}
+
+var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
+	OutlinkPluginForThread.posivility = function OutlinkPluginForThread_posivility(href)
+	{
+		//本来、URL.maybeThreadを確認すればよいが、無駄なアクションも多いので処理だけ抽出
+		return  href.match(/\/read.cgi\//) ? 1 : 0;
+	}
+	OutlinkPluginForThread.getPreview = function OutlinkPluginForThread_getPreview(href, onload, isPopup)
+	{
+		if (!isPopup) return null;	//ポップアップにしか表示しない
+		var url = new URL(href);
+		href = url.threadUrl;
+		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onClick="OutlinkPluginForThread.getThreadTitle(event)" title="スレタイを取得。未読スレの場合、既読になります。">';
+		if (url.boardId == Skin.Thread.boardId)
+		{
+			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="次スレに指定">';
+		}
+		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : "(スレタイ未取得)";
+		var b = Skin.BoardList.getBoardName(url.boardId);
+		html = html.format(href, t, b);
+		var preview = document.createElement("DIV");
+		preview.className = "threadtitlePopup";
+		preview.dataset.board = b;
+		preview.dataset.thread = t;
+		preview.dataset.threadState = (this._titleBuffer[href]) ? "y" : "";
+		preview.innerHTML = html;
+		return preview;
+	}
+	OutlinkPluginForThread.getThreadTitle =  function OutlinkPluginForThread_getThreadTitle(aEvent)
+	{
+		var href = aEvent.target.dataset.ref;
+		var html = TextLoadManager.syncGet(Skin.Thread.Info.Server + href + "1");
+		if (html && (html.match(/<a id="threadName">(.+?)<\/a>/)))
+		{
+			this._titleBuffer[href]  = RegExp.$1;
+		}
+		var t = this._titleBuffer[href] || "(スレッドロードエラー)";
+		var preview = aEvent.target.parentNode;
+		preview.dataset.thread = t;
+		preview.dataset.titleState = (this._titleBuffer[href]) ? "y" : "e";
+	}
+	OutlinkPluginForThread.setToNextThread =  function OutlinkPluginForThread_setToNextThread(aEvent)
+	{
+		Skin.Thread.Navigator.setNextThread(aEvent.target.dataset.ref, true, 0);
+		Notice.add("次スレを {0} に設定しました。".format(aEvent.target.dataset.ref));
+	}
+	OutlinkPluginForThread._titleBuffer = {};
+
+var OutlinkPluginForDefault = new OutlinkPlugin(OUTLINK_ETC);
+	OutlinkPluginForDefault.posivility = function OutlinkPluginForDefault_posivility(href)
+	{
+		return 1;
+	}
+	OutlinkPluginForDefault.getPreview = function OutlinkPluginForDefault_getPreview(href, onload)
+	{
+		var p = new ImageThumbnailOnClickOverlayFrame("http://img.simpleapi.net/small/" + href,Preference.ImagePopupSize);
+		p.rel = href;
+		return p.container;
+	}
+
+Skin.Services.OutLink.plugins = [OutlinkPluginForImage, OutlinkPluginForMovie, OutlinkPluginForNicoNico, OutlinkPluginForThread, OutlinkPluginForDefault];
 
 /* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function Popup() { }
