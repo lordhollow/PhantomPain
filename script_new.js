@@ -863,9 +863,107 @@ var ImageLoadManager = new loadManager();
 		//console.log("request "+obj.href);
 	}
 
-function ImageThumbnail(url, sz){}
+
+/* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function ImageThumbnail(url, sz){this.thumbSize = sz; if(url) {this.init(url);}}
+ImageThumbnail.prototype = {
+	thumbSize: 200,		//最大サイズ
+	container: null,	//nodeの子。
+	loading: true,
+	init: function ImageThumbnail_init(href)
+	{
+		this.src = href;
+		this.container = document.createElement("DIV");
+		this.container.className = "ithumbcontainer";
+		this.container.dataset.state="loading";	//画像を表示させたいけどURLをここに入れたくないのでこれで頑張って設定
+		//this.container.style.width = this.container.style.height = this.thumbSize + "px";
+
+		ImageLoadManager.push(href, this.onLoaderResponse.bind(this));
+	},
+	
+	onLoaderResponse: function ImageThumbnail_onLoaderResponse(obj)
+	{
+		if (obj.status == "OK")
+		{
+			this.loaded(obj);
+		}
+		else
+		{
+			this.error(obj);
+		}
+	},
+	
+	loaded: function ImageThumbnail_loaded(obj)
+	{
+		this.loading = false;
+		var ds = this.ds(obj.img.naturalWidth, obj.img.naturalHeight);
+		var c = document.createElement("IMG");
+		c.width = ds.width;
+		c.height= ds.height;
+		c.src   = obj.href;
+		this.container.innerHTML = "";
+		this.container.appendChild(c);
+		this.container.dataset.state="ok";
+		if (this.onload) this.onload();
+	},
+	error: function ImageThumbnail_error(e)
+	{
+		this.loading = false;
+		this.container.dataset.state="error";
+		if (this.onload) this.onload();
+	},
+	ds: function ImageThumbnail_ds(w, h)
+	{	//w, hをthmbSizeの矩形に押し込んだときの縦横のサイズを求める。戻り値は{width:?, height:? }
+		var r = 1;
+		var ms = this.thumbSize;
+		if((ms>w)&&(ms>h)){
+			r =  1;
+		}else{
+			r = (w>h)?(ms/w):(ms/h);
+		}
+		w = Math.floor(w*r);
+		h = Math.floor(h*r);
+		return {width: w, height: h, offsetX: Math.floor(ms-w)/2, offsetY: Math.floor(ms-h)/2 };
+	},
+};
+/* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
 function ImageThumbnailOnClickOverlay(url, sz){this.thumbSize = sz; this.init(url);}
+ImageThumbnailOnClickOverlay.prototype = new ImageThumbnail();
+ImageThumbnailOnClickOverlay.prototype.loaded = function ImageThumbnailOnClickOverlay_loaded(e)
+{
+	ImageThumbnail.prototype.loaded.call(this, e);
+	this.container.addEventListener("click", this.showOverlay.bind(this), false);
+}
+ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnClickOverlay_showOverlay()
+{
+	var ov = document.createElement("DIV");
+	ov.className="overlay";
+	ov.innerHTML = '<div><img src="{0}" class="ovlImg" style="max-height:{1}px; max-width:{2}px;margin:{3}px"></div>'.format(this.src, window.innerHeight-4, window.innerWidth-2,2);
+	document.body.dataset.contentsOverlay = "y";
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = "";}, false);
+	ov.addEventListener("DOMMouseScroll", function(e){ e.preventDefault(); } , false);
+	document.body.appendChild(ov);
+}
+
+/* 下は、クリックするとsrcの内容をオーバーレイで表示するサムネイル */
 function ImageThumbnailOnClickOverlayFrame(url, sz){this.thumbSize = sz; this.init(url);}
+ImageThumbnailOnClickOverlayFrame.prototype = new ImageThumbnail();
+ImageThumbnailOnClickOverlayFrame.prototype.loaded = function ImageThumbnailOnClickOverlayFrame_loaded(e)
+{
+	ImageThumbnail.prototype.loaded.call(this, e);
+	this.container.addEventListener("click", this.showOverlay.bind(this), false);
+}
+ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnailOnClickOverlayFrame_showOverlay()
+{
+	var ov = document.createElement("DIV");
+	ov.className="overlay";
+	ov.innerHTML = '<div><iframe src="{0}" style="height:{1}px"></div>'.format(this.rel, window.innerHeight-32);
+	document.body.dataset.contentsOverlay = "y";
+	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = ""; }, false);
+	document.body.appendChild(ov);
+}
+
+
 function MarkerService(){}
 function BookmarkService(){}
 function PickupServiece(){}
