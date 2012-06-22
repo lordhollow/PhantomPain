@@ -362,15 +362,37 @@ var Skin = PP3 = {
 				}
 				return true;
 			},
+			deployAll: function message_deployAll()
+			{
+				this.deployTo(1);
+				this.deployTo(Skin.Thread.Info.Total);
+			},
+			deployTo: function Thread_deployTo(to)
+			{
+				if (to <= 0) to = 1;
+				if (to >= Skin.Thread.Info.Total) to = Skin.Thread.Info.Total;
+				var min = to,  max = to;
+				if (to < this.deployedMin)
+				{
+					max = this.deployedMin-1;
+				}
+				if (to > this.deployedMax)
+				{
+					min = this.deployedMax+1;
+				}
+				//console.log("deployTo: {0}->{1}".format(min,max));
+				this.deploy(min, max);
+			},
 			deploy: function Message_deploy(from, to)
 			{
+				this.prepare(from, to);
 				var nodes = new Array();
 				for(var i = from; i< to; i++)
 				{
 					nodes.push(this.domobj[i]);
 					this._deployNode(this.domobj[i]);
 				}
-				this.onDeployed(nodes);
+				this.onDeploy(nodes);
 			},
 			_deployNode: function Message_deployNode(node)
 			{
@@ -1651,8 +1673,8 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	}
 	Bookmark.focus = function Bookmark_focus()
 	{
-		//★Thread.deployTo(this.no);
-		//★NodeUtil.focus(this.no)
+		Skin.Thread.Message.deployTo(this.no);
+		Skin.Thread.Message.getManipulator(this.no).focus();
 	}
 	Bookmark.getDeployMode =  function ThreadMessages_getDeployMode(no)
 	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
