@@ -32,6 +32,11 @@ var _Preference =
  
 };
 
+function PP3ResetPreference()
+{	//ブックマークレットとして javascript:PP3ResetPreference(); を登録しておくと、リセットすることができます。
+	console.log("設定をクリアしました");
+}
+
 Function.prototype.bind = function prototype_bind()
 {
 	var __method = this, args = $A(arguments), object = args.shift();
