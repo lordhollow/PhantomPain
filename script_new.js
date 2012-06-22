@@ -129,6 +129,8 @@ var Skin = PP3 = {
 		//loadPref
 		this.BoardList.init();
 		this.Thread.init();		//ThreadInit
+		
+		this.EventHandler.init();
 	},
 	Configulator: {
 	},
@@ -298,18 +300,18 @@ var Skin = PP3 = {
 			prepare: function Message_prepare(from, to)
 			{	//minにはidsまたはアンカーの文字列を指定可能。
 				//alert([min, max]);
-				if (min instanceof Array)
+				if (from instanceof Array)
 				{
 					var b = true;
-					for(var i=0; i<min.length; i++)
+					for(var i=0; i<from.length; i++)
 					{
-						b &= this.prepare(min[i],min[i]);
+						b &= this.prepare(from[i],from[i]);
 					}
 					return b;
 				}
-				else if ((min+"").substr(1) == ">")
+				else if ((from+"").substr(1) == ">")
 				{
-					var str = min+"";
+					var str = from+"";
 					str=str.replace(/>/g,"");
 					var e=str.split(",");
 					var r=new Array();
@@ -317,16 +319,16 @@ var Skin = PP3 = {
 					{
 						if(e[i].match(/(\d+)(-(\d+))?/))
 						{
-							var smin = parseInt(RegExp.$1);
-							var smax = parseInt(RegExp.$3);
-							if (!smax) smax = smin;
-							this.load(smin, smax);
+							var min = parseInt(RegExp.$1);
+							var max = parseInt(RegExp.$3);
+							if (!max) max = min;
+							this.load(min, max);
 						}
 					}
 				}
-				var tmin = parseInt(min);
+				var tmin = parseInt(from);
 				if (!tmin)return false;
-				var tmax = max;
+				var tmax = to;
 				if (tmax > Skin.Thread.Info.Total) tmax = Skin.Thread.Info.Total;	//絶対取れないところはとりに行かない。
 				for(; tmin <= tmax; tmin++)
 				{	//tmin位置が読み込み済みならtminを+1
@@ -1059,7 +1061,105 @@ var Skin = PP3 = {
 		},
 	},
 	EventHandler: {
-	
+		init: function EventHandler_init()
+		{
+			this.mode = "thread";
+			document.addEventListener("keydown", this.keydown.bind(this),false);
+			document.addEventListener("mouseover", this.mouseOver.bind(this), false);
+			document.addEventListener("mousedown", this.mouseDown.bind(this), false);
+			document.addEventListener("mouseup", this.mouseUp.bind(this), false);
+			document.addEventListener("mousemove", this.mouseMove.bind(this), false);
+			document.addEventListener("click",     this.mouseClick.bind(this), false);
+			document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
+			document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
+			document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
+			document.addEventListener("animationstart", this.animationStart.bind(this),false);
+			document.addEventListener("animationend", this.animationEnd.bind(this),false);
+		},
+		enter: function EventHandler_enter(mode)
+		{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
+			this.mode = mode;
+		},
+		leave: function EventHandler_leave(mode)
+		{
+			this.mode = "thread";
+		},
+		keydown: function EventHandler_keydown(e)
+		{
+		},
+		mouseDown: function EventHandler_mouseDown(aEvent)
+		{
+			if (this._dragDrop)return;
+			var t = aEvent.target;
+			if ((t.className == "popup") && (!t.popup.fixed))
+			{	//固定でないポップアップはヒゲのところをドラッグできる
+				this._dragDrop = new PopupDragDrop(t, aEvent);
+				aEvent.preventDefault();
+			}
+		},
+		mouseUp: function EventHandler_mouseDown(aEvent)
+		{
+			if (this._dragDrop && (this._dragDrop.which == aEvent.button))
+			{
+				this._dragDrop.drop(aEvent);
+				this._dragDrop = null;
+			}
+		},
+		mouseMove: function EventHandler_mosueMove(aEvent)
+		{
+			if (this._dragDrop)
+			{
+				this._dragDrop.drag(aEvent);
+				aEvent.preventDefault();
+				return;
+			}
+		},
+		mouseOver: function EventHandler_mouseOver(aEvent)
+		{
+			var t = aEvent.target;
+			if (t.className=="resPointer")
+			{	//レスアンカーにポイント → レスポップアップ
+				new ResPopup(t);
+			}
+		},
+		mouseClick: function EventHandler_mouseClick(aEvent)
+		{
+		},
+		mouseDblClick: function EventHandler_mouseDblClick(e)
+		{
+		},
+		mouseWheel: function EventHandler_mouseWheel(e)
+		{
+		},
+		animationStart: function EventHandler_animationStart(aEvent)
+		{
+			//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
+			if (aEvent.animationName.match(/AndClose$/))
+			{
+				aEvent.target.style.display = "";
+			}
+		},
+		animationEnd: function EventHandler_animationEnd(aEvent)
+		{
+			//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
+			if (aEvent.animationName.match(/AndClose$/))
+			{
+				aEvent.target.style.display = "none";
+			}
+		},
+		aboneImmidiate: function EventHandler_aboneImmidiate(aEvent)
+		{
+			var q   = aEvent.sourceEvent.type;	//クエリ
+			var filter = [
+				function(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
+				function(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
+				function(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
+				function(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
+			];
+			ThreadMessages.apply(function(node){
+				node.dataset.ng = "y";
+			}, filter[aEvent.detail], true);
+		},
 	},
 };
 
@@ -1501,7 +1601,7 @@ Popup.prototype = {
 	getPopupPos: function Popup_getPopupPos()
 	{
 		//位置計算(アレンジされているようその下辺中央を指すように)
-		var pos = Util.getElementPagePos(this.arranged);
+		var pos = DOMUtil.getElementPagePos(this.arranged);
 		pos.pageX += pos.width /2;
 		pos.pageY += pos.height;
 		return pos;
@@ -1671,6 +1771,40 @@ GearPopup.prototype = new Popup();
 		return Skin.Thread.Message.getNode(no, true);
 	};
 
+/* ■ドラッグドロップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function PopupDragDrop(popupContainer, aEvent){ this.init(popupContainer, aEvent);}
+PopupDragDrop.prototype = {
+	init: function PopupDragDrop_init(popupContainer, aEvent)
+	{
+		this.popupContainer = popupContainer;
+		this.popup = popupContainer.popup;
+		this.which = aEvent.button;
+		this.origin = {clientX: aEvent.clientX, clientY: aEvent.clientY, pageX: aEvent.pageX, pageY: aEvent.pageY};
+	},
+	drag: function PopupDragDrop_drag(aEvent)
+	{
+		var dx = aEvent.clientX - this.origin.clientX;
+		var dy = aEvent.clientY - this.origin.clientY;
+		if (!this.procceed)
+		{
+			var d2 = dx*dx + dy*dy;
+			if (d2 >= 3*3)
+			{	//半径3ピクセルより大きく動かすとドラッグ開始
+				this.procceed = true;
+				this.popup.float();
+			}
+		}
+		else
+		{
+			this.popup.offsetFloat(dx, dy);
+			this.origin = {clientX: aEvent.clientX, clientY: aEvent.clientY, pageX: aEvent.pageX, pageY: aEvent.pageY};
+		}
+	},
+	drop: function PopupDragDrop_drop(aEvent)
+	{
+		this.proceed = false;
+	},
+}
 
 function ViewerEntry(href){ this.init(href); }
 function ResManipulator(){}
