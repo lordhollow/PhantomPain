@@ -1,3 +1,37 @@
+var _Preference =
+{	//設定初期値
+	ResMenuAttachDelay: 250,	//レスメニューがアタッチされるまでのディレイ(ms)
+	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
+	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
+	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
+	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
+	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
+	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
+	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
+	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
+	AutoReloadInterval: 300,	//オートロード間隔(秒)
+	ImagePopupSize: 200,		//画像ポップアップのサイズ
+	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
+	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
+	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
+	SlideshowInterval: 5,		//スライドショーの間隔(秒)
+	LoadBackwardOnTopWheel: true,	//一番上で上にスクロールしようとするとロードが掛かる
+	LoadForwardOnBottomWheel: true,	//一番下で下にスクロールしようとするとロードが掛かる
+	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
+	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
+	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
+	AutoPreviewOutlinks: false,	//Outlinkを自動展開
+	ChapterWidth: 100,			//Naviのチャプター幅
+	EnableNextThreadSearch: true,	//次スレ検索有効？
+	NextThreadSearchBeginsAt: 900,	//次スレ検索開始レス番号
+	NoticeLength: 10,			//表示するお知らせの数
+	//レスをダブルクリックしたらどうなる？
+	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
+	OnResDblClick: ["pickup", "closepopup", "bookmark", "track", "resto", "preview", "preview", "tree"],
+	//中身は none(これがデフォルト), bookmark, res, resto, pickup, tree, track, preview, closepopup, setbookmark
+ 
+};
+
 Function.prototype.bind = function prototype_bind()
 {
 	var __method = this, args = $A(arguments), object = args.shift();
@@ -860,7 +894,7 @@ ResManipulator.prototype = {
 //MessageLoader_loadByAnchorStr(アンカー文字列からのThread.Message.prepare)
 
 //ショートカット
-var Preference = Skin.Preference;
+var Preference = Skin.Preference = clone(_Preference);
 var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
