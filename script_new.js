@@ -68,6 +68,19 @@ String.prototype.format = function StringPrototype_format()
 	return String.format.apply(String, arguments);
 };
 
+function EVAL(str, def)
+{	//冷害が発生しないeval
+	try
+	{
+		return eval(str);
+	}
+	catch(e)
+	{
+		console.log(str);
+		console.log(e);
+	}
+	return def;
+}
 
 var Skin = PP3 = {
 	skinName: "PhantomPain3",
@@ -75,17 +88,128 @@ var Skin = PP3 = {
 	init: function()
 	{
 		//loadPref
+		this.BoardList.init();
 		this.Thread.init();		//ThreadInit
 	},
 	Configulator: {
 	},
+	CommonPref: {
+		_identifier: new String("UNKNOWN"),
+		_storage: localStorage,
+	
+		setIdentifier: function CommonPref_setIdentifier(aThreadURL) {
+			var url = new URL(aThreadURL);
+			this._identifier = url.threadId;
+		},
+		getThreadObjectKey: function(objName)
+		{
+			return "bbs2chSkin.common." + objName + "." + this._identifier;
+		},
+		getGlobalObjectKey: function(objName)
+		{
+			return "bbs2chSkin.common." + objName;
+		},
+		
+		//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
+		writeThreadObject: function CommonPref_wroteThreadObject(objName, str)
+		{
+			var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+			this._storage.setItem(pn, str);
+		},
+		readThreadObject: function CommonPref_readThreadObject(objName)
+		{
+			var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+			return this._storage.getItem(pn);
+		},
+		writeGlobalObject: function CommonPref_writeGlobalObject(objName, str)
+		{
+			var pn = "bbs2chSkin.common." + objName;
+			this._storage.setItem(pn, str);
+		},
+		readGlobalObject: function CommonPref_readGlobalObject(objName)
+		{
+			var pn = "bbs2chSkin.common." + objName;
+			return this._storage.getItem(pn);
+		},
+		foreach: function CommonPref_foreach(objName, proc)
+		{
+			var ex = new RegExp("^bbs2chSkin\.common\." + objName + "\.");
+			for(var key in this._storage)
+			{
+				if (ex.test(key))
+				{
+					proc(key, this._storage.getItem(key));
+				}
+			}
+		},
+	},
+	
 	BoardList: {
-		init: function(){},
-		prepareBoardNames: function(){},
-		save: function(){},
-		reloadBoardNameTxt: function(){},
-		getBoardName: function(){},
-		setBoardName: function(){},
+		init: function BoardList_init()
+		{
+			this.prepareBoardNames();
+		},
+		prepareBoardNames: function BoardList_prepareBoardNames()
+		{	
+			var sys = EVAL("[" + (Skin.CommonPref.readGlobalObject("BoardNames") || "") + "]", [])[0];
+			var usr = EVAL("[" + (Skin.CommonPref.readGlobalObject("UserBoardNames") || "{}") + "]", [{}])[0]; 
+			if (!sys) sys = this.reloadBoardNameTxt();
+			this.boardNameListSys = sys;
+			this.boardNameListUsr = usr;
+		},
+		save: function BoardList_save(list, prefName)
+		{
+			var json = "{";
+			for(var key in list)
+			{
+				json += '"{0}": "{1}",'.format(key, list[key]);
+			}
+			json += "}";
+			Skin.CommonPref.writeGlobalObject(prefName, json);
+		},
+		reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
+		{
+//			var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
+//			var sys =  Util.eval("[" + (boardnameTxt|| "") + "]", [])[0] || {};
+//			this.save(sys, "BoardNames");
+//			return sys;
+		},
+		getBoardName: function BoardList_getBoardName(boardId)
+		{
+			if (this.boardNameListUsr && this.boardNameListUsr[boardId])
+			{
+				return  this.boardNameListUsr[boardId];
+			}
+			else if (this.boardNameListSys && this.boardNameListSys[boardId])
+			{
+				return  this.boardNameListSys[boardId];
+			}
+			return "その他の掲示板";
+		},
+		setBoardName: function BoardList_setBoardName(id, name)
+		{
+			if (!id) id = Thread.boardId;	//俺だよ、俺俺
+			if (!name || name == "")
+			{	//定義を消す
+				if (this.boardNameListUsr && this.boardNameListUsr[id])
+				{
+					delete this.boardNameListUsr[id];
+				}
+			}
+			else
+			{
+				if (!this.boardNameListUsr) this.boardNameListUsr = {};
+				this.boardNameListUsr[id] = name;
+				this.save(this.boardNameListUsr, "UserBoardNames");
+			}
+			if (id == Thread.boardId)
+			{	//TODO::イベントを投げて板名変化を通知し、反映するように変更
+				//特に、２箇所以上に影響が及ぶ場合はそのときに必ず実施。
+				Thread.boardName = this.getBoardName(Thread.boardId);
+				var e = $("threadName");
+				if (e) e.dataset.boardName = Thread.boardName;
+			}
+		},
 	},
 	
 	Thread: {
