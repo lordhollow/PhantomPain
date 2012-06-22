@@ -573,15 +573,85 @@ var Skin = PP3 = {
 			{
 			},
 			Structure: {
+				nodesById: new Array(),		//いわゆるID
+				nodesReplyFrom: new Array(),	//いわゆる逆参照情報
 				analyze: function MessageStructure_analyze(nodes)
 				{
-					console.log("structure_analyze");
+					if (this._scriptedStyle == null)
+					{
+						this._scriptedStyle = $("scriptedStyle");
+					}
+					var html = "";
+					for(var i=0; i<nodes.length; i++)
+					{
+						html += this._analyze(nodes[i]);
+					}
+					this._scriptedStyle.innerHTML += html;
 				},
-				getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(node)
+				getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(no)
 				{	//指定したレス番号にレスしているレスのレス番号のリストを取得
+					return this.nodesReplyFrom[no];
 				},
 				getNodeIdsById: function MessageStructure_getNodeIdsById(id)
 				{	//IDを指定してその人物が発言したレス番号のリストを取得
+					return this.nodesById[id];
+				},
+				_analyze: function MessageStructure__analyze(node)
+				{
+					var obj = node.dataset;
+					var html ="";
+					//IDによる構造
+					if (obj.aid.length > 5)		//"????"回避
+					{
+						if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
+						this.nodesById[obj.aid].push(obj.no);
+						if (this.nodesById[obj.aid].length == 2)
+						{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
+							html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }"
+							       .format(obj.aid, obj.idcolor, obj.idbackcolor);
+						}
+					}
+					
+					//Replyによる構造
+					var replyTo = this._getReplyTo(node);
+					for(var i=0, j=replyTo.length; i < j; i++)
+					{
+						var t = replyTo[i];
+						if(!this.nodesReplyFrom[t])
+						{
+							this.nodesReplyFrom[t] = new Array();
+							//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
+							this._scriptedStyle.innerHTML += 
+							html += ("article[data-no=\"{0}\"] > .menu > ul > .resto { display:table-cell; }\n"
+							       + "article[data-no=\"{0}\"] > h2 > .no { font-weight: bold; }\n")
+							       .format(t);
+						}
+						this.nodesReplyFrom[t].push(obj.no);
+					}
+					return html;
+				},
+				_getReplyTo: function MessageStructure__getReplyTo(node)
+				{
+					var anchors = node.getElementsByClassName("resPointer");
+					var replyTo = new Array();
+					for (var i=0, j=anchors.length; i<j; i++)
+					{
+						var target = anchors[i].textContent;
+						var ids = StringUtil.splitResNumbers(target);
+						if (ids.length < Preference.ReplyCheckMaxWidth)
+						{
+							for (var ii=0, jj = ids.length; ii < jj; ii++)
+							{
+								replyTo[ids[ii]] = 1;
+							}
+						}
+					}
+					var ret = new Array();
+					for(var i=0, j=replyTo.length; i<j; i++)
+					{
+						if (replyTo[i]) ret.push(i);
+					}
+					return ret;	
 				},
 			},
 		},
