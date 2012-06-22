@@ -313,23 +313,147 @@ var Skin = PP3 = {
 				this.nextThread = this.loadNextThreadInfo();
 				this.prevThread = this.searchPrevThread();
 			},
-			gotoPrevChapter: function Navigator_gotoPrevChapter()
+			getNavigation: function Navigation_getNavigation()
 			{
+				if (!this._navi)
+				{
+					navi = document.createElement("NAV");
+					navi.id = "navigation";
+					var html = "";
+					
+					//Chapter
+					html += '<h1>CHAPTER</h1><ul>';
+					var w = Preference.ChapterWidth;
+					var m = Skin.Thread.Info.Total;
+					for (var i=0; i< (m/w); i++)
+					{
+						html+= '<li><a class="navchapter">{0}-{1}</a></li>'.format(i*w+1, (i+1)*w);
+					}
+					html += '<li><a class="navprevchapter">prev.</a></li>';
+					html += '<li><a class="navnextchapter">next.</a></li>';
+					html += '</ul>';
+					
+					//BacklogWidth
+					html += '<h1>BACKLOG</h1><ul>';
+					var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750", "*ALL*" ];
+					for (var i=0; i<backlogWidths.length; i++)
+					{
+						html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
+					}
+					//その他
+					html += '<h1>etc.</h1><ul>';
+					html += '<li><form onsubmit="Thread.loadFocus(jumpto.value);return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
+					html += '<li><a class="navboardlist">スレ一覧</a></li>';
+					html += '<li><a class="navprevthread">前スレ</a></li>';
+					html += '<li><a class="navnextthread">次スレ</a></li>';
+					html += '</ul>';
+		
+					navi.innerHTML = html;
+					this._navi = navi;
+				}
+				return this._navi.cloneNode(true);
 			},
-			gotoNextChapter: function Navigator_gotoNextChapter()
+			isNavigationElement: function Navigator_isNavigationElement(e)
 			{
+				switch(e.className)
+				{
+					case "navchapter":
+					case "navprevchapter":
+					case "navnextchapter":
+					case "navbacklog":
+					case "navboardlist":
+					case "navprevthread":
+					case "navnextthread":
+						return true;
+					default:
+						return false;
+				}
+			},
+			invokeNavigation: function Navigator_invokeNavigation(e)
+			{	//altkeyの状態とか取り込んで、別ウィンドウ表示とか実装すべきか？
+				var c = e.textContent;
+				switch(e.className)
+				{
+					case "navchapter":
+					case "navbacklog":
+						this.reload(c == "*ALL*" ? "" : c);
+						break;
+					case "navprevchapter":
+						this.reloadToPrevChapter();
+						break;
+					case "navnextchapter":
+						this.reloadToNextChapter();
+						break;
+					case "navboardlist":
+						this.transitToThreadList();
+						break;
+					case "navprevthread":
+						this.transitToPrevThread();
+						break;
+					case "navnextthread":
+						this.transitToNextThread();
+						break;
+					default:
+						return;
+				}
+			},
+			goto: function Navigator_goto(range)
+			{
+				window.location.href = Skin.Thread.Info.Server + Skin.Thread.Info.Url + range;
+			},
+			gotoPrevChapter: function Navigator_gotoPrevChapter(w)
+			{
+				if (!w) w = Preference.ChapterWidth;
+				var max = Skin.Thread.Message.deployedMin - 1;
+				var min = max - w - 1;
+				if (min < 0) min = 1;
+				if (max < min) max = min;
+				this.goto(min + "-" + max);
+			},
+			gotoNextChapter: function Navigator_gotoNextChapter(w)
+			{
+				if (!w) w = Preference.ChapterWidth;
+				var min = Skin.Thread.Message.deployedMax +1;
+				var max = min + w - 1;
+				if (min < 0) min = 1;
+				if (max < min) max = min;
+				this.goto(min + "-" + max);
 			},
 			gotoThreadList: function Navigator_gotoThreadList()
 			{
+				window.location.href = "bbs2ch:board:" + Skin.Thread.Info.Board;
 			},
-			gotoPrevThread: function Navigator_gotoPrevThread()
+			gotoPrevThread: function Navigator_gotoPrevThread(w)
 			{
+				if (!w) w = Preference.ChapterWidth;
+				if (this.prevThread.url)
+				{
+					window.location.href = Skin.Thread.Info.Server + this.prevThread.url + "l" + w;
+				}
 			},
-			gotoNextThread: function Navigator_gotoNextThread()
+			gotoNextThread: function Navigator_gotoNextThread(w)
 			{
+				if (!w) w = Preference.ChapterWidth;
+				if (this.nextThread.url)
+				{
+					window.location.href = Skin.Thread.Info.Server + this.nextThread.url + "l" + w;
+				}
 			},
-			checkNextThread: function Navigator_checkNextThread(nodes)
+			checkNextThread: function Navigator_checkNextThread(anchor, node)
 			{
+				if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
+				if (!Preference.EnableNextThreadSearch) return;		//機能無効
+				if (!anchor)return;
+				if (!node) node = Util.getDecendantNode(anchor, "ARTICLE");
+				var nodeNo = parseInt(node.dataset.no);
+				var url = new URL(anchor.href);
+				if (url.maybeThread
+				 && (url.boardId == this.boardId)					//同じ板
+				 && (nodeNo >= this.nextThread.linkedNode) 			//前に決めた番号より後のレス
+				 && (nodeNo >= Preference.NextThreadSearchBeginsAt))	//次スレアドレスチェック番号以降のレス
+				{
+					this.setNextThread(anchor.href, false, nodeNo);
+				}
 			},
 			setNextThread: function Navigator_setNextThread(href, ud, nodeNo)
 			{	//ud: ユーザーが決めたか？ trueのとき、勝手に上書きされない状態で出てくる。
@@ -648,5 +772,7 @@ ResManipulator.prototype = {
 //AutoLoad.start, end, toggle
 //MessageLoader_loadByAnchorStr(アンカー文字列からのThread.Message.prepare)
 
+//ショートカット
+Preference = Skin.Preference;
 
 window.addEventListener("load", function(){ PP3.init(); });
