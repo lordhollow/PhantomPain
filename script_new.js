@@ -277,9 +277,9 @@ var Skin = PP3 = {
 		},
 		openWriteDialog: function Thread_openWriteDialog(to)
 		{
-		},
-		reload: function Thread_reload(range)
-		{
+			if (!to) to = "";
+			var url = Preference.PostScheme + Skin.Thread.Info.Url + to
+			window.location.href = url;
 		},
 		checkNewMessage: function Thread_checkNewMessage()
 		{
