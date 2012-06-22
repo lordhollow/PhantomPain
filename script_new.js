@@ -907,6 +907,64 @@ var Skin = PP3 = {
 	},
 	Util: {
 		Popup: {
+			toggle: function PopupUtil_toggle(target, content, closeOnMouseLeave, toTopBeforeHide, category)
+			{
+				if (target.__popup)
+				{
+					var p = target.__popup;
+					if (!toTopBeforeHide || (p.isTopLevelPopup(category)))
+					{	//トップレベルに一度出さないか、トップレベルのときクローズ
+						p.close();
+					}
+					else
+					{	//トップレベルに一度出す
+						p.toTop();
+					}
+				}
+				else
+				{
+					var p = new Popup();
+					p.closeOnMouseLeave = closeOnMouseLeave;
+					p._init(target);
+					p.onClose = this._onCloseHandler.bind(target);
+					target.__popup = p;
+					p.show(content);
+				}
+			},
+			toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave, caption)
+			{
+				if (target.__popup)
+				{
+					target.__popup.close();
+				}
+				else if (ids)
+				{
+					ids = ($A(ids)).sort(function(a,b){return a-b;});
+					MessageLoader.load(ids);
+					var p = new ResPopup();
+					p.closeOnMouseLeave = closeOnMouseLeave;
+					p.onClose = this._onCloseHandler.bind(target);
+					target.__popup = p;
+					p.popup(ids, target, caption);
+				}
+			},
+			_onCloseHandler: function PopupUtil__onCloseHandler()
+			{
+				this.__popup = null;
+			},
+			isPopup: function PopupUtil_isPopup(e)
+			{
+				return this.getPopup(e) != null;
+			},
+			getPopup: function PopupUtil_getPopup(e)
+			{
+				while (e)
+				{
+					if (e.popup) return e.popup;
+					e = e.parentNode;
+				}
+				return null;
+			},
 		},
 		String: {
 			toNarrowString: function StringUtil_toNarrowString(src)
@@ -1309,10 +1367,311 @@ var OutlinkPluginForMovie = new OutlinkPlugin();
 var OutlinkPluginForNicoNico = new OutlinkPlugin();
 var OutlinkPluginForThread = new OutlinkPlugin();
 var OutlinkPluginForDefault = new OutlinkPlugin();
-function Popup(){}
+
+/* ■ポップアップ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function Popup() { }
+Popup.prototype = {
+	closeOnMouseLeave: true,
+	dontLimitSize: false,
+	_init: function Popup_init(e)
+	{	//eはなにからポップアップさせようとしているか。要素または要素のIDを指定する。
+		if (!e.tagName) e = $(e);
+		if (!e)
+		{
+			console.log("PopupInitializedError");
+			console.log(e);
+			e = document.body;	//なんもないならとりあえずエラーにならないようにBodyにつけとく
+		}
+		this.arranged = e;	//適用先オブジェクト
+		this.fixed = DOMUtil.isFixedElement(e);	//適用先オブジェクトは固定されたもの？
+		
+		//親の探索
+		while (e)
+		{
+			if (e.popup)
+			{	//ポップアップからのポップアップ→子として登録
+				e.popup.registorChild(this);
+				break;
+			}
+			e = e.parentNode;
+		}
+		
+		//自分を作成
+		var c = document.createElement("DIV");
+		c.addEventListener("mouseleave", this.checkClose.bind(this), false);
+		c.className = "popup";
+		c.dataset.popupEnchanted = "y";
+		c.dataset.fixedPopup = this.fixed ? "y" : "";
+		c.popup = this;
+		this.container = c;
+	},
+	
+	show: function Popup_show(content)
+	{
+		var pos = this.getPopupPos();
+		this.container.appendChild(content);
+		$("popupContainer").appendChild(this.container);
+		this.limitSize(pos);
+		this.adjust(pos);
+	},
+	checkClose: function Popup_checkClose(aEvent)
+	{
+		if (!this.closeOnMouseLeave) return;
+		var e=this.container.firstChild;
+		if (this.fixed)
+		{
+			pos = {x: aEvent.clientX, y: aEvent.clientY};
+		}
+		else
+		{
+			pos = {x: aEvent.pageX, y: aEvent.pageY};
+		}
+		var p = DOMUtil.getElementPagePos(e);
+		if(pos.x<=p.pageX||
+		   pos.y<=p.pageY||
+		   pos.x>=p.pageX+p.width||
+		   pos.y>=p.pageY+p.height)this.close();
+	},
+	close: function Popup_close()
+	{
+		if (this.closed) return;
+		this.closed = true;
+		if (this.container && this.container.parentNode) this.container.parentNode.removeChild(this.container);
+		if (this.onClose) this.onClose(this);
+		if (Preference.PopupDestructChain && this.childPopups)
+		{
+			for(var i=0, j=this.childPopups.length; i < j; i++)
+			{
+				this.childPopups[i].close();
+			}
+		}
+		if (this.parentPopup) this.parentPopup.unregistorChild(this);
+	},
+	//サイズ制限
+	limitSize: function Popup_limitSize(pos)
+	{
+		if (this.dontLimitSize) return;
+		var e = this.container.firstChild;
+		//幅・・・画面幅の80%
+		//高さ・・・アンカー位置の下側で画面下端まで(40は吹き出しのヒゲの分と若干の余裕）：最低保障３割
+		var maxWidth = window.innerWidth *0.8;
+		var poy = (this.fixed) ? 0 : window.pageYOffset;	//固定の時はスクロール位置を気にしない
+		var maxHeight = window.innerHeight - (pos.pageY - poy) - 40;
+		if (maxHeight < window.innerHeight*0.3) maxHeight = window.innerHeight*0.3;
+		e.style.maxWidth = maxWidth + "px";
+		e.style.maxHeight = maxHeight + "px";
+	},
+	//画面内に押し込む(サイズ制限されているので必ず入るはず)。下にしか出ないし、縦にはスクロールできるので横だけ押し込む。
+	adjust: function Popup_adjust(pos)
+	{
+		if (!pos) pos = this.getPopupPos();
+		this.container.style.left = "-10000px";	//調整前に一度外に追い出さないと折り返した幅になってる
+		var px = pos.pageX, py = pos.pageY;
+		var x = px + this.container.firstChild.offsetWidth - document.body.offsetWidth;
+		this.container.style.left = px + "px";
+		this.container.style.top  = py + "px";
+		x = (x < 0) ?  -Preference.PopupLeft : -(x + Preference. PopupRightMargin);	//吹き出し位置調整
+		this.container.firstChild.style.marginLeft = x + "px";
+	},
+	float: function Popup_float()
+	{
+		if (!this.floating)
+		{
+			this.closeOnMouseLeave = false;
+			this.floatingRect = DOMUtil.getElementPagePos(this.container.firstChild);
+			this.floatingRect.pageX -= Preference.PopupLeft;
+			this.floatingRect.pageY -= 4;
+			this.container.dataset.floatingPopup = "y";
+			this.container.style.left = this.floatingRect.pageX + "px";
+			this.container.style.top  = this.floatingRect.pageY + "px";
+			this.container.firstChild.style.marginLeft = "0px";
+			if (this.parentPopup) this.parentPopup.unregistorChild(this);
+			this.floating = true;
+		}
+		this.toTop();
+	},
+	offsetFloat: function Popup_float(dx, dy)
+	{
+		if (!this.floating) return;
+		this.floatingRect.pageX += dx;
+		this.floatingRect.pageY += dy;
+		this.container.style.left = this.floatingRect.pageX + "px";
+		this.container.style.top  = this.floatingRect.pageY + "px";
+	},
+	getPopupPos: function Popup_getPopupPos()
+	{
+		//位置計算(アレンジされているようその下辺中央を指すように)
+		var pos = Util.getElementPagePos(this.arranged);
+		pos.pageX += pos.width /2;
+		pos.pageY += pos.height;
+		return pos;
+	},
+	getPopupObj: function Popup_getPopupObj(element)
+	{	//elementの親につけられたpopupを探す
+		if (element)
+		{
+			if (element.popup)	return element.popup;
+			if (element.parentNode) return this.getPopupObj(element.parentNode);
+		}
+		return null;
+	},
+	registorChild: function Popup_registorChild(popup)
+	{
+		if (!this.childPopups) this.childPopups = new Array();
+		this.childPopups.push(popup);
+		popup.parentPopup = this;
+	},
+	unregistorChild: function Popup_unregistorChild(popup)
+	{
+		if (popup && (popup.parentPopup == this))
+		{
+			this.childPopups = this.childPopups.filter(function(x){ return x != popup; });
+			popup.parentPopup = null;
+		}
+	},
+	isTopLevelPopup: function Popup_isTopLevelPopup(cls)
+	{
+		var container = $("popupContainer");
+		var topLevelPopup = "";
+		for(var i=0; i<container.children.length; i++)
+		{
+			var popup = container.children[i];
+			if (popup.firstChild && (!cls || (popup.firstChild.className == cls)))
+			{	//本当はかぶってるかどうかで判定したほうが良い？
+				topLevelPopup = popup;
+			}
+		}
+		return topLevelPopup == this.container;
+	},
+	toTop: function Popup_toTop()
+	{	//一回抜いてまた入れるだけ
+		$("popupContainer").removeChild(this.container);
+		$("popupContainer").appendChild(this.container);
+	},
+};
+
 function ResPopup(anchor){ this.init(anchor); }
+ResPopup.prototype = new Popup();
+
+	ResPopup.prototype.init = function ResPopup_init(anchor)
+	{
+		//Delayを仕掛ける
+		if (anchor != null)
+		{//.textContent
+			var tid = setTimeout(this.popup.bind(this, anchor), Preference.ResPopupDelay);
+			anchor.addEventListener("mouseout", 
+				function(){
+					clearTimeout(tid);
+					anchor.removeEventListener("mouseout", arguments.callee, false);
+				},false);
+		}
+	};
+	
+	ResPopup.prototype.popup =  function ResPopup_popup(obj, e, caption)
+	{
+		var ids;
+		if (!e) e = obj;
+		this._init(e);
+		if (obj.tagName)
+		{	//要素。アンカーだと信じる
+			ids = StringUtil.splitResNumbers(obj.textContent);
+			Skin.Thread.Message.prepare(obj.textContent);
+			this.container.dataset.popupCaption = (caption||"") + obj.textContent;
+		}
+		else if (obj.length)
+		{	//配列・・・だといいなぁ
+			ids = obj;
+			//prepareいらんのか？
+			this.container.dataset.popupCaption = caption;
+		}
+		else
+		{	//その他・・・適当に
+			ids = [obj];
+			//prepareいらんのか？
+			this.container.dataset.popupCaption = caption;
+		}
+		
+		var innerContainer = document.createElement("DIV");
+		for(var i=0, len=ids.length; i < len ; i++)
+		{
+			var node = Skin.Thread.Message.getNode(ids[i], true);
+			if (node != null)
+			{
+				innerContainer.appendChild(node);
+			}
+		}
+		this.show(innerContainer);
+	};
+
 function GearPopup(enchantElement) { this.init(enchantElement); }
-function PopupDragDrop(popupContainer, aEvent){ this.init(popupContainer, aEvent);}
+GearPopup.prototype = new Popup();
+	GearPopup.prototype.init = function GearPopup_init(enchantElement)
+	{
+		this._init(enchantElement);
+		this.content = document.createElement("DIV");
+		if (enchantElement)
+		{
+			enchantElement.dataset.gearEnchanted = "y";
+			enchantElement.enchantedGear = this;
+		}
+		this.onClose = function()
+		{
+			if (enchantElement)
+			{
+				enchantElement.dataset.gearEnchanted = "";
+				enchantElement.enchantedGear = null;
+			}
+		};
+	};
+	GearPopup.prototype.changePos = function GearPopup_changePos(e)
+	{	//名前良くない
+		this.arranged = e;
+		this.adjust();
+	};
+	GearPopup.prototype.changeOrigin = function GearPopup_changeOrigin(no)
+	{
+		this.to(no);
+		this.origin = no;
+	};
+	GearPopup.prototype.showPopup = function GearPopup_showPopup(no)
+	{
+		var n = this.getNode(no);
+		this.content.appendChild(n);
+		this.origin = no;
+		this.show(this.content);
+		var c = this.container;
+		c.dataset.gearEnchanted = "y";
+		c.dataset.popupCaption = "GEAR>>" + n.dataset.no;
+		c.enchantedGear = this;
+	};
+	GearPopup.prototype.to = function GearPopup_to(no)
+	{
+		if (this.stepping) return;
+		this.stepping = true;
+		var n = this.getNode(no);
+		if (n)
+		{
+			this.content.innerHTML = "";
+			this.container.dataset.popupCaption = "GEAR>>" + n.dataset.no;
+			this.content.appendChild(n);
+			if (!this.floating) this.adjust();
+		}
+		this.stepping = false;
+	};
+	GearPopup.prototype.step = function GearPopup_step(cnt)
+	{
+		this.to(this.no + cnt);
+	};
+	GearPopup.prototype.getNode = function GearPopup_getNode(no)
+	{
+		if (no < 1) no = 1;
+		if (no > ThreadInfo.Total) no = ThreadInfo.Total;
+		Skin.Thread.Message.prepare(no, no);
+		this.no = no;
+		return Skin.Thread.Message.getNode(no, true);
+	};
+
+
 function ViewerEntry(href){ this.init(href); }
 function ResManipulator(){}
 ResManipulator.prototype = {
