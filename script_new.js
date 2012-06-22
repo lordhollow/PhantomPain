@@ -169,10 +169,10 @@ var Skin = PP3 = {
 		},
 		reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
 		{
-//			var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
-//			var sys =  Util.eval("[" + (boardnameTxt|| "") + "]", [])[0] || {};
-//			this.save(sys, "BoardNames");
-//			return sys;
+			var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
+			var sys =  Util.eval("[" + (boardnameTxt|| "") + "]", [])[0] || {};
+			this.save(sys, "BoardNames");
+			return sys;
 		},
 		getBoardName: function BoardList_getBoardName(boardId)
 		{
@@ -383,9 +383,77 @@ var OutlinkPluginForMovie = new OutlinkPlugin();
 var OutlinkPluginForNicoNico = new OutlinkPlugin();
 var OutlinkPluginForThread = new OutlinkPlugin();
 var OutlinkPluginForDefault = new OutlinkPlugin();
-function loadManager(){}
+
+/* ■ロードマネージャ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function loadManager(){ }
+loadManager.prototype = {
+	queue: new Array(),
+	loadWidth: 5,		//同時ロード要求数。キューがあるときに変えても意味ない
+	b: false,
+	push: function loadManager_push(href, callback)
+	{	//ロード要求突っ込む。有効期限(expired)あったほうがいいかも？
+		var qs = this.queue.length;
+		this.queue.push({href: href, callback: callback});
+		if (!this.b)
+		{
+			this.b = true;
+			setTimeout(this.begin.bind(this), 1);
+		}
+	},
+	begin: function loadManager_begin()
+	{
+		this.b = false;
+		for(var i=0, j = Math.min(this.loadWidth, this.queue.length); i<j; i++)
+		{
+			this.request(this.queue.shift());
+		}
+	},
+	request: function loadManager_request(obj)
+	{
+	},
+	response: function loadmanager_response(obj, status)
+	{
+		//console.log("response "+ status + " " + obj.href);
+		obj.status = status;
+		if(obj.callback)obj.callback(obj);
+		this.checkNext();
+	},
+	checkNext: function()
+	{
+		if (this.queue.length)
+		{
+			this.request(this.queue.shift());
+		}
+	},
+};
 var TextLoadManager = new loadManager();
+	TextLoadManager.syncGet = function TextLoadManager_syncGet(url, enableCache)
+	{
+		var req = new XMLHttpRequest();
+		req.open('GET', url, false);	//sync
+		if (!enableCache) req.setRequestHeader("If-Modified-Since", "Wed, 15 Nov 1995 00:00:00 GMT");	//キャッシュから読まない
+		try
+		{
+			req.send(null);	
+			if ((req.readyState==4)&&(req.status>=200)&&(req.status<300))
+			{
+				return req.responseText;
+			}
+		}
+		catch(e){}
+		return null;
+	}
+	
 var ImageLoadManager = new loadManager();
+	ImageLoadManager.request = function ImageLoadManager_request(obj)
+	{
+		obj.img = new Image();
+		obj.img.addEventListener("load", this.response.bind(this, obj, "OK"), false);
+		obj.img.addEventListener("error", this.response.bind(this, obj, "NG"), false);
+		obj.img.src = obj.href;
+		//console.log("request "+obj.href);
+	}
+
 function ImageThumbnail(url, sz){}
 function ImageThumbnailOnClickOverlay(url, sz){this.thumbSize = sz; this.init(url);}
 function ImageThumbnailOnClickOverlayFrame(url, sz){this.thumbSize = sz; this.init(url);}
