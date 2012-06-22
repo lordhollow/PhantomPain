@@ -1,3 +1,74 @@
+Function.prototype.bind = function prototype_bind()
+{
+	var __method = this, args = $A(arguments), object = args.shift();
+	return function()
+	{
+		return __method.apply(object, args.concat($A(arguments)));
+	}
+}
+
+var $A = Array.from = function prototype_arrayFrom(iterable) 
+{
+	if (!iterable) return [];
+	if (iterable.toArray) {
+		return iterable.toArray();
+	} else {
+		var results = [];
+		for (var i = 0, length = iterable.length; i < length; i++)
+			results.push(iterable[i]);
+		return results;
+	}
+}
+
+var $qA = function prototype_quoteArrayFrom(iterable)
+{	//$Aなんだけどクオートで囲む。クオートが入っていればエスケープ。
+	if (!iterable) return [];
+	var results = [];
+	for (var i=0, j=iterable.length; i<j; i++)
+	{
+		var str = iterable[i];
+		str=str.replace(/\"/g, '\\"');
+		results.push('"' + str + '"');
+	}
+	 return results;
+}
+
+Array.prototype.include = function prototype_include(val)
+{
+	for(var i=0;i<this.length;i++){
+		if (this[i]==val) return true;
+	}
+	return false;
+}
+
+function clone(obj)
+{
+	var f = function(){};
+	f.prototype = obj;
+	return new f;
+}
+
+var $=function prototype_getElementById(id){return document.getElementById(id);}
+
+String.format = function String_format(p_txt)
+{
+	if ( arguments.length <= 1 ) {
+		return p_txt;
+	}
+	for( var v_idx = 1, v_num = arguments.length; v_idx < v_num; v_idx++ )
+	{
+		p_txt = p_txt.replace(new RegExp("\\{" + (v_idx - 1) + "\\}", "gi"), arguments[v_idx]);
+	}
+	return p_txt;
+};
+
+String.prototype.format = function StringPrototype_format()
+{
+	Array.prototype.unshift.apply(arguments, [this]);
+	return String.format.apply(String, arguments);
+};
+
+
 var Skin = PP3 = {
 	skinName: "PhantomPain3",
 	skinVer: "ver. \"closed alpha\"",
