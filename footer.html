@@ -8,10 +8,13 @@
 <div id="footer">powerd by PhantomPain3</div>
 <!-- INFO{ Status: "<STATUS/>", total:<ALLRESCOUNT/>, new: <NEWRESCOUNT/> }-->
 <script>
-ThreadInfo.Status  = "<STATUS/>";
-ThreadInfo.Total   = <ALLRESCOUNT/>;
-ThreadInfo.Fetched = <GETRESCOUNT/>;
-ThreadInfo.New     = <NEWRESCOUNT/>;
+if (Skin)
+{
+	Skin.Thread.Info.Status  = "<STATUS/>";
+	Skin.Thread.Info.Total   = <ALLRESCOUNT/>;
+	Skin.Thread.Info.Fetched = <GETRESCOUNT/>;
+	Skin.Thread.Info.New     = <NEWRESCOUNT/>;
+}
 </script>
 </body>
 </html>

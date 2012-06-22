@@ -3,18 +3,17 @@
 <head>
 <meta charset="Shift_JIS" />
 <title><THREADNAME/> - PhantomPain3</title>
-<script src="<SKINPATH/>script.js"></script>
+<script src="<SKINPATH/>script_new.js"></script>
 <link rel="stylesheet" href="<SKINPATH/>style/style.css">
 <link rel="shortcut icon" href="<SKINPATH/>type-2ch.gif" /> 
 <script>
-var ThreadInfo = {
+Skin.Thread.Info = {
 	Title:  "<THREADNAME/>",
 	Url:    "<THREADURL/>",
 	Server: "<SERVERURL/>",
 	Board:  "<BOARDURL/>",
 	Skin:   "<SKINPATH/>",
 };
-CommonPref.setIdentifier("<THREADURL/>");
 </script>
 <style type="text/css" id="scriptedStyle">
 .res
@@ -29,7 +28,7 @@ CommonPref.setIdentifier("<THREADURL/>");
 #error { display: none; }
 #footmenu{ display: block !important;}
 </style>
-<body onload="init();">
+<body>
 <div id="headBar">
 <div id="boardPane"></div>
 <h1 id="thtitle">
