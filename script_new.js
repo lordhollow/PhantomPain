@@ -2536,7 +2536,64 @@ PopupDragDrop.prototype = {
 	},
 }
 
+
+/* ■ビューアのエントリ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+const ViewerEntryState = { PreLoad: 0, Loading: 1, Loaded: 2, Error: -1}
+
 function ViewerEntry(href){ this.init(href); }
+ViewerEntry.prototype = {
+	init: function ViewerEntry_init(href)
+	{
+		this.href = href;
+		this.state = ViewerEntryState.PreLoad;
+		this.relations = new Array();
+	},
+	addRelation: function ViewerEntry_addRelation(no)
+	{
+		if (!this.relations.include(no))
+		{
+			this.relations.push(no);
+			this.relations.sort(function(a,b){return a-b;});
+		}
+	},
+	getElement: function ViewerEntry_getElement()
+	{
+		this.prepare();
+		return this.element;
+	},
+	loaded: function ViewerEntry_loaded(obj)
+	{
+		if (obj.status == "OK")
+		{
+			this.state = ViewerEntryState.Loaded;
+			this.element.src = this.href;
+		}
+		else
+		{
+			this.state = ViewerEntryState.Error;
+			this.element.src = Skin.Thread.Info.Skin + "style/error.png";
+		}
+	},
+	prepare: function ViewerEntry_prepare()
+	{
+		if (this.state == ViewerEntryState.PreLoad)
+		{
+			//console.log("preload request " + this.href);
+			this.element = document.createElement("IMG");
+			this.element.src =  Skin.Thread.Info.Skin + "style/loading.gif";
+			this.state = ViewerEntryState.Loading;
+			ImageLoadManager.push(this.href, this.loaded.bind(this));
+		}
+	},
+	release: function ViewerEntry_release()
+	{
+		//console.log("release " + this.href);
+		this.element = null;
+		this.state = ViewerEntryState.PreLoad;
+	},
+	typename: "ViewerEntry",
+};
+
 function ResManipulator(){}
 ResManipulator.prototype = {
 	resTo: function NodeUtil_resTo(){},
