@@ -556,7 +556,7 @@ var Skin = PP3 = {
 					if (this.deployedMax < n) this.deployedMax = n;
 					if (Preference.AutoPreviewOutLinks)
 					{
-						this.getManipulator(node).previewLinks();
+						$M(node).previewLinks();
 					}
 				}
 			},
@@ -1791,7 +1791,7 @@ var Bookmark = new MarkerService(false, "bm", "bm", true);
 	Bookmark.focus = function Bookmark_focus()
 	{
 		Skin.Thread.Message.deployTo(this.no);
-		Skin.Thread.Message.getManipulator(this.no).focus();
+		$M(this.no).focus();
 	}
 	Bookmark.getDeployMode =  function ThreadMessages_getDeployMode(no)
 	{	//ブックマークの位置によってn(変),yb(表示範囲より前),y(表示範囲内),ya(表示範囲より後ろ)のいずれかを返す
