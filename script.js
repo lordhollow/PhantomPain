@@ -1147,11 +1147,11 @@ Services: {
 				}
 			}
 		},
-		nodeLoaded: function MarkerServices_nodeLoaded(node)
+		nodeLoaded: function MarkerServices_nodeLoaded(nodes)
 		{
 			for(var i=0, j=this.service.length; i<j;i++)
 			{
-				var s = this.service[i].nodeLoaded(node);
+				var s = this.service[i].nodeLoaded(nodes);
 			}
 		},
 		onStorageChanged: function MarkerServices_onStorageChanged(ev)
@@ -2657,9 +2657,12 @@ MarkerService.prototype = {
 	{
 		return "";
 	},
-	nodeLoaded: function MarkerService_nodeLoaded(node)
+	nodeLoaded: function MarkerService_nodeLoaded(nodes)
 	{	//markAllNodeがtrueのときは、ロードされたときにこれが発動する。
-		node.dataset[this.mark] = this.getMarkerClass(node);
+		for(var i=0;i<nodes.length; i++)
+		{
+			nodes[i].dataset[this.mark] = this.getMarkerClass(nodes[i]);
+		}
 		if(this.marked) this.marked();	//マーク後処理
 	},
 };
