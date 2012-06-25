@@ -2008,6 +2008,82 @@ var Skin = PP3 = {
 		},
 		mouseWheel: function EventHandler_mouseWheel(e)
 		{
+			if (e.target.id == "RMenu_Gear")
+			{
+				var node = DOMUtil.getDecendantNode(e.target, "ARTICLE");
+				if (e.target.enchantedGear)
+				{
+					if (e.target.enchantedGear.origin != parseInt(node.dataset.no))
+					{	//adjust
+						e.target.enchantedGear.changePos(e.target);
+						e.target.enchantedGear.changeOrigin(parseInt(node.dataset.no));
+						e.preventDefault();
+						return;
+					}
+				}
+				else
+				{
+					var pp = new GearPopup(e.target);
+					pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(e.target), false);
+					e.preventDefault();
+					return;
+				}
+			}
+			var t = DOMUtil.getDecendantNodeByData(e.target, "gearEnchanted", "y");
+			if (t)
+			{
+				t.enchantedGear.step(e.detail < 0 ? -1 : 1);
+				e.preventDefault();
+				return;
+			}
+			t = DOMUtil.getDecendantNodeByData(e.target, "popupEnchanted", "y");
+			if (t)
+			{
+				t = t.childNodes[0];
+				if(((e.detail<0)&&(t.scrollTop==0))||
+				   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
+					e.preventDefault();
+					return;
+				}
+			}
+			else if (this.mode=="thread")
+			{
+				if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
+			}
+		},
+		resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
+		{
+			if (Preference.LoadBackwardOnTopWheel 
+				&& (window.scrollY == 0)
+				&& (e.detail < 0)
+				&& (Skin.Thread.Message.deployedMin != 1))
+			{
+				if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
+				{
+					this.LoadOnWheelDelta = 0;
+					var focusTo = Skin.Thread.Message.deployedMin - 1;
+					Skin.Thread.Message.deployTo(focusTo-Preference.LoadOnWheelWidth);
+					$M(focusTo).focus();
+				}
+				e.preventDefault();
+			}
+			else if (Preference.LoadForwardOnBottomWheel
+				 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
+				 && (e.detail > 0)
+				 && (Skin.Thread.Message.deployedMax != Skin.Thread.Info.Total))
+			{
+				if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
+				{
+					this.LoadOnWheelDelta = 0;
+					var focusTo = Skin.Thread.Message.deployedMax + 1;
+					Skin.Thread.Message.deployTo(focusTo + Preference.LoadOnWheelWidth);
+					$M(focusTo).focus();
+				}
+			}
+			else
+			{
+				this.LoadOnWheelDelta = 0;
+			}
 		},
 		animationStart: function EventHandler_animationStart(aEvent)
 		{
