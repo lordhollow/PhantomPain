@@ -78,35 +78,34 @@ Skin.Thread.Info = {
 </div><!-- headBar -->
 <div id="resMenu" class="menu">
 	<ul>
-	<li><button class="icon_resto" title="ResTo" onclick="MessageMenu.ResTo(event);"></button></li>
-	<li class="resto"><button class="icon_popupref" title="逆参照" onclick="MessageMenu.PopupRef(event);" id="RMenu.Ref"></button>
+	<li><button class="icon_resto" title="ResTo" data-action="resTo"></button></li>
+	<li class="resto"><button class="icon_popupref" title="逆参照" id="RMenu_Ref"></button>
 		<ul>
 		<li>
-			<button class="treeon  icon_tree" title="逆参構築" onclick="MessageMenu.CreateRefTree(event);"></button>
-			<button class="treeoff icon_notree" title="逆参解体" onclick="MessageMenu.DeleteRefTree(event);"></button>
+			<button class="treeon  icon_tree" title="逆参構築" data-action="openRefTree"></button>
+			<button class="treeoff icon_notree" title="逆参解体" data-action="closeRefTree"></button>
 		</li>
-		<li><button class="treeon icon_exref" title="逆参抽出" onclick="MessageMenu.ExtractRef(event);"></button></li>
+		<li><button class="treeon icon_exref" title="逆参抽出" data-action="expressReffer"></button></li>
 		</ul>
 	</li>
 	<li>
-		<button class="trackon  icon_notracking" title="追跡対象外(クリックで追跡開始)"onclick="MessageMenu.BeginTracking(event);"></button>
-		<button class="trackoff icon_tracking" title="追跡中(クリックで解除)" onclick="MessageMenu.EndTracking(event);"></button>
+		<button class="trackon  icon_notracking" title="追跡対象外(クリックで追跡開始)" data-action="beginTracking"></button>
+		<button class="trackoff icon_tracking" title="追跡中(クリックで解除)" data-action="endTracking"></button>
 		<ul>
 		<li>
-			<button class="trackpop icon_popuptracking" title="追跡項目ポップアップ" id="RMenu.TrPop" onclick="MessageMenu.PopupTracked(event);"></button></li>
+			<button class="trackpop icon_popuptracking" title="追跡項目ポップアップ" id="RMenu_Track"></button></li>
 	</ul>
 	</li>
 	<li>
-		<button class="bmoff icon_bookmarkn" title="しおりを挟む" onclick="MessageMenu.SetBookmark(event);"></button>
-		<button class="bmon icon_bookmark" title="しおり(クリックで除去)" onclick="MessageMenu.ResetBookmark(event);"></button>
+		<button class="bmoff icon_bookmarkn" title="しおりを挟む" data-action="setBookmark"></button>
+		<button class="bmon icon_bookmark" title="しおり(クリックで除去)" data-action="resetBookmark"></button>
 	</li>
 	<li>
-		<button class="pickoff icon_nopickup" title="Pickup" onclick="MessageMenu.SetPickup(event);"></button>
-		<button class="pickon icon_pickup" title="Pickup" onclick="MessageMenu.ResetPickup(event);"></button>
+		<button class="pickoff icon_nopickup" title="Pickup" data-action="setPickup"></button>
+		<button class="pickon icon_pickup" title="Pickup" data-action="resetPickup"></button>
 	</li>
-	<!--<li><img src="style/hide.png" title="非表示" onclick="MessageMenu.ToggleHiding(event);"></li>-->
-	<li class="imgon"><button class="icon_image" title="画像展開" onclick="MessageMenu.ExtractImages(event);"></button></li>
-	<li><button class="icon_gear" title="ギア" onclick="MessageMenu.BeginGear(event);" id="RMenu_Gear"></button></li>
+	<li class="imgon"><button class="icon_image" title="画像展開" data-action="previewLinks"></button></li>
+	<li><button class="icon_gear" title="ギア" id="RMenu_Gear"></button></li>
 	</ul>
 </div><!-- resMenu -->
 <div id="popupContainer"></div>
