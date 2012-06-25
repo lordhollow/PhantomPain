@@ -489,14 +489,13 @@ var Skin = PP3 = {
 				{
 					min = this.deployedMax+1;
 				}
-				//console.log("deployTo: {0}->{1}".format(min,max));
 				this.deploy(min, max);
 			},
 			deploy: function Message_deploy(from, to)
 			{
 				this.prepare(from, to);
 				var nodes = new Array();
-				for(var i = from; i< to; i++)
+				for(var i = from; i<= to; i++)
 				{
 					nodes.push(this.domobj[i]);
 					this._deployNode(this.domobj[i]);
