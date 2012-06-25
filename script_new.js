@@ -2571,4 +2571,9 @@ var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
 
+var $M = function GetManipulator(NodeOrNo)
+{
+	return Skin.Thread.Message.getManipulator(NodeOrNo);
+}
+
 window.addEventListener("load", function pp3initializer(){ PP3.init(); });
