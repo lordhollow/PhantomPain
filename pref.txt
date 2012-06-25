@@ -1,5 +1,5 @@
 <div id="configulator">
-	<form id="prefpagelist" onsubmit="Configulator.page(event);return false;">
+	<form id="prefpagelist" onsubmit="Skin.Configulator.page(event);return false;">
 	<input type="submit" value="" name="template1" title="テンプレート1">
 	<input type="submit" value="" name="template2" title="テンプレート2">
 	<input type="submit" value="" name="template3" title="テンプレート3">
@@ -14,8 +14,8 @@
 		</div>
 
 		<form name="page3" class="prefpage" data-key="template3">
-		この板の名前: <input type="text" value="@<Thread.boardName>@" name="boardName">
-		<input type="button" onclick="BoardList.setBoardName(null, document.forms.page3.boardName.value);" value="変更">
+		この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
+		<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.page3.boardName.value);" value="変更">
 		</form>
 	</div>
 </div>

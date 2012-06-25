@@ -159,6 +159,43 @@ var Skin = PP3 = {
 
 	},
 	Configulator: {
+		toggle: function Configulator_toggle(t)
+		{
+			if (!t) return;
+			if (!t.tagName) t = $(t);
+			if (!t) return;
+			if (!this.editor)
+			{	//初期化
+				var cont = document.createElement("DIV");
+				cont.id = "prefMenu";
+				var html = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "pref.txt") || "";
+				this.htmlTemplate = html;
+				//テンプレートエンジン発動！
+				//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
+				//ここでしか変更されない値はどうでもいいけど。
+				html = html.replace(/@<([^@]+?)>@/g, function(all,$1){ return eval($1);});
+				cont.innerHTML = html;
+				this.editor = cont.firstChild;
+				cont.removeChild(this.editor);
+				var pages = this.editor.children[1];
+				this.editor.removeChild(pages);
+				this.pages = {};
+				for(var i=0; i<pages.children.length; i++)
+				{
+					var page = pages.children[i];
+					this.pages[page.dataset.key] = page;
+				}
+			}
+			PopupUtil.toggle(t, this.editor, false);
+		},
+		page: function Configulator_page(aEvent)
+		{
+			var name = aEvent.explicitOriginalTarget.name;
+			var page = this.pages[name];
+			if (!page) return false;
+			PopupUtil.toggle(aEvent.explicitOriginalTarget, page, false, true, "prefpage");
+			return false;
+		},
 	},
 	CommonPref: {
 		_identifier: new String("UNKNOWN"),
@@ -232,7 +269,7 @@ var Skin = PP3 = {
 		},
 		reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
 		{
-			var boardnameTxt = TextLoadManager.syncGet(ThreadInfo.Skin + "boardname.txt");
+			var boardnameTxt = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "boardname.txt");
 			var sys =  EVAL("[" + (boardnameTxt|| "") + "]", [])[0] || {};
 			this.save(sys, "BoardNames");
 			return sys;
@@ -251,7 +288,7 @@ var Skin = PP3 = {
 		},
 		setBoardName: function BoardList_setBoardName(id, name)
 		{
-			if (!id) id = Thread.boardId;	//俺だよ、俺俺
+			if (!id) id = Skin.Thread.boardId;	//俺だよ、俺俺
 			if (!name || name == "")
 			{	//定義を消す
 				if (this.boardNameListUsr && this.boardNameListUsr[id])
@@ -265,12 +302,12 @@ var Skin = PP3 = {
 				this.boardNameListUsr[id] = name;
 				this.save(this.boardNameListUsr, "UserBoardNames");
 			}
-			if (id == Thread.boardId)
+			if (id == Skin.Thread.boardId)
 			{	//TODO::イベントを投げて板名変化を通知し、反映するように変更
 				//特に、２箇所以上に影響が及ぶ場合はそのときに必ず実施。
-				Thread.boardName = this.getBoardName(Thread.boardId);
+				Skin.Thread.boardName = this.getBoardName(Skin.Thread.boardId);
 				var e = $("threadName");
-				if (e) e.dataset.boardName = Thread.boardName;
+				if (e) e.dataset.boardName = Skin.Thread.boardName;
 			}
 		},
 	},
@@ -314,13 +351,13 @@ var Skin = PP3 = {
 			this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
 			if (this.Message.deployedMax != this.Info.Total)
 			{	//最後まで表示されていないときは全部表示してから。
-				this.Message.deployTo(ThreadInfo.Total);
+				this.Message.deployTo(Skin.Thread.Info.Total);
 			}
 			if (!this.checking)
 			{
 				this.checking = true;
 				document.body.dataset.loading = "y";
-				TextLoadManager.push(ThreadInfo.Server + ThreadInfo.Url + "l1n", this._loaded.bind(this));
+				TextLoadManager.push(Skin.Thread.Info.Server + Skin.Thread.Info.Url + "l1n", this._loaded.bind(this));
 			}
 		},
 		_loaded: function Thread__loaded(obj)
@@ -1816,7 +1853,7 @@ var Skin = PP3 = {
 			},
 			Menu_Config: function IdClickHandler_Menu_Config(t, ev)
 			{
-				Skin.Configulator.toggle();
+				Skin.Configulator.toggle(t);
 			},
 		},
 		ClassClickHandler: {
