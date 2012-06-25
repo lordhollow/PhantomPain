@@ -27,8 +27,8 @@ var _Preference =
 	NoticeLength: 10,			//表示するお知らせの数
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
-	OnResDblClick: ["pickup", "closepopup", "bookmark", "track", "resto", "preview", "preview", "tree"],
-	//中身は none(これがデフォルト), bookmark, res, resto, pickup, tree, track, preview, closepopup, setbookmark
+	OnResDblClick: ["togglePickup", "closeIfPopup", "toggleBookmark", "toggleTracking", "resTo", "previewLinks", "previewLinks", "toggleRefTree"],
+	//中身は none(これがデフォルト), それ以外はManipulatorのメソッド名。
  
 };
 const OUTLINK_NON   = 0;	//outlinkじゃない
@@ -1414,6 +1414,28 @@ var Skin = PP3 = {
 		},
 		mouseDblClick: function EventHandler_mouseDblClick(e)
 		{
+			var t = e.target;
+			if (t.tagName == "ARTICLE")
+			{
+				var flg = 0;
+				if (e.shiftKey) flg += 1;
+				if (e.ctrlKey) flg += 2;
+				if (e.altKey) flg += 4;
+				var method = Preference.OnResDblClick[flg];
+				$M(t).invoke(method);
+			}
+			else if (t.className == "resPointer")
+			{
+				if(t.textContent.match(/(\d+)/))
+				{
+					Skin.Thread.Message.deployTo(RegExp.$1);
+					$M(RegExp.$1).focus();
+				}
+			}
+			else if (t.className == "popup")
+			{
+				t.popup.close();
+			}
 		},
 		mouseWheel: function EventHandler_mouseWheel(e)
 		{
@@ -2684,15 +2706,19 @@ function ResManipulator(NodeOrNo){ this.init(NodeOrNo);}
 ResManipulator.prototype = {
 	init: function ResManipulator_init(NodeOrNo)
 	{
-		if (NodeOrNo.tagName && (NodeOrNo.TagName == "ARTICLE"))
+		if (NodeOrNo.tagName && (NodeOrNo.tagName == "ARTICLE"))
 		{
 			this.node = NodeOrNo;
-			this.no = parseInt(node.dataset.no);
+			this.no = parseInt(this.node.dataset.no);
 		}
 		else
 		{
 			this.no = parseInt(NodeOrNo);
 		}
+	},
+	invoke: function ResManipulator_invoke(methodName)
+	{
+		if (this[methodName]) this[methodName]();
 	},
 	resTo: function ResManipulator_resTo()
 	{
@@ -2759,13 +2785,13 @@ ResManipulator.prototype = {
 	{
 		if (this.no)
 		{
-			if (Bookmark.no == no)
+			if (Bookmark.no == this.no)
 			{
-				Bookmark.del(no);
+				Bookmark.del(this.no);
 			}
 			else
 			{
-				Bookmark.add(no);
+				Bookmark.add(this.no);
 			}
 		}
 	},
@@ -2781,13 +2807,13 @@ ResManipulator.prototype = {
 	{
 		if (this.no)
 		{
-			if (Pickup.pickups.include(no))
+			if (Pickup.pickups.include(this.no))
 			{
-				Pickup.del(no);
+				Pickup.del(this.no);
 			}
 			else
 			{
-				Pickup.add(no);
+				Pickup.add(this.no);
 			}
 		}
 	},
@@ -2903,7 +2929,6 @@ var Notice = Skin.Notice;
 var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
-
 var $M = function GetManipulator(NodeOrNo)
 {
 	return Skin.Thread.Message.getManipulator(NodeOrNo);
