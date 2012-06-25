@@ -142,6 +142,7 @@ var Skin = PP3 = {
 		this.BoardList.init();
 		this.Thread.init();
 		this.Services.Marker.init();
+		this.ResMenu.init();
 		
 		this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 		$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
@@ -1096,6 +1097,28 @@ var Skin = PP3 = {
 		},
 	},
 	ResMenu: {
+		init: function ResMenu_init()
+		{
+			this._menu = $("resMenu");
+			this._menu.parentNode.removeChild(this._menu);
+		},
+		attach: function MessageMenu_attach(node)
+		{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
+			var m = this._menu;		//参照コピ～
+			if (m == null) return;	//レスメニューなし
+			if (node == m.parentNode) return;	//同じとこに割り当て→無視
+			if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
+			this.popTrack = null;
+			if ((node != null) && (node.tagName == "ARTICLE"))
+			{
+				m.dataset.binding = node.dataset.no;
+				node.insertBefore(m, node.childNodes[1]);
+			}
+			else
+			{
+				m.dataset.binding = 0;
+			}
+		},
 	},
 	BoardPane: {
 		init: function BoardPane_init()
@@ -1742,6 +1765,21 @@ var Skin = PP3 = {
 		mouseOver: function EventHandler_mouseOver(aEvent)
 		{
 			var t = aEvent.target;
+			if (DOMUtil.isDecendantOf(t, "resMenu"))
+			{	//レスメニューにポイント → 何もしない
+				//(resMenuがArticleの子要素になるので、これがないと干渉してしまう
+				return;
+			}
+			var res = DOMUtil.getDecendantNode(t, "ARTICLE");
+			if (res != null)
+			{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
+				var tid = setTimeout(Skin.ResMenu.attach.bind(Skin.ResMenu, res), Preference.ResMenuAttachDelay);
+				res.addEventListener("mouseout",
+					function(){
+						clearTimeout(tid);
+						res.removeEventListener("mouseout", arguments.callee, false);
+				}, false);
+			}
 			if (t.className=="resPointer")
 			{	//レスアンカーにポイント → レスポップアップ
 				new ResPopup(t);
