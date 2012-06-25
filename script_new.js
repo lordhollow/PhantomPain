@@ -132,1988 +132,1988 @@ function EVAL(str, def)
 }
 
 var Skin = PP3 = {
-	skinName: "PhantomPain3",
-	skinVer: "ver. \"closed alpha\"",
-	init: function()
+skinName: "PhantomPain3",
+skinVer: "ver. \"closed alpha\"",
+init: function()
+{
+	var dt1 = new Date();
+
+	//loadPref
+	this.BoardList.init();
+	this.Thread.init();
+	this.Services.Marker.init();
+	this.ResMenu.init();
+	
+	this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
+	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
+	document.title = Skin.Thread.Info.Title + " - {0}({1})".format(this.ownerApp, this.skinName);				//タイトル修正
+	//★if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
+
+	this.EventHandler.init();
+
+	Notice.add(Skin.Thread.Info.Status);
+	Notice.add("{0} messages.".format(Skin.Thread.Info.Total));
+	if (Skin.Thread.Info.New) Notice.add("({0} new messages.)".format(Skin.Thread.Info.New));
+
+	var dt2 = new Date();
+	Notice.add("{0} ms for initialize".format(dt2-dt1));
+
+},
+Configulator: {
+	toggle: function Configulator_toggle(t)
 	{
-		var dt1 = new Date();
-
-		//loadPref
-		this.BoardList.init();
-		this.Thread.init();
-		this.Services.Marker.init();
-		this.ResMenu.init();
-		
-		this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
-		$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
-		document.title = Skin.Thread.Info.Title + " - {0}({1})".format(this.ownerApp, this.skinName);				//タイトル修正
-		//★if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
-
-		this.EventHandler.init();
-
-		Notice.add(Skin.Thread.Info.Status);
-		Notice.add("{0} messages.".format(Skin.Thread.Info.Total));
-		if (Skin.Thread.Info.New) Notice.add("({0} new messages.)".format(Skin.Thread.Info.New));
-	
-		var dt2 = new Date();
-		Notice.add("{0} ms for initialize".format(dt2-dt1));
-
-	},
-	Configulator: {
-		toggle: function Configulator_toggle(t)
-		{
-			if (!t) return;
-			if (!t.tagName) t = $(t);
-			if (!t) return;
-			if (!this.editor)
-			{	//初期化
-				var cont = document.createElement("DIV");
-				cont.id = "prefMenu";
-				var html = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "pref.txt") || "";
-				this.htmlTemplate = html;
-				//テンプレートエンジン発動！
-				//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
-				//ここでしか変更されない値はどうでもいいけど。
-				html = html.replace(/@<([^@]+?)>@/g, function(all,$1){ return eval($1);});
-				cont.innerHTML = html;
-				this.editor = cont.firstChild;
-				cont.removeChild(this.editor);
-				var pages = this.editor.children[1];
-				this.editor.removeChild(pages);
-				this.pages = {};
-				for(var i=0; i<pages.children.length; i++)
-				{
-					var page = pages.children[i];
-					this.pages[page.dataset.key] = page;
-				}
-			}
-			PopupUtil.toggle(t, this.editor, false);
-		},
-		page: function Configulator_page(aEvent)
-		{
-			var name = aEvent.explicitOriginalTarget.name;
-			var page = this.pages[name];
-			if (!page) return false;
-			PopupUtil.toggle(aEvent.explicitOriginalTarget, page, false, true, "prefpage");
-			return false;
-		},
-	},
-	CommonPref: {
-		_identifier: new String("UNKNOWN"),
-		_storage: localStorage,
-	
-		getThreadObjectKey: function(objName)
-		{
-			return "bbs2chSkin.common." + objName + "." + this._identifier;
-		},
-		getGlobalObjectKey: function(objName)
-		{
-			return "bbs2chSkin.common." + objName;
-		},
-		
-		//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
-		writeThreadObject: function CommonPref_wroteThreadObject(objName, str)
-		{
-			var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-			this._storage.setItem(pn, str);
-		},
-		readThreadObject: function CommonPref_readThreadObject(objName)
-		{
-			var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
-			return this._storage.getItem(pn);
-		},
-		writeGlobalObject: function CommonPref_writeGlobalObject(objName, str)
-		{
-			var pn = "bbs2chSkin.common." + objName;
-			this._storage.setItem(pn, str);
-		},
-		readGlobalObject: function CommonPref_readGlobalObject(objName)
-		{
-			var pn = "bbs2chSkin.common." + objName;
-			return this._storage.getItem(pn);
-		},
-		foreach: function CommonPref_foreach(objName, proc)
-		{
-			var ex = new RegExp("^bbs2chSkin\.common\." + objName + "\.");
-			for(var key in this._storage)
+		if (!t) return;
+		if (!t.tagName) t = $(t);
+		if (!t) return;
+		if (!this.editor)
+		{	//初期化
+			var cont = document.createElement("DIV");
+			cont.id = "prefMenu";
+			var html = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "pref.txt") || "";
+			this.htmlTemplate = html;
+			//テンプレートエンジン発動！
+			//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
+			//ここでしか変更されない値はどうでもいいけど。
+			html = html.replace(/@<([^@]+?)>@/g, function(all,$1){ return eval($1);});
+			cont.innerHTML = html;
+			this.editor = cont.firstChild;
+			cont.removeChild(this.editor);
+			var pages = this.editor.children[1];
+			this.editor.removeChild(pages);
+			this.pages = {};
+			for(var i=0; i<pages.children.length; i++)
 			{
-				if (ex.test(key))
-				{
-					proc(key, this._storage.getItem(key));
-				}
+				var page = pages.children[i];
+				this.pages[page.dataset.key] = page;
 			}
-		},
+		}
+		PopupUtil.toggle(t, this.editor, false);
+	},
+	page: function Configulator_page(aEvent)
+	{
+		var name = aEvent.explicitOriginalTarget.name;
+		var page = this.pages[name];
+		if (!page) return false;
+		PopupUtil.toggle(aEvent.explicitOriginalTarget, page, false, true, "prefpage");
+		return false;
+	},
+},
+CommonPref: {
+	_identifier: new String("UNKNOWN"),
+	_storage: localStorage,
+
+	getThreadObjectKey: function(objName)
+	{
+		return "bbs2chSkin.common." + objName + "." + this._identifier;
+	},
+	getGlobalObjectKey: function(objName)
+	{
+		return "bbs2chSkin.common." + objName;
 	},
 	
-	BoardList: {
-		init: function BoardList_init()
-		{
-			this.prepareBoardNames();
-		},
-		prepareBoardNames: function BoardList_prepareBoardNames()
-		{	
-			var sys = EVAL("[" + (Skin.CommonPref.readGlobalObject("BoardNames") || "") + "]", [])[0];
-			var usr = EVAL("[" + (Skin.CommonPref.readGlobalObject("UserBoardNames") || "{}") + "]", [{}])[0]; 
-			if (!sys) sys = this.reloadBoardNameTxt();
-			this.boardNameListSys = sys;
-			this.boardNameListUsr = usr;
-		},
-		save: function BoardList_save(list, prefName)
-		{
-			var json = "{";
-			for(var key in list)
-			{
-				json += '"{0}": "{1}",'.format(key, list[key]);
-			}
-			json += "}";
-			Skin.CommonPref.writeGlobalObject(prefName, json);
-		},
-		reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
-		{
-			var boardnameTxt = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "boardname.txt");
-			var sys =  EVAL("[" + (boardnameTxt|| "") + "]", [])[0] || {};
-			this.save(sys, "BoardNames");
-			return sys;
-		},
-		getBoardName: function BoardList_getBoardName(boardId)
-		{
-			if (this.boardNameListUsr && this.boardNameListUsr[boardId])
-			{
-				return  this.boardNameListUsr[boardId];
-			}
-			else if (this.boardNameListSys && this.boardNameListSys[boardId])
-			{
-				return  this.boardNameListSys[boardId];
-			}
-			return "その他の掲示板";
-		},
-		setBoardName: function BoardList_setBoardName(id, name)
-		{
-			if (!id) id = Skin.Thread.boardId;	//俺だよ、俺俺
-			if (!name || name == "")
-			{	//定義を消す
-				if (this.boardNameListUsr && this.boardNameListUsr[id])
-				{
-					delete this.boardNameListUsr[id];
-				}
-			}
-			else
-			{
-				if (!this.boardNameListUsr) this.boardNameListUsr = {};
-				this.boardNameListUsr[id] = name;
-				this.save(this.boardNameListUsr, "UserBoardNames");
-			}
-			if (id == Skin.Thread.boardId)
-			{	//TODO::イベントを投げて板名変化を通知し、反映するように変更
-				//特に、２箇所以上に影響が及ぶ場合はそのときに必ず実施。
-				Skin.Thread.boardName = this.getBoardName(Skin.Thread.boardId);
-				var e = $("threadName");
-				if (e) e.dataset.boardName = Skin.Thread.boardName;
-			}
-		},
+	//objName = ブックマーク：bm, ピックアップ：pk, Ignores: ig
+	writeThreadObject: function CommonPref_wroteThreadObject(objName, str)
+	{
+		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+		this._storage.setItem(pn, str);
 	},
-	
-	Thread: {
-		init: function Thread_init()
+	readThreadObject: function CommonPref_readThreadObject(objName)
+	{
+		var pn = "bbs2chSkin.common." + objName + "." + this._identifier;
+		return this._storage.getItem(pn);
+	},
+	writeGlobalObject: function CommonPref_writeGlobalObject(objName, str)
+	{
+		var pn = "bbs2chSkin.common." + objName;
+		this._storage.setItem(pn, str);
+	},
+	readGlobalObject: function CommonPref_readGlobalObject(objName)
+	{
+		var pn = "bbs2chSkin.common." + objName;
+		return this._storage.getItem(pn);
+	},
+	foreach: function CommonPref_foreach(objName, proc)
+	{
+		var ex = new RegExp("^bbs2chSkin\.common\." + objName + "\.");
+		for(var key in this._storage)
 		{
-			//identifier設定
-			var url = new URL(this.Info.Url);
-			this.boardId  = url.boardId;
-			this.threadId = url.threadId;
-			
-			//スレッドのIDを共通設定に使わせる(これより前にスレッド個別設定を使用してはならない)
-			Skin.CommonPref._identifier = url.threadId;
+			if (ex.test(key))
+			{
+				proc(key, this._storage.getItem(key));
+			}
+		}
+	},
+},
 
-			//板名
-			this.boardName = Skin.BoardList.getBoardName(this.boardId);
-
-			//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+BoardList: {
+	init: function BoardList_init()
+	{
+		this.prepareBoardNames();
+	},
+	prepareBoardNames: function BoardList_prepareBoardNames()
+	{	
+		var sys = EVAL("[" + (Skin.CommonPref.readGlobalObject("BoardNames") || "") + "]", [])[0];
+		var usr = EVAL("[" + (Skin.CommonPref.readGlobalObject("UserBoardNames") || "{}") + "]", [{}])[0]; 
+		if (!sys) sys = this.reloadBoardNameTxt();
+		this.boardNameListSys = sys;
+		this.boardNameListUsr = usr;
+	},
+	save: function BoardList_save(list, prefName)
+	{
+		var json = "{";
+		for(var key in list)
+		{
+			json += '"{0}": "{1}",'.format(key, list[key]);
+		}
+		json += "}";
+		Skin.CommonPref.writeGlobalObject(prefName, json);
+	},
+	reloadBoardNameTxt: function BoardList_reloadBoardNameTxt()
+	{
+		var boardnameTxt = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "boardname.txt");
+		var sys =  EVAL("[" + (boardnameTxt|| "") + "]", [])[0] || {};
+		this.save(sys, "BoardNames");
+		return sys;
+	},
+	getBoardName: function BoardList_getBoardName(boardId)
+	{
+		if (this.boardNameListUsr && this.boardNameListUsr[boardId])
+		{
+			return  this.boardNameListUsr[boardId];
+		}
+		else if (this.boardNameListSys && this.boardNameListSys[boardId])
+		{
+			return  this.boardNameListSys[boardId];
+		}
+		return "その他の掲示板";
+	},
+	setBoardName: function BoardList_setBoardName(id, name)
+	{
+		if (!id) id = Skin.Thread.boardId;	//俺だよ、俺俺
+		if (!name || name == "")
+		{	//定義を消す
+			if (this.boardNameListUsr && this.boardNameListUsr[id])
+			{
+				delete this.boardNameListUsr[id];
+			}
+		}
+		else
+		{
+			if (!this.boardNameListUsr) this.boardNameListUsr = {};
+			this.boardNameListUsr[id] = name;
+			this.save(this.boardNameListUsr, "UserBoardNames");
+		}
+		if (id == Skin.Thread.boardId)
+		{	//TODO::イベントを投げて板名変化を通知し、反映するように変更
+			//特に、２箇所以上に影響が及ぶ場合はそのときに必ず実施。
+			Skin.Thread.boardName = this.getBoardName(Skin.Thread.boardId);
 			var e = $("threadName");
-			if (e)
-			{
-				 e.dataset.board = this.boardId;
-				 e.dataset.boardName = this.boardName;
-			}
+			if (e) e.dataset.boardName = Skin.Thread.boardName;
+		}
+	},
+},
 
-			//次スレ前スレ
-			this.Navigator.init();
-
-			//メッセージの分析
-			this.Message.init();			//message
-		},
-		openWriteDialog: function Thread_openWriteDialog(to)
-		{
-			if (!to) to = "";
-			var url = Preference.PostScheme + this.Info.Url + to
-			window.location.href = url;
-		},
-		checkNewMessage: function Thread_checkNewMessage()
-		{
-			this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
-			if (this.Message.deployedMax != this.Info.Total)
-			{	//最後まで表示されていないときは全部表示してから。
-				this.Message.deployTo(Skin.Thread.Info.Total);
-			}
-			if (!this.checking)
-			{
-				this.checking = true;
-				document.body.dataset.loading = "y";
-				TextLoadManager.push(Skin.Thread.Info.Server + Skin.Thread.Info.Url + "l1n", this._loaded.bind(this));
-			}
-		},
-		_loaded: function Thread__loaded(obj)
-		{
-			if (!obj || obj.status == "NG")
-			{
-				Notice.add("Load Error.");
-			}
-			else
-			{
-				var html = obj.responseText;
-				this._checkNewMessage(html);
-			}
-			document.body.dataset.loading = "";
-			this.checking = false;
-		},
-		_checkNewMessage: function Thread__checkNewMessage(html)
-		{
-			if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
-			{
-				var obj;
-				EVAL("obj = "+ RegExp.$1, {});	//{ status, total, new }
-				if (obj.new)
-				{	//新着があるとき～
-					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-					{
-						var nc = document.createElement("DIV");
-						nc.innerHTML = RegExp.$1;
-						this.Message.onLoad($A(nc.getElementsByTagName("ARTICLE")));
-					}
-					//TODO::既存の新着マーク除去
-					
-					this.Info.Total = obj.total;
-					this.Info.New = obj.new;
-					this.Info.Fetched = obj.total - obj.new;
-					this.Info.Status = obj.status;
-					this.Message.deployTo(this.Info.Total);
-					$M(this.Info.Fetched + 1).focus();
-				}
-				Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", StringUtil.timestamp()));
-			}
-		},
-		Message: {
-			domobj: new Array(),	//DOMオブジェクト。indexはレス番号
-			outLinks: new Array(),	
-			deployedMin: 0,
-			deployedMax: 0,
-			init: function Message_init()
-			{
-				var nodes = $A($("resContainer").children);
-				this.onLoad(nodes);
-				this.onDeploy(nodes);
-			},
-			prepare: function Message_prepare(from, to)
-			{	//minにはidsまたはアンカーの文字列を指定可能。
-				//alert([min, max]);
-				if (from instanceof Array)
-				{
-					var b = true;
-					for(var i=0; i<from.length; i++)
-					{
-						b &= this.prepare(from[i],from[i]);
-					}
-					return b;
-				}
-				else if ((from+"").substr(1) == ">")
-				{
-					var str = from+"";
-					str=str.replace(/>/g,"");
-					var e=str.split(",");
-					var r=new Array();
-					for(var i=0;i<e.length;i++)
-					{
-						if(e[i].match(/(\d+)(-(\d+))?/))
-						{
-							var min = parseInt(RegExp.$1);
-							var max = parseInt(RegExp.$3);
-							if (!max) max = min;
-							this.load(min, max);
-						}
-					}
-				}
-				var tmin = parseInt(from);
-				if (!tmin)return false;
-				var tmax = to;
-				if (tmax > Skin.Thread.Info.Total) tmax = Skin.Thread.Info.Total;	//絶対取れないところはとりに行かない。
-				for(; tmin <= tmax; tmin++)
-				{	//tmin位置が読み込み済みならtminを+1
-					if (!this.isReady(tmin))	break;
-				}
-				for(; tmax >= tmin; tmax--)
-				{	//tmax位置が読み込み済みならtmaxを-1
-					if (!this.isReady(tmax))	break;	
-				}
-				if ((tmin <= tmax) && (tmin != 0))
-				{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
-					var loardUrlStr = Skin.Thread.Info.Server + Skin.Thread.Info.Url + tmin + "-" + tmax;
-					var html = TextLoadManager.syncGet(loardUrlStr) || "";
-					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
-					{
-						var nc = document.createElement("DIV");
-						nc.innerHTML = RegExp.$1;
-						this.onLoad($A(nc.getElementsByTagName("ARTICLE")));
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				return true;
-			},
-			deployAll: function message_deployAll()
-			{
-				this.deployTo(1);
-				this.deployTo(Skin.Thread.Info.Total);
-			},
-			deployTo: function Thread_deployTo(to)
-			{
-				if (to <= 0) to = 1;
-				if (to >= Skin.Thread.Info.Total) to = Skin.Thread.Info.Total;
-				var min = to,  max = to;
-				if (to < this.deployedMin)
-				{
-					max = this.deployedMin-1;
-				}
-				if (to > this.deployedMax)
-				{
-					min = this.deployedMax+1;
-				}
-				this.deploy(min, max);
-			},
-			deploy: function Message_deploy(from, to)
-			{
-				this.prepare(from, to);
-				var nodes = new Array();
-				for(var i = from; i<= to; i++)
-				{
-					nodes.push(this.domobj[i]);
-					this._deployNode(this.domobj[i]);
-				}
-				this.onDeploy(nodes);
-			},
-			_deployNode: function Message_deployNode(node)
-			{
-				if (!node)return;	//ほぎゃ！
-				if (node.tagName != "ARTICLE") return;	//ほぎゃ！
-				if (this.isDeployed(node.dataset.no)) return;
-				if (node.parentNode)
-				{	//既存の親を除外。loadから来た仮のdivだと思われる。
-					node.parentNode.removeChild(node);
-				}
-				var rc = $("resContainer");
-				var nn =  parseInt(node.dataset.no);
-				var nextSibling = this._findDeployedNextSibling(nn);
-				if (nextSibling)
-				{
-					rc.insertBefore(node, nextSibling);
-				}
-				else
-				{
-					rc.appendChild(node);
-				}
-			},
-			_findDeployedNextSibling: function Message__findDeployedNextSibing(no)
-			{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
-				for(var i=no; i<=this.deployedMax; i++)
-				{
-					if(this.isDeployed(i))
-					{
-						return this.domobj[i];
-					}
-				}
-				return null;
-			},
-			getNode: function Message_getNode(no, clone)
-			{
-				if (this.domobj[no] != null)
-				{
-					var obj = this.domobj[no];
-					if (clone)
-					{
-						obj = obj.cloneNode(true);
-						//objから、本来備わっていないもの(=レスメニューと展開済みツリー、展開済み画像）を削除する。
-						//article> { H , (div) , p , オマケたち } の順に並んでいるので、divとオマケを削除する。
-						if (obj.childNodes[1].tagName == "DIV")
-						{
-							obj.removeChild(obj.childNodes[1]);
-						}
-						while(obj.childNodes.length > 2)
-						{
-							obj.removeChild(obj.childNodes[2]);
-						}
-						//outlinkのpreviewShowingをすべてnにする
-						var outlinks = obj.getElementsByClassName("outLink");
-						for(var i=0, j=outlinks.length; i<j; i++)
-						{
-							outlinks[i].dataset.previewShowing = "n";
-						}
-					}
-					return obj;
-				}
-				return null;
-			},
-			getManipulator: function Message_getManipulator(NodeOrNo)
-			{	//旧NodeUtil相当のオブジェクトを返すよ
-				return new ResManipulator(NodeOrNo);
-			},
-			foreach: function Message_foreach(func, includeNotDeployed, includePopup)
-			{
-				if (includeNotDeployed)
-				{	//all loaded
-					nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
-				}
-				else
-				{	//only deployed
-					nodes = $A($("resContainer").children);
-					if (includePopup)
-					{
-						var pn = $A($("popupContainer").getElementsByTagName("ARTICLE"));
-						for(var i=0; i<pn.length; i++)
-						{
-							nodes.push(pn[i]);
-						}
-					}
-				}
-				for (var i=0, j=nodes.length; i<j; i++)
-				{
-					if (nodes[i]) func(nodes[i]);
-				}
-			},
-			apply: function Message_foreach(func, filter, includeNotDeployed, includePopup)
-			{
-				this.foreach(function message_apply_func(node){
-					if (filter(node)) func(node);
-				}, includeNotDeployed, includePopup);
-			},
-			isReady: function Message_isReady(no)
-			{
-				return (this.domobj[no]);
-			},
-			isDeployed: function Message_isDeployed(no)
-			{
-				if ( this.domobj[no])
-					if (this.domobj[no].parentNode)
-						if (this.domobj[no].parentNode.id == "resContainer")
-							return true;
-				return false;
-			},
-			onLoad: function Message_onLoad(nodes)
-			{
-				for(var i=0; i<nodes.length; i++)
-				{
-					var node = nodes[i];
-					if ((node.tagName == "ARTICLE") && (!this.isReady(node.dataset.no)))
-					{	//処理前のレスである場合…（本当は他スレじゃないか確認が要るのかも？）
-						var no = parseInt(node.dataset.no);
-						var msgNode = node.childNodes[1];
-						this._extendAnchor(msgNode);
-						this._replaceStr(msgNode);
-						this.domobj[no] = node;
-						this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
-						//新着判定
-						if(node.childNodes[0].className=="new")
-						{
-							document.body.dataset.hasNew = "y";
-						}
-						
-						//名前とトリップの抽出
-						var name = node.childNodes[0].childNodes[3].textContent;
-						node.dataset.author = name;
-						if (name.match(/◆([^\s]+)/))
-						{
-							node.dataset.trip = RegExp.$1;
-						}
-						if (name.match(/^(\d+)(◆.+)?/))
-						{
-							node.dataset.numberdName = "y";
-						}
-					}
-				}
-				//構造解析
-				this.Structure.analyze(nodes);
-				//マーカー登録
-				//★MarkerServices.nodeLoaded(nodes);
-			},
-			onDeploy: function Message_onDeploy(nodes)
-			{
-				for(var i=0; i<nodes.length; i++)
-				{
-					var node = nodes[i];
-					var n = parseInt(node.dataset.no);
-					if ((this.deployedMin == 0) || (n < this.deployedMin)) this.deployedMin = n;
-					if ((n==2) && (this.isDeployed(2))) this.deployedMin = 1;
-					if (this.deployedMax < n) this.deployedMax = n;
-					if (Preference.AutoPreviewOutLinks)
-					{
-						$M(node).previewLinks();
-					}
-				}
-			},
-			_extendAnchor: function Message__extendAnchor(node)
-			{
-				var as=node.getElementsByTagName("A");
-				//var ml=Profiles.maxLinkContent.value;
-				for(var i=0;i<as.length;i++){
-					var a=as[i];
-					//コンマを拡張
-					if(a.className=="resPointer"){
-						var bro=a.nextSibling;
-						var n=bro.textContent;
-						if((n)&&(n.match(/^([0-9,\-]+)/))){
-							var c=RegExp.$1;
-							a.appendChild(document.createTextNode(c));
-							bro.data=n.substr(c.length);
-						}
-					}
-					else if (a.className=="outLink")
-					{	//あまりよろしくないけどここが一番効率的かも
-						if (OutlinkPluginForImage.posivility(a.href))
-						{
-							node.parentNode.dataset.hasImage = "y";
-						}
-						Skin.Thread.Navigator.checkNextThread(a);
-					}
-					//長すぎるoutLinkを適当に刈り込み
-					//else if(a.textContent.length>ml){
-					//	var t=a.textContent;
-					//	if(t.match(/(h?[ft]?tp:\/\/[^\/]+\/)/)){
-					//		a.textContent=RegExp.$1+Message.longUrl;
-					//		a.title=t;
-					//		classTokenPlus(a,"trimedURL")
-					//	}
-					//}
-				}
-				//全角アンカーを拾う("０-９"はFx3だと\dだけで拾えなかったから追加)
-				var res=node.innerHTML;
-				if(this._dblSizeAnchorRegExp.test(res)){
-					res=res.replace(this._dblSizeAnchorRegExp,function (a,$1,$2){
-						$2=StringUtil.toNarrowString($2);
-						return "<a href='#"+$2+"' class='resPointer'>&gt;&gt;"+$2+"</a>";});
-					node.innerHTML=res;
-				}
-			},
-			_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
-			_replaceStr: function Message__replaceStr(node)
-			{
-			},
-			Structure: {
-				nodesById: new Array(),		//いわゆるID
-				nodesReplyFrom: new Array(),	//いわゆる逆参照情報
-				analyze: function MessageStructure_analyze(nodes)
-				{
-					if (this._scriptedStyle == null)
-					{
-						this._scriptedStyle = $("scriptedStyle");
-					}
-					var html = "";
-					for(var i=0; i<nodes.length; i++)
-					{
-						html += this._analyze(nodes[i]);
-					}
-					this._scriptedStyle.innerHTML += html;
-				},
-				getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(no)
-				{	//指定したレス番号にレスしているレスのレス番号のリストを取得
-					return this.nodesReplyFrom[no];
-				},
-				getNodeIdsById: function MessageStructure_getNodeIdsById(id)
-				{	//IDを指定してその人物が発言したレス番号のリストを取得
-					return this.nodesById[id];
-				},
-				_analyze: function MessageStructure__analyze(node)
-				{
-					var obj = node.dataset;
-					var html ="";
-					//IDによる構造
-					if (obj.aid.length > 5)		//"????"回避
-					{
-						if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
-						this.nodesById[obj.aid].push(obj.no);
-						if (this.nodesById[obj.aid].length == 2)
-						{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
-							html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }"
-							       .format(obj.aid, obj.idcolor, obj.idbackcolor);
-						}
-					}
-					
-					//Replyによる構造
-					var replyTo = this._getReplyTo(node);
-					for(var i=0, j=replyTo.length; i < j; i++)
-					{
-						var t = replyTo[i];
-						if(!this.nodesReplyFrom[t])
-						{
-							this.nodesReplyFrom[t] = new Array();
-							//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
-							this._scriptedStyle.innerHTML += 
-							html += ("article[data-no=\"{0}\"] > .menu > ul > .resto { display:table-cell; }\n"
-							       + "article[data-no=\"{0}\"] > h2 > .no { font-weight: bold; }\n")
-							       .format(t);
-						}
-						this.nodesReplyFrom[t].push(obj.no);
-					}
-					return html;
-				},
-				_getReplyTo: function MessageStructure__getReplyTo(node)
-				{
-					var anchors = node.getElementsByClassName("resPointer");
-					var replyTo = new Array();
-					for (var i=0, j=anchors.length; i<j; i++)
-					{
-						var target = anchors[i].textContent;
-						var ids = StringUtil.splitResNumbers(target);
-						if (ids.length < Preference.ReplyCheckMaxWidth)
-						{
-							for (var ii=0, jj = ids.length; ii < jj; ii++)
-							{
-								replyTo[ids[ii]] = 1;
-							}
-						}
-					}
-					var ret = new Array();
-					for(var i=0, j=replyTo.length; i<j; i++)
-					{
-						if (replyTo[i]) ret.push(i);
-					}
-					return ret;	
-				},
-			},
-		},
-		Navigator: {
-			init: function Navigator_init()
-			{
-				//次スレ/前スレ情報
-				this.nextThread = this.loadNextThreadInfo();
-				this.prevThread = this.searchPrevThread();
-			},
-			getNavigation: function Navigation_getNavigation()
-			{
-				if (!this._navi)
-				{
-					navi = document.createElement("NAV");
-					navi.id = "navigation";
-					var html = "";
-					
-					//Chapter
-					html += '<h1>CHAPTER</h1><ul>';
-					var w = Preference.ChapterWidth;
-					var m = Skin.Thread.Info.Total;
-					for (var i=0; i< (m/w); i++)
-					{
-						html+= '<li><a class="navchapter">{0}-{1}</a></li>'.format(i*w+1, (i+1)*w);
-					}
-					html += '<li><a class="navprevchapter">prev.</a></li>';
-					html += '<li><a class="navnextchapter">next.</a></li>';
-					html += '</ul>';
-					
-					//BacklogWidth
-					html += '<h1>BACKLOG</h1><ul>';
-					var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750", "*ALL*" ];
-					for (var i=0; i<backlogWidths.length; i++)
-					{
-						html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
-					}
-					//その他
-					html += '<h1>etc.</h1><ul>';
-					html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
-					html += '<li><a class="navboardlist">スレ一覧</a></li>';
-					html += '<li><a class="navprevthread">前スレ</a></li>';
-					html += '<li><a class="navnextthread">次スレ</a></li>';
-					html += '</ul>';
+Thread: {
+	init: function Thread_init()
+	{
+		//identifier設定
+		var url = new URL(this.Info.Url);
+		this.boardId  = url.boardId;
+		this.threadId = url.threadId;
 		
-					navi.innerHTML = html;
-					this._navi = navi;
-				}
-				return this._navi.cloneNode(true);
-			},
-			isNavigationElement: function Navigator_isNavigationElement(e)
-			{
-				switch(e.className)
-				{
-					case "navchapter":
-					case "navprevchapter":
-					case "navnextchapter":
-					case "navbacklog":
-					case "navboardlist":
-					case "navprevthread":
-					case "navnextthread":
-						return true;
-					default:
-						return false;
-				}
-			},
-			invokeNavigation: function Navigator_invokeNavigation(e)
-			{	//altkeyの状態とか取り込んで、別ウィンドウ表示とか実装すべきか？
-				var c = e.textContent;
-				switch(e.className)
-				{
-					case "navchapter":
-					case "navbacklog":
-						this.reload(c == "*ALL*" ? "" : c);
-						break;
-					case "navprevchapter":
-						this.reloadToPrevChapter();
-						break;
-					case "navnextchapter":
-						this.reloadToNextChapter();
-						break;
-					case "navboardlist":
-						this.transitToThreadList();
-						break;
-					case "navprevthread":
-						this.transitToPrevThread();
-						break;
-					case "navnextthread":
-						this.transitToNextThread();
-						break;
-					default:
-						return;
-				}
-			},
-			goto: function Navigator_goto(range)
-			{
-				window.location.href = Skin.Thread.Info.Server + Skin.Thread.Info.Url + range;
-			},
-			gotoPrevChapter: function Navigator_gotoPrevChapter(w)
-			{
-				if (!w) w = Preference.ChapterWidth;
-				var max = Skin.Thread.Message.deployedMin - 1;
-				var min = max - w - 1;
-				if (min < 0) min = 1;
-				if (max < min) max = min;
-				this.goto(min + "-" + max);
-			},
-			gotoNextChapter: function Navigator_gotoNextChapter(w)
-			{
-				if (!w) w = Preference.ChapterWidth;
-				var min = Skin.Thread.Message.deployedMax +1;
-				var max = min + w - 1;
-				if (min < 0) min = 1;
-				if (max < min) max = min;
-				this.goto(min + "-" + max);
-			},
-			gotoThreadList: function Navigator_gotoThreadList()
-			{
-				window.location.href = "bbs2ch:board:" + Skin.Thread.Info.Board;
-			},
-			gotoPrevThread: function Navigator_gotoPrevThread(w)
-			{
-				if (!w) w = Preference.ChapterWidth;
-				if (this.prevThread.url)
-				{
-					window.location.href = Skin.Thread.Info.Server + this.prevThread.url + "l" + w;
-				}
-			},
-			gotoNextThread: function Navigator_gotoNextThread(w)
-			{
-				if (!w) w = Preference.ChapterWidth;
-				if (this.nextThread.url)
-				{
-					window.location.href = Skin.Thread.Info.Server + this.nextThread.url + "l" + w;
-				}
-			},
-			checkNextThread: function Navigator_checkNextThread(anchor, node)
-			{
-				if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
-				if (!Preference.EnableNextThreadSearch) return;		//機能無効
-				if (!anchor)return;
-				if (!node) node = DOMUtil.getDecendantNode(anchor, "ARTICLE");
-				var nodeNo = parseInt(node.dataset.no);
-				var url = new URL(anchor.href);
-				if (url.maybeThread
-				 && (url.boardId == this.boardId)					//同じ板
-				 && (nodeNo >= this.nextThread.linkedNode) 			//前に決めた番号より後のレス
-				 && (nodeNo >= Preference.NextThreadSearchBeginsAt))	//次スレアドレスチェック番号以降のレス
-				{
-					this.setNextThread(anchor.href, false, nodeNo);
-				}
-			},
-			setNextThread: function Navigator_setNextThread(href, ud, nodeNo)
-			{	//ud: ユーザーが決めたか？ trueのとき、勝手に上書きされない状態で出てくる。
-				var url = new URL(href);
-				ud = ud ? true : false;	//真偽値の正規化
-				var nextThread = { url: href, id: url.threadId, userDecided: ud, linkedNode: nodeNo};
-				this.nextThread = nextThread;
-				this.saveNextThreadInfo(nextThread);	//TODO::ここで毎回呼ぶと負荷が掛かる場合があるかも？次回以降大丈夫だろうけど。
-				document.body.dataset.nextThread = nextThread.url || "";
-			},
-			saveNextThreadInfo: function Navigator_saveNextThreadInfo(nextThread)
-			{
-				var saveStr = '{url: "{0}", id: "{1}", userDecided: {2}, linkedNode: {3} }'
-				              .format(nextThread.url, nextThread.id, nextThread.userDecided, nextThread.linkedNode);
-				Skin.CommonPref.writeThreadObject("nextThread", saveStr);
-			},
-			loadNextThreadInfo: function NavigatorloadNextThreadInfo(objStr)
-			{
-				objStr = objStr ? objStr : Skin.CommonPref.readThreadObject("nextThread");
-				try
-				{
-					if (objStr)
-					{
-						var n;
-						eval("n="+objStr);
-						return n;
-					}
-				}catch(e){}
-				return {url: null, id: null, userDecided: false, linkedNode: 0};	//デフォルト
-			},
-			searchPrevThread: function Navigator_searchPrevThread()
-			{
-				var This = this;
-				var ret = {url: null};
-				Skin.CommonPref.foreach("nextThread", function(key, dat)
-				{
-					var info = This.loadNextThreadInfo(dat);
-					if (info.id == Skin.Thread.threadId)
-					{	//URL => 今のアドレスの数字のところをkeyの末尾の数字で置き換えたもの
-						if (key.match(/(\d+)$/))
-						{
-							var num = RegExp.$1;
-							var url = Skin.Thread.Info.Url.replace(/\/(\d+)\/$/, function(a,$1){	return "/" + num + "/"; });
-							ret = {url: url};
-						}
-					}
-				});
-				document.body.dataset.prevThread = ret.url || "";	//これがここでええのんかな？
-				return ret;
-			},
-		},
+		//スレッドのIDを共通設定に使わせる(これより前にスレッド個別設定を使用してはならない)
+		Skin.CommonPref._identifier = url.threadId;
+
+		//板名
+		this.boardName = Skin.BoardList.getBoardName(this.boardId);
+
+		//スレタイ表示部のdeta-boardに登録（なぜスレタイかといわれれば見た目に関することなので、設定で変えられるほうがいいかも）
+		var e = $("threadName");
+		if (e)
+		{
+			 e.dataset.board = this.boardId;
+			 e.dataset.boardName = this.boardName;
+		}
+
+		//次スレ前スレ
+		this.Navigator.init();
+
+		//メッセージの分析
+		this.Message.init();			//message
 	},
-	Services: {
-		Marker: {
-			service: new Array(),
-			
-			init: function MarkerServices_init()
-			{
-				Bookmark.init();
-				Pickup.init();
-				Tracker.init();
-				this.push(Bookmark);
-				this.push(Pickup);
-				this.push(Tracker);
-			},
-			
-			push: function MarkerServices_push(service)
-			{
-				if(service)
-				{
-					this.service.push(service);
-					if(this.service.length==1)
-					{	//最初の一個登録時→ストレージイベントを追加
-						window.addEventListener("storage", this.onStorageChanged.bind(this), false);
-					}
-				}
-			},
-			nodeLoaded: function MarkerServices_nodeLoaded(node)
-			{
-				for(var i=0, j=this.service.length; i<j;i++)
-				{
-					var s = this.service[i].nodeLoaded(node);
-				}
-			},
-			onStorageChanged: function MarkerServices_onStorageChanged(ev)
-			{
-				if (e.newValue == e.oldValue) return;	//変化なしなら帰る（そんなことがあるかどうかは知らない）
-				for(var i=0, j=this.service.length; i<j;i++)
-				{
-					var s = this.service[i].onStorageChanged(ev);
-				}
-			},
-		},
-		OutLink: {
-			getOutlinkPlugin: function OutlinkServices_getOutlinkPlugin(node)
-			{	//適合するアウトリンクプラグインを求める。
-				//適合率1ならそれに決定。
-				//そうでなければ、より適合率の高そうなものが出るまで繰り返す。
-				if (node.className != "outLink") return null;
-				var mp = 0;
-				var mpt = null;
-				for(var i=0, j=this.plugins.length; i < j ; i++)
-				{
-					var p = this.plugins[i].posivility(node.href);
-					if (p >= 1)
-					{
-						return this.plugins[i];
-					}
-					else
-					{
-						if (mp < p)
-						{
-							mp = p;
-							mpt = this.plugins[i];
-						}
-					}
-				}
-				return mpt;
-			},
-		},
-		AutoUpdate: {
-			begin: function AutoUpdate_begin()
-			{
-				if (this.running) return;
-				this.running = true;
-				document.body.dataset.autoload = "y";
-				this.autoTickCount = 0;
-				this.autoTimer = setInterval(this._check.bind(this), 1000);
-			},
-			end: function AutoUpdate_end()
-			{
-				if (!this.running) return;
-				this.running = false;
-				document.body.dataset.autoload = "";
-				clearInterval(this.autoTimer);
-				this.autoTimer = 0;
-			},
-			toggle: function AutoUpdate_toggle()
-			{
-				if (this.running)
-				{
-					this.end();
-				}
-				else
-				{
-					this.begin();
-				}
-			},
-			_check: function AutoUpdate__check()
-			{
-				if (++this.autoTickCount >= Preference.AutoReloadInterval)
-				{
-					Skin.Thread.checkNewMessage();
-				}
-			},
-		},
+	openWriteDialog: function Thread_openWriteDialog(to)
+	{
+		if (!to) to = "";
+		var url = Preference.PostScheme + this.Info.Url + to
+		window.location.href = url;
 	},
-	ResMenu: {
-		init: function ResMenu_init()
+	checkNewMessage: function Thread_checkNewMessage()
+	{
+		this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
+		if (this.Message.deployedMax != this.Info.Total)
+		{	//最後まで表示されていないときは全部表示してから。
+			this.Message.deployTo(Skin.Thread.Info.Total);
+		}
+		if (!this.checking)
 		{
-			this._menu = $("resMenu");
-			this._menu.parentNode.removeChild(this._menu);
-		},
-		attach: function MessageMenu_attach(node)
-		{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
-			var m = this._menu;		//参照コピ～
-			if (m == null) return;	//レスメニューなし
-			if (node == m.parentNode) return;	//同じとこに割り当て→無視
-			if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
-			this.popTrack = null;
-			if ((node != null) && (node.tagName == "ARTICLE"))
-			{
-				m.dataset.binding = node.dataset.no;
-				node.insertBefore(m, node.childNodes[1]);
-			}
-			else
-			{
-				m.dataset.binding = 0;
-			}
-		},
+			this.checking = true;
+			document.body.dataset.loading = "y";
+			TextLoadManager.push(Skin.Thread.Info.Server + Skin.Thread.Info.Url + "l1n", this._loaded.bind(this));
+		}
 	},
-	BoardPane: {
-		init: function BoardPane_init()
+	_loaded: function Thread__loaded(obj)
+	{
+		if (!obj || obj.status == "NG")
 		{
-			this.container = $("boardPane");
-			this.container.innerHTML = "";	//全子供殺す
-	
-			this.boardList = document.createElement("IFRAME");
-			this.boardList.id = "boardList";
-	
-			this.container.appendChild(this.boardList);
-		},
-		toggle: function BoardPane_toggle()
+			Notice.add("Load Error.");
+		}
+		else
 		{
-			if (!this.container) this.init();
-			this._size = this._size ? 0 : window.innerHeight /2;
-			this.update();
-		},
-		update: function BoardPane_update()
-		{
-			if (!this.container) this.init();
-			this.container.style.height = this._size + "px";
-			if (this._size)
-			{
-				var url = "bbs2ch:board:" + Skin.Thread.Info.Board;
-				if (!this.boardList.src) this.boardList.src = url;
-			}
-		},
+			var html = obj.responseText;
+			this._checkNewMessage(html);
+		}
+		document.body.dataset.loading = "";
+		this.checking = false;
 	},
-	Finder: {
-		init: function Finder_init()
+	_checkNewMessage: function Thread__checkNewMessage(html)
+	{
+		if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
 		{
-			this.form = document.createElement("DIV");
-			this.form.id = "finder";
-			this.form.innerHTML =
-				'<form id="fform" onsubmit="Finder.express();return false;">' +
-				'<input type="text" size="40" name="q">' +
-				'<input type="submit" value="抽出">' +
-				'<br>' +
-				'<regend><input type="checkbox" name="r">正規表現</regend>' +
-				'<regend><input type="checkbox" name="i">大小区別</regend>' +
-				'<regend><input type="checkbox" name="p">pickupのみ</regend>' +
-				'<span id="fformerr"></span>' +
-				'</form>' ;
-		},
-		showing: function Finder_showing()
-		{
-			return (this.popup != null);
-		},
-		toggleExpressMode: function Finder_toggleExpressMode()
-		{
-			if (this.showing())
-			{
-				this.leaveExpressMode();
-			}
-			else
-			{
-				this.enterExpressMode();
-			}
-		},
-		enterExpressMode: function Finder_enterExpressMode()
-		{
-			if (!this.form) this.init();
-			if (document.body.dataset.expressMode != "y")
-			{
-				var content = this.form;
-				var p = new Popup();
-				p.closeOnMouseLeave = false;
-				p._init("Menu_Finder");
-				p.show(this.form);
-				$("fform").q.value = document.getSelection()
-				p.container.dataset.finder = "y";
-				this.popup = p;
-	
-				this.pageY = window.scrollY;
-				document.body.dataset.expressMode="y";
-			}
-		},
-		leaveExpressMode: function Finder_leaveExpressMode()
-		{
-			document.body.dataset.expressMode="n";
-			window.scrollTo(0,this.pageY);
-			if (this.popup)
-			{
-				this.popup.close();
-				this.popup = null;
-			}
-		},
-		express: function Finder_express()
-		{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
-			var cond = $("fform").q.value;
-			var reg  = $("fform").r.checked;
-			var icase=!$("fform").i.checked;
-			var pick = $("fform").p.checked;
-			
-			if (cond.match(/\[resto:(\d+)\]/))
-			{
-				this.expressReffer(parseInt(RegExp.$1));
-				return;
-			}
-			if (cond == "[tracked]")
-			{
-				this.expressTracked();
-				return;
-			}
-			if (!reg) cond = this.escape(cond);
-			var flag = icase ? "i" : "";
-			var exp = null;
-			try
-			{
-				exp = new RegExp(cond, flag);
-			}
-			catch(e)
-			{
-				$("fformerr").innerHTML = "<br>" + e;
-				return;
-			}
-			Skin.Thread.Message.foreach(function(node){
-				node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
-			}, false);
-		},
-		expressReffer: function Finder_expressReffer(no)
-		{
-			var t = Skin.Thread.Message.Structure.getReplyIdsByNo(no);
-			t = t ? t.clone() : [];
-			t.push(no);
-			Skin.Thread.Message.foreach(function(node){
-				node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
-			}, false);
-		},
-		expressTracked: function Finder_expressTracked()
-		{
-			Skin.Thread.Message.foreach(function(node){
-				node.dataset.express = Tracker.getMarkerClass(node) != "" ? "y" : "n";
-			},false);
-		},
-		escape: function Finder_escape(str)
-		{
-			var escapechar = "\\{}()[]*-+?.,^$|";
-			var ret = "";
-			for(var i=0; i< str.length; i++)
-			{
-				for(var j=0; j<escapechar.length; j++)
+			var obj;
+			EVAL("obj = "+ RegExp.$1, {});	//{ status, total, new }
+			if (obj.new)
+			{	//新着があるとき～
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
 				{
-					if (escapechar[j] == str[i])
-					{
-						ret += "\\";
-						break;
-					}
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					this.Message.onLoad($A(nc.getElementsByTagName("ARTICLE")));
 				}
-				ret += str[i];
+				//TODO::既存の新着マーク除去
+				
+				this.Info.Total = obj.total;
+				this.Info.New = obj.new;
+				this.Info.Fetched = obj.total - obj.new;
+				this.Info.Status = obj.status;
+				this.Message.deployTo(this.Info.Total);
+				$M(this.Info.Fetched + 1).focus();
 			}
-			return ret;
-		},
+			Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", StringUtil.timestamp()));
+		}
 	},
-	Viewer: {
-		_entries: null,
-		_orderd: null,
-		init: function Viewer_init()
+	Message: {
+		domobj: new Array(),	//DOMオブジェクト。indexはレス番号
+		outLinks: new Array(),	
+		deployedMin: 0,
+		deployedMax: 0,
+		init: function Message_init()
 		{
-			this.auto = false;
-			//表示範囲だけが対象なので・・・
-			this._entries = new Array();
-			this._orderd  = new Array();
-			var anchors = $("resContainer").getElementsByClassName("outLink");
-			for(var i=0, j = anchors.length; i<j; i++)
+			var nodes = $A($("resContainer").children);
+			this.onLoad(nodes);
+			this.onDeploy(nodes);
+		},
+		prepare: function Message_prepare(from, to)
+		{	//minにはidsまたはアンカーの文字列を指定可能。
+			//alert([min, max]);
+			if (from instanceof Array)
 			{
-				var a = anchors[i];
-				var op = Skin.Services.OutLink.getOutlinkPlugin(a);
-				if (op && op.type == OUTLINK_IMAGE)
+				var b = true;
+				for(var i=0; i<from.length; i++)
 				{
-					var href = a.href;
-					if (!this._entries[href])
-					{
-						var entry = new ViewerEntry(href);
-						if (Preference.ViewerPreloadWidth < 0) entry.prepare();
-						this._entries[href] = entry;
-						this._orderd.push(entry);
-					}
-					this._entries[href].addRelation(parseInt(DOMUtil.getDecendantNode(a, "ARTICLE").dataset.no));
+					b &= this.prepare(from[i],from[i]);
 				}
+				return b;
 			}
-		},
-		enterViewerMode: function Viewer_enterViewerMode()
-		{
-			if (document.body.dataset.mediaview != "y")
+			else if ((from+"").substr(1) == ">")
 			{
-				var c = document.createElement("DIV");
-				c.id = "ViewerContainer";
-				var buttons = [ {name: "home", onclick: "Skin.Viewer.home();"},
-					{name: "first", onclick: "Skin.Viewer.first();"},
-					{name: "prev", onclick: "Skin.Viewer.prev();"},
-					{name: "next", onclick: "Skin.Viewer.next();"},
-					{name: "last", onclick: "Skin.Viewer.last();"},
-					{name: "auto", onclick: "Skin.Viewer.toggleAuto();"},
-					{name: "close", onclick: "Skin.Viewer.close();"} ];
-				var bhtml = "";
-				for(var i=0, j=buttons.length; i < j; i++)
-				{
-					bhtml += '<button name="{0}" onclick="{1} return false;">'.format(buttons[i].name, buttons[i].onclick);
-				}
-				c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">' + bhtml + '</div></form>';
-				var cc = document.createElement("DIV");
-				this.container = cc;
-				c.appendChild(cc);
-				document.body.appendChild(c);
-				document.body.dataset.mediaview = "y";
-				document.body.dataset.contentsOverlay = "y";
-				Skin.EventHandler.enter("viewer");
-				this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
-				this.cursorShowHandler = this.cursorShow.bind(this);
-				document.addEventListener("mousemove", this.cursorShowHandler, false);
-				this.cursorHideCount = 0;
-			}
-		},
-		leaveViewerMode: function Viewer_leaveViewerMode()
-		{
-			if (document.body.dataset.mediaview == "y")
-			{
-				document.body.removeChild($("ViewerContainer"));
-				this.container = null;
-				Skin.EventHandler.leave("viewer");
-				document.body.dataset.mediaview = "";
-				document.body.dataset.contentsOverlay = "";
-				clearInterval(this.cursorHideCheckTimer);
-				document.removeEventListener("mousemove", this.cursorShowHandler, false);
-			}
-		},
-		cursorHideCheck: function Viewer_cursorHideCheck()
-		{
-			this.cursorHideCount++;
-			if (this.cursorHideCount == Preference.ViewerCursorHideAt)
-			{
-				this.container.dataset.cursor="hide";
-			}
-		},
-		cursorShow: function Viewer_cursorShow()
-		{
-			this.cursorHideCount = 0;
-			this.container.dataset.cursor="shown";
-		},
-		_clearContainer: function Viewer__clearContainer()
-		{
-			var nodes = $A(this.container.childNodes);
-			for(var i=0, j=nodes.length; i<j; i++)
-			{
-				this.container.removeChild(nodes[i]);
-			}
-		},
-		home: function Viewer_home()
-		{
-			this.endSlideshow();
-			if(!this.homeCtrl)
-			{
-				var c = document.createElement("DIV");
-				c.id = "viewerHomeCtrl";
-				c.innerHTML = '<button name="play" onclick="Skin.Viewer.next();return false;"><button name="auto" onclick="Skin.Viewer.beginSlideshow();return false;">';
-				this.homeCtrl = c;
-			}
-			var home = this.homeCtrl;
-			home.dataset.images = this._orderd.length;
-			if (home.parentNode) home.parentNode.removeChild(home);
-			this._clearContainer();
-			this.container.appendChild(home);
-			this.index = -1;
-			this.showStatus();
-		},
-		prev: function Viewer_prev()
-		{
-			var index = this.index -1;
-			if (index < 0 ) index = this._orderd.length - 1;
-			this.showImage(this.errorSkipToPrev(index));
-		},
-		next: function Viewer_next()
-		{
-			var index = this.index +1;
-			if (index >= this._orderd.length) index = 0;
-			this.showImage(this.errorSkipToNext(index));
-		},
-		last: function Viewer_last()
-		{
-			this.showImage(this.errorSkipToPrev(this._orderd.length - 1));
-		},
-		first: function Viewer_first()
-		{
-			this.showImage(this.errorSkipToNext(0));
-		},
-		toggleAuto: function Viewer_toggleAuto()
-		{
-			return this.auto ? this.endSlideshow() : this.beginSlideshow();
-		},
-		beginSlideshow: function Viewer_beginSlideshow()
-		{
-			if (!this.auto)
-			{
-				this.auto = true;
-				this.slideshowTick = 0;
-				if (this.index < 0) this.first();
-				this.slideshowTimer = setInterval(this.slideshowUpdate.bind(this), 250);
-			}
-			$("viewerCtrls").dataset.auto = "y";
-			return this.auto;
-		},
-		endSlideshow: function Viewer_endSlideshow()
-		{
-			if (this.auto)
-			{
-				this.auto = false;
-				this.slideshowTick = 0;
-				clearInterval(this.slideshowTimer);
-			}
-			$("viewerCtrls").dataset.auto = "";
-			return this.auto;
-		},
-		slideshowUpdate: function Viewer_slideshowUpdate()
-		{
-			this.slideshowTick += 0.25;
-			if (this.slideshowTick >= Preference.SlideshowInterval)
-			{
-				this.next();
-				this.slideshowTick = 0;
-			}
-		},
-		errorSkipToNext: function Viewer_errorSkipToNext(index)
-		{
-			for (var j = this._orderd.length; index < j; index++)
-			{
-				if (this._orderd[index].state != ViewerEntryState.Error)
-				{
-					return index;
-				}
-			}
-			return index;
-		},
-		errorSkipToPrev: function Viewer_errorSkipToPrev(index)
-		{
-			for (; index >= 0; index--)
-			{
-				if (this._orderd[index].state != ViewerEntryState.Error)
-				{
-					return index;
-				}
-			}
-			return index;
-		},
-		showImage: function Viewer_showImage(index)
-		{
-			if ((index < 0) || (index >= this._orderd.length))
-			{
-				this.home();
-			}
-			else
-			{
-				this._clearContainer();
-				var e = this._orderd[index].getElement();
-				e.style.maxHeight = window.innerHeight + "px";
-				e.style.maxWidth  = window.innerWidth + "px";
-				this.container.appendChild(e);
-				this.index = index;
-			}
-			if (this.auto) this.slideshowTick = 0;	//スライドショー中に任意で飛ばしたらそこから計測
-			this.showStatus();
-		},
-		getStatus: function Viewer_getStatus()
-		{
-			var total=0, loading=0, loaded=0, error=0;
-			for(var i=0, j=this._orderd.length; i < j ; i++)
-			{
-				total++;
-				var s = this._orderd[i].state;
-				if (s == ViewerEntryState.Loading)
-				{
-					loading++;
-				}
-				else if (s == ViewerEntryState.Loaded)
-				{
-					loaded++;
-				}
-				else if (s == ViewerEntryState.Error)
-				{
-					error++;
-				}
-			}
-			return {total: total, loading: loading, loaded: loaded, error: error, index: this.index};
-		},
-		showStatus: function Viewer_showStatus()
-		{
-			var c = $("viewerState");
-			if (c)
-			{
-				var s = this.getStatus();
-				if (this.index >= 0)
-				{
-					var o = this._orderd[s.index];
-					c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
-				}
-				else
-				{
-					c.innerHTML = "{0} Images.<br><br>".format(s.total);
-				}
-				var ctrl = $("ViewerCtrl");
-				DOMUtil.notifyRefreshInternal(ctrl);
-			}
-		},
-		show: function Viewer_show()
-		{
-			this.init();
-			this.enterViewerMode();
-			this.home();
-		},
-		close: function Viewer_close()
-		{
-			this.endSlideshow();
-			this.leaveViewerMode();
-		},
-	},
-	Notice: {
-		init: function Notice_init()
-		{
-			this.container = document.createElement("DIV");
-			this.container.id = "noticeContainer";
-			document.body.appendChild(this.container);
-		},
-		add: function Notice_add(msg)
-		{
-			if (!this.container) this.init();
-			if (this.container.childNodes.length == Preference.NoticeLength)
-			{
-				this.container.removeChild(this.container.firstChild);
-			}
-			var e = document.createElement("P");
-			e.innerHTML = msg;
-			this.container.appendChild(e);
-			DOMUtil.notifyRefreshInternal(this.container);
-		},
-	},
-	Util: {
-		Popup: {
-			toggle: function PopupUtil_toggle(target, content, closeOnMouseLeave, toTopBeforeHide, category)
-			{
-				if (target.__popup)
-				{
-					var p = target.__popup;
-					if (!toTopBeforeHide || (p.isTopLevelPopup(category)))
-					{	//トップレベルに一度出さないか、トップレベルのときクローズ
-						p.close();
-					}
-					else
-					{	//トップレベルに一度出す
-						p.toTop();
-					}
-				}
-				else
-				{
-					var p = new Popup();
-					p.closeOnMouseLeave = closeOnMouseLeave;
-					p._init(target);
-					p.onClose = this._onCloseHandler.bind(target);
-					target.__popup = p;
-					p.show(content);
-				}
-			},
-			toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave, caption)
-			{
-				if (target.__popup)
-				{
-					target.__popup.close();
-				}
-				else if (ids)
-				{
-					ids = ($A(ids)).sort(function(a,b){return a-b;});
-					Skin.Thread.Message.prepare(ids);
-					var p = new ResPopup();
-					p.closeOnMouseLeave = closeOnMouseLeave;
-					p.onClose = this._onCloseHandler.bind(target);
-					target.__popup = p;
-					p.popup(ids, target, caption);
-				}
-			},
-			_onCloseHandler: function PopupUtil__onCloseHandler()
-			{
-				this.__popup = null;
-			},
-			isPopup: function PopupUtil_isPopup(e)
-			{
-				return this.getPopup(e) != null;
-			},
-			getPopup: function PopupUtil_getPopup(e)
-			{
-				while (e)
-				{
-					if (e.popup) return e.popup;
-					e = e.parentNode;
-				}
-				return null;
-			},
-		},
-		String: {
-			toNarrowString: function StringUtil_toNarrowString(src)
-			{
-				var str=new String;
-				var len=src.length;
-				for(var i=0;i<len;i++){
-					var c=src.charCodeAt(i);
-					if(c>=65281&&c<=65374&&c!=65340){
-						str+=String.fromCharCode(c-65248);
-					}else{
-						str+=src.charAt(i);
-					} 
-				}
-				return str;
-			},
-			timestamp: function StringUtil_timestamp(d)
-			{
-				if (!d) d = new Date();
-				var h=d.getHours();
-				var m=d.getMinutes();
-				var s=d.getSeconds();
-				if(m<10)m="0"+m;
-				if(s<10)s="0"+s;
-				return h+":"+m+":"+s;
-			},
-			splitResNumbers: function StringUtil_splitResNumbers(str)
-			{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
+				var str = from+"";
 				str=str.replace(/>/g,"");
 				var e=str.split(",");
 				var r=new Array();
-				for(var i=0;i<e.length;i++){
-					if(e[i].match(/(\d+)-(\d+)/)){
-						for(var j=parseInt(RegExp.$1);j <= parseInt(RegExp.$2);j++){
-							r.push(j);
-						}
-					}else if(!isNaN(parseInt(e[i])))r.push(parseInt(e[i]));
+				for(var i=0;i<e.length;i++)
+				{
+					if(e[i].match(/(\d+)(-(\d+))?/))
+					{
+						var min = parseInt(RegExp.$1);
+						var max = parseInt(RegExp.$3);
+						if (!max) max = min;
+						this.load(min, max);
+					}
 				}
-				return r;
-			},
+			}
+			var tmin = parseInt(from);
+			if (!tmin)return false;
+			var tmax = to;
+			if (tmax > Skin.Thread.Info.Total) tmax = Skin.Thread.Info.Total;	//絶対取れないところはとりに行かない。
+			for(; tmin <= tmax; tmin++)
+			{	//tmin位置が読み込み済みならtminを+1
+				if (!this.isReady(tmin))	break;
+			}
+			for(; tmax >= tmin; tmax--)
+			{	//tmax位置が読み込み済みならtmaxを-1
+				if (!this.isReady(tmax))	break;	
+			}
+			if ((tmin <= tmax) && (tmin != 0))
+			{	//min-maxの範囲に少なくとも１個は取得すべきレスあり
+				var loardUrlStr = Skin.Thread.Info.Server + Skin.Thread.Info.Url + tmin + "-" + tmax;
+				var html = TextLoadManager.syncGet(loardUrlStr) || "";
+				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+				{
+					var nc = document.createElement("DIV");
+					nc.innerHTML = RegExp.$1;
+					this.onLoad($A(nc.getElementsByTagName("ARTICLE")));
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
 		},
-		Dom: {
-			isDecendantOf: function DOMUtil_isDecendantOf(e, id)
+		deployAll: function message_deployAll()
+		{
+			this.deployTo(1);
+			this.deployTo(Skin.Thread.Info.Total);
+		},
+		deployTo: function Thread_deployTo(to)
+		{
+			if (to <= 0) to = 1;
+			if (to >= Skin.Thread.Info.Total) to = Skin.Thread.Info.Total;
+			var min = to,  max = to;
+			if (to < this.deployedMin)
 			{
-				if (e.id == id) return e;
-				if (e.parentNode  == null) return null;
-				return this.isDecendantOf(e.parentNode, id);
-			},
-			getDecendantNode: function DOMUtil_getDecendantNode(e, tagName)
+				max = this.deployedMin-1;
+			}
+			if (to > this.deployedMax)
 			{
-				if (e.tagName == tagName) return e;
-				if (e.parentNode  == null) return null;
-				return this.getDecendantNode(e.parentNode, tagName);
-			},
-			getDecendantNodeByData: function  DOMUtil_getDecendantNodeByClass(e, x, v)
-			{	//特定追加データの値を持つ親を帰す。
-				if (e.dataset && (e.dataset[x] == v))return e;
-				if (e.parentNode == null) return null;
-				return this.getDecendantNodeByData(e.parentNode, x, v);
-			},
-			isFixedElement: function DOMUtil_isFixedElement(e)
+				min = this.deployedMax+1;
+			}
+			this.deploy(min, max);
+		},
+		deploy: function Message_deploy(from, to)
+		{
+			this.prepare(from, to);
+			var nodes = new Array();
+			for(var i = from; i<= to; i++)
 			{
-				try
+				nodes.push(this.domobj[i]);
+				this._deployNode(this.domobj[i]);
+			}
+			this.onDeploy(nodes);
+		},
+		_deployNode: function Message_deployNode(node)
+		{
+			if (!node)return;	//ほぎゃ！
+			if (node.tagName != "ARTICLE") return;	//ほぎゃ！
+			if (this.isDeployed(node.dataset.no)) return;
+			if (node.parentNode)
+			{	//既存の親を除外。loadから来た仮のdivだと思われる。
+				node.parentNode.removeChild(node);
+			}
+			var rc = $("resContainer");
+			var nn =  parseInt(node.dataset.no);
+			var nextSibling = this._findDeployedNextSibling(nn);
+			if (nextSibling)
+			{
+				rc.insertBefore(node, nextSibling);
+			}
+			else
+			{
+				rc.appendChild(node);
+			}
+		},
+		_findDeployedNextSibling: function Message__findDeployedNextSibing(no)
+		{	//insertBeforeの第２引数に使うために、noを超えるnoを持つdeployedアイテムのうち、最もnoの小さいものを返す。
+			for(var i=no; i<=this.deployedMax; i++)
+			{
+				if(this.isDeployed(i))
 				{
-					var style = document.defaultView.getComputedStyle(e, null);
-					if (style.position == "fixed") return true;
-					if (e.parentNode == null) return false;
-					return this.isFixedElement(e.parentNode);
-				} catch(e) { return false; }
-			},
-			getElementPagePos: function DOMUtil_getElementPagePos(e)
-			{	//要素の絶対座標を求める
-				rect = e.getBoundingClientRect();
-				rect.pageX = Math.round(rect.left);
-				rect.pageY = Math.round(rect.top);
-				rect.fixed = this.isFixedElement(e);
-				if (!rect.fixed)
-				{
-					rect.pageX += window.scrollX;
-					rect.pageY += window.scrollY;
+					return this.domobj[i];
 				}
-				return {pageX: rect.pageX, pageY: rect.pageY,
-				        width: Math.round(rect.right - rect.left), height: Math.round(rect.bottom - rect.top),
-				        fixed: rect.fixed};
-			},
-			notifyRefreshInternal: function DOMUtil_notifyRefreshInternal(e)
+			}
+			return null;
+		},
+		getNode: function Message_getNode(no, clone)
+		{
+			if (this.domobj[no] != null)
 			{
-				var element = e;
-				element.dataset.refreshState = "refresh";
-				setTimeout(function(){element.dataset.refreshState = "";}, 15);
+				var obj = this.domobj[no];
+				if (clone)
+				{
+					obj = obj.cloneNode(true);
+					//objから、本来備わっていないもの(=レスメニューと展開済みツリー、展開済み画像）を削除する。
+					//article> { H , (div) , p , オマケたち } の順に並んでいるので、divとオマケを削除する。
+					if (obj.childNodes[1].tagName == "DIV")
+					{
+						obj.removeChild(obj.childNodes[1]);
+					}
+					while(obj.childNodes.length > 2)
+					{
+						obj.removeChild(obj.childNodes[2]);
+					}
+					//outlinkのpreviewShowingをすべてnにする
+					var outlinks = obj.getElementsByClassName("outLink");
+					for(var i=0, j=outlinks.length; i<j; i++)
+					{
+						outlinks[i].dataset.previewShowing = "n";
+					}
+				}
+				return obj;
+			}
+			return null;
+		},
+		getManipulator: function Message_getManipulator(NodeOrNo)
+		{	//旧NodeUtil相当のオブジェクトを返すよ
+			return new ResManipulator(NodeOrNo);
+		},
+		foreach: function Message_foreach(func, includeNotDeployed, includePopup)
+		{
+			if (includeNotDeployed)
+			{	//all loaded
+				nodes = includePopup ? $A(document.body.getElementsByTagName("ARTICLE")) : this.domobj;
+			}
+			else
+			{	//only deployed
+				nodes = $A($("resContainer").children);
+				if (includePopup)
+				{
+					var pn = $A($("popupContainer").getElementsByTagName("ARTICLE"));
+					for(var i=0; i<pn.length; i++)
+					{
+						nodes.push(pn[i]);
+					}
+				}
+			}
+			for (var i=0, j=nodes.length; i<j; i++)
+			{
+				if (nodes[i]) func(nodes[i]);
+			}
+		},
+		apply: function Message_foreach(func, filter, includeNotDeployed, includePopup)
+		{
+			this.foreach(function message_apply_func(node){
+				if (filter(node)) func(node);
+			}, includeNotDeployed, includePopup);
+		},
+		isReady: function Message_isReady(no)
+		{
+			return (this.domobj[no]);
+		},
+		isDeployed: function Message_isDeployed(no)
+		{
+			if ( this.domobj[no])
+				if (this.domobj[no].parentNode)
+					if (this.domobj[no].parentNode.id == "resContainer")
+						return true;
+			return false;
+		},
+		onLoad: function Message_onLoad(nodes)
+		{
+			for(var i=0; i<nodes.length; i++)
+			{
+				var node = nodes[i];
+				if ((node.tagName == "ARTICLE") && (!this.isReady(node.dataset.no)))
+				{	//処理前のレスである場合…（本当は他スレじゃないか確認が要るのかも？）
+					var no = parseInt(node.dataset.no);
+					var msgNode = node.childNodes[1];
+					this._extendAnchor(msgNode);
+					this._replaceStr(msgNode);
+					this.domobj[no] = node;
+					this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
+					//新着判定
+					if(node.childNodes[0].className=="new")
+					{
+						document.body.dataset.hasNew = "y";
+					}
+					
+					//名前とトリップの抽出
+					var name = node.childNodes[0].childNodes[3].textContent;
+					node.dataset.author = name;
+					if (name.match(/◆([^\s]+)/))
+					{
+						node.dataset.trip = RegExp.$1;
+					}
+					if (name.match(/^(\d+)(◆.+)?/))
+					{
+						node.dataset.numberdName = "y";
+					}
+				}
+			}
+			//構造解析
+			this.Structure.analyze(nodes);
+			//マーカー登録
+			//★MarkerServices.nodeLoaded(nodes);
+		},
+		onDeploy: function Message_onDeploy(nodes)
+		{
+			for(var i=0; i<nodes.length; i++)
+			{
+				var node = nodes[i];
+				var n = parseInt(node.dataset.no);
+				if ((this.deployedMin == 0) || (n < this.deployedMin)) this.deployedMin = n;
+				if ((n==2) && (this.isDeployed(2))) this.deployedMin = 1;
+				if (this.deployedMax < n) this.deployedMax = n;
+				if (Preference.AutoPreviewOutLinks)
+				{
+					$M(node).previewLinks();
+				}
+			}
+		},
+		_extendAnchor: function Message__extendAnchor(node)
+		{
+			var as=node.getElementsByTagName("A");
+			//var ml=Profiles.maxLinkContent.value;
+			for(var i=0;i<as.length;i++){
+				var a=as[i];
+				//コンマを拡張
+				if(a.className=="resPointer"){
+					var bro=a.nextSibling;
+					var n=bro.textContent;
+					if((n)&&(n.match(/^([0-9,\-]+)/))){
+						var c=RegExp.$1;
+						a.appendChild(document.createTextNode(c));
+						bro.data=n.substr(c.length);
+					}
+				}
+				else if (a.className=="outLink")
+				{	//あまりよろしくないけどここが一番効率的かも
+					if (OutlinkPluginForImage.posivility(a.href))
+					{
+						node.parentNode.dataset.hasImage = "y";
+					}
+					Skin.Thread.Navigator.checkNextThread(a);
+				}
+				//長すぎるoutLinkを適当に刈り込み
+				//else if(a.textContent.length>ml){
+				//	var t=a.textContent;
+				//	if(t.match(/(h?[ft]?tp:\/\/[^\/]+\/)/)){
+				//		a.textContent=RegExp.$1+Message.longUrl;
+				//		a.title=t;
+				//		classTokenPlus(a,"trimedURL")
+				//	}
+				//}
+			}
+			//全角アンカーを拾う("０-９"はFx3だと\dだけで拾えなかったから追加)
+			var res=node.innerHTML;
+			if(this._dblSizeAnchorRegExp.test(res)){
+				res=res.replace(this._dblSizeAnchorRegExp,function (a,$1,$2){
+					$2=StringUtil.toNarrowString($2);
+					return "<a href='#"+$2+"' class='resPointer'>&gt;&gt;"+$2+"</a>";});
+				node.innerHTML=res;
+			}
+		},
+		_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
+		_replaceStr: function Message__replaceStr(node)
+		{
+		},
+		Structure: {
+			nodesById: new Array(),		//いわゆるID
+			nodesReplyFrom: new Array(),	//いわゆる逆参照情報
+			analyze: function MessageStructure_analyze(nodes)
+			{
+				if (this._scriptedStyle == null)
+				{
+					this._scriptedStyle = $("scriptedStyle");
+				}
+				var html = "";
+				for(var i=0; i<nodes.length; i++)
+				{
+					html += this._analyze(nodes[i]);
+				}
+				this._scriptedStyle.innerHTML += html;
+			},
+			getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(no)
+			{	//指定したレス番号にレスしているレスのレス番号のリストを取得
+				return this.nodesReplyFrom[no];
+			},
+			getNodeIdsById: function MessageStructure_getNodeIdsById(id)
+			{	//IDを指定してその人物が発言したレス番号のリストを取得
+				return this.nodesById[id];
+			},
+			_analyze: function MessageStructure__analyze(node)
+			{
+				var obj = node.dataset;
+				var html ="";
+				//IDによる構造
+				if (obj.aid.length > 5)		//"????"回避
+				{
+					if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
+					this.nodesById[obj.aid].push(obj.no);
+					if (this.nodesById[obj.aid].length == 2)
+					{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
+						html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }"
+						       .format(obj.aid, obj.idcolor, obj.idbackcolor);
+					}
+				}
+				
+				//Replyによる構造
+				var replyTo = this._getReplyTo(node);
+				for(var i=0, j=replyTo.length; i < j; i++)
+				{
+					var t = replyTo[i];
+					if(!this.nodesReplyFrom[t])
+					{
+						this.nodesReplyFrom[t] = new Array();
+						//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
+						this._scriptedStyle.innerHTML += 
+						html += ("article[data-no=\"{0}\"] > .menu > ul > .resto { display:table-cell; }\n"
+						       + "article[data-no=\"{0}\"] > h2 > .no { font-weight: bold; }\n")
+						       .format(t);
+					}
+					this.nodesReplyFrom[t].push(obj.no);
+				}
+				return html;
+			},
+			_getReplyTo: function MessageStructure__getReplyTo(node)
+			{
+				var anchors = node.getElementsByClassName("resPointer");
+				var replyTo = new Array();
+				for (var i=0, j=anchors.length; i<j; i++)
+				{
+					var target = anchors[i].textContent;
+					var ids = StringUtil.splitResNumbers(target);
+					if (ids.length < Preference.ReplyCheckMaxWidth)
+					{
+						for (var ii=0, jj = ids.length; ii < jj; ii++)
+						{
+							replyTo[ids[ii]] = 1;
+						}
+					}
+				}
+				var ret = new Array();
+				for(var i=0, j=replyTo.length; i<j; i++)
+				{
+					if (replyTo[i]) ret.push(i);
+				}
+				return ret;	
 			},
 		},
 	},
-	EventHandler: {
-		init: function EventHandler_init()
+	Navigator: {
+		init: function Navigator_init()
 		{
-			this.mode = "thread";
-			document.addEventListener("keydown", this.keydown.bind(this),false);
-			document.addEventListener("mouseover", this.mouseOver.bind(this), false);
-			document.addEventListener("mousedown", this.mouseDown.bind(this), false);
-			document.addEventListener("mouseup", this.mouseUp.bind(this), false);
-			document.addEventListener("mousemove", this.mouseMove.bind(this), false);
-			document.addEventListener("click",     this.mouseClick.bind(this), false);
-			document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
-			document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
-			document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
-			document.addEventListener("animationstart", this.animationStart.bind(this),false);
-			document.addEventListener("animationend", this.animationEnd.bind(this),false);
+			//次スレ/前スレ情報
+			this.nextThread = this.loadNextThreadInfo();
+			this.prevThread = this.searchPrevThread();
 		},
-		enter: function EventHandler_enter(mode)
-		{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
-			this.mode = mode;
-		},
-		leave: function EventHandler_leave(mode)
+		getNavigation: function Navigation_getNavigation()
 		{
-			this.mode = "thread";
-		},
-		keydown: function EventHandler_keydown(e)
-		{
-		},
-		mouseDown: function EventHandler_mouseDown(aEvent)
-		{
-			if (this._dragDrop)return;
-			var t = aEvent.target;
-			if ((t.className == "popup") && (!t.popup.fixed))
-			{	//固定でないポップアップはヒゲのところをドラッグできる
-				this._dragDrop = new PopupDragDrop(t, aEvent);
-				aEvent.preventDefault();
-			}
-		},
-		mouseUp: function EventHandler_mouseDown(aEvent)
-		{
-			if (this._dragDrop && (this._dragDrop.which == aEvent.button))
+			if (!this._navi)
 			{
-				this._dragDrop.drop(aEvent);
-				this._dragDrop = null;
-			}
-		},
-		mouseMove: function EventHandler_mosueMove(aEvent)
-		{
-			if (this._dragDrop)
-			{
-				this._dragDrop.drag(aEvent);
-				aEvent.preventDefault();
-				return;
-			}
-		},
-		mouseOver: function EventHandler_mouseOver(aEvent)
-		{
-			var t = aEvent.target;
-			if (DOMUtil.isDecendantOf(t, "resMenu"))
-			{	//レスメニューにポイント → 何もしない
-				//(resMenuがArticleの子要素になるので、これがないと干渉してしまう
-				return;
-			}
-			var res = DOMUtil.getDecendantNode(t, "ARTICLE");
-			if (res != null)
-			{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
-				var tid = setTimeout(Skin.ResMenu.attach.bind(Skin.ResMenu, res), Preference.ResMenuAttachDelay);
-				res.addEventListener("mouseout",
-					function(){
-						clearTimeout(tid);
-						res.removeEventListener("mouseout", arguments.callee, false);
-				}, false);
-			}
-			if (t.className=="resPointer")
-			{	//レスアンカーにポイント → レスポップアップ
-				new ResPopup(t);
-			}
-			else if (t.className == "outLink")
-			{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
-				var p = Skin.Services.OutLink.getOutlinkPlugin(t);
-				if (p) p.popupPreview(t, aEvent);
-			}
-		},
-		mouseClick: function EventHandler_mouseClick(e)
-		{
-			var t = e.target;
-			var cancel = false;
-			if (t.id && (this.IdClickHandler[t.id]))
-			{
-				cancel = this.IdClickHandler[t.id](t, e);
-			}
-			if (t.className && (this.ClassClickHandler[t.className]))
-			{
-				cancel = this.ClassClickHandler[t.className](t, e);
-			}
-			if (t.dataset.action)
-			{
-				var M = $M(DOMUtil.getDecendantNode(t, "ARTICLE"));
-				if (M[t.dataset.action]) M[t.dataset.action]();
-			}
-			if (Skin.Thread.Navigator.isNavigationElement(t))
-			{
-				Skin.Thread.Navigator.invokeNavigation(t);
-			}
-			if (PopupUtil.isPopup(t))
-			{
-				var popup = PopupUtil.getPopup(t);
-				if (popup.floating && !popup.isTopLevelPopup())
+				navi = document.createElement("NAV");
+				navi.id = "navigation";
+				var html = "";
+				
+				//Chapter
+				html += '<h1>CHAPTER</h1><ul>';
+				var w = Preference.ChapterWidth;
+				var m = Skin.Thread.Info.Total;
+				for (var i=0; i< (m/w); i++)
 				{
-					popup.toTop();
+					html+= '<li><a class="navchapter">{0}-{1}</a></li>'.format(i*w+1, (i+1)*w);
 				}
+				html += '<li><a class="navprevchapter">prev.</a></li>';
+				html += '<li><a class="navnextchapter">next.</a></li>';
+				html += '</ul>';
+				
+				//BacklogWidth
+				html += '<h1>BACKLOG</h1><ul>';
+				var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750", "*ALL*" ];
+				for (var i=0; i<backlogWidths.length; i++)
+				{
+					html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
+				}
+				//その他
+				html += '<h1>etc.</h1><ul>';
+				html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
+				html += '<li><a class="navboardlist">スレ一覧</a></li>';
+				html += '<li><a class="navprevthread">前スレ</a></li>';
+				html += '<li><a class="navnextthread">次スレ</a></li>';
+				html += '</ul>';
+	
+				navi.innerHTML = html;
+				this._navi = navi;
 			}
-			if(cancel){
-				aEvent.preventDefault();
-				aEvent.stopPropagation();
+			return this._navi.cloneNode(true);
+		},
+		isNavigationElement: function Navigator_isNavigationElement(e)
+		{
+			switch(e.className)
+			{
+				case "navchapter":
+				case "navprevchapter":
+				case "navnextchapter":
+				case "navbacklog":
+				case "navboardlist":
+				case "navprevthread":
+				case "navnextthread":
+					return true;
+				default:
+					return false;
 			}
 		},
-		IdClickHandler: {
-			footer: function IdClickHandler_footer(t, ev)
+		invokeNavigation: function Navigator_invokeNavigation(e)
+		{	//altkeyの状態とか取り込んで、別ウィンドウ表示とか実装すべきか？
+			var c = e.textContent;
+			switch(e.className)
 			{
-				if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
-				return false;
-			},
-			Menu_Template: function IdClickHandler_Menu_Template(t, ev)
+				case "navchapter":
+				case "navbacklog":
+					this.reload(c == "*ALL*" ? "" : c);
+					break;
+				case "navprevchapter":
+					this.reloadToPrevChapter();
+					break;
+				case "navnextchapter":
+					this.reloadToNextChapter();
+					break;
+				case "navboardlist":
+					this.transitToThreadList();
+					break;
+				case "navprevthread":
+					this.transitToPrevThread();
+					break;
+				case "navnextthread":
+					this.transitToNextThread();
+					break;
+				default:
+					return;
+			}
+		},
+		goto: function Navigator_goto(range)
+		{
+			window.location.href = Skin.Thread.Info.Server + Skin.Thread.Info.Url + range;
+		},
+		gotoPrevChapter: function Navigator_gotoPrevChapter(w)
+		{
+			if (!w) w = Preference.ChapterWidth;
+			var max = Skin.Thread.Message.deployedMin - 1;
+			var min = max - w - 1;
+			if (min < 0) min = 1;
+			if (max < min) max = min;
+			this.goto(min + "-" + max);
+		},
+		gotoNextChapter: function Navigator_gotoNextChapter(w)
+		{
+			if (!w) w = Preference.ChapterWidth;
+			var min = Skin.Thread.Message.deployedMax +1;
+			var max = min + w - 1;
+			if (min < 0) min = 1;
+			if (max < min) max = min;
+			this.goto(min + "-" + max);
+		},
+		gotoThreadList: function Navigator_gotoThreadList()
+		{
+			window.location.href = "bbs2ch:board:" + Skin.Thread.Info.Board;
+		},
+		gotoPrevThread: function Navigator_gotoPrevThread(w)
+		{
+			if (!w) w = Preference.ChapterWidth;
+			if (this.prevThread.url)
 			{
-				if (Preference.TemplateLength)
+				window.location.href = Skin.Thread.Info.Server + this.prevThread.url + "l" + w;
+			}
+		},
+		gotoNextThread: function Navigator_gotoNextThread(w)
+		{
+			if (!w) w = Preference.ChapterWidth;
+			if (this.nextThread.url)
+			{
+				window.location.href = Skin.Thread.Info.Server + this.nextThread.url + "l" + w;
+			}
+		},
+		checkNextThread: function Navigator_checkNextThread(anchor, node)
+		{
+			if (this.nextThread.userDecided) return;			//ユーザーが決めた次スレがあるとき、何もしない
+			if (!Preference.EnableNextThreadSearch) return;		//機能無効
+			if (!anchor)return;
+			if (!node) node = DOMUtil.getDecendantNode(anchor, "ARTICLE");
+			var nodeNo = parseInt(node.dataset.no);
+			var url = new URL(anchor.href);
+			if (url.maybeThread
+			 && (url.boardId == this.boardId)					//同じ板
+			 && (nodeNo >= this.nextThread.linkedNode) 			//前に決めた番号より後のレス
+			 && (nodeNo >= Preference.NextThreadSearchBeginsAt))	//次スレアドレスチェック番号以降のレス
+			{
+				this.setNextThread(anchor.href, false, nodeNo);
+			}
+		},
+		setNextThread: function Navigator_setNextThread(href, ud, nodeNo)
+		{	//ud: ユーザーが決めたか？ trueのとき、勝手に上書きされない状態で出てくる。
+			var url = new URL(href);
+			ud = ud ? true : false;	//真偽値の正規化
+			var nextThread = { url: href, id: url.threadId, userDecided: ud, linkedNode: nodeNo};
+			this.nextThread = nextThread;
+			this.saveNextThreadInfo(nextThread);	//TODO::ここで毎回呼ぶと負荷が掛かる場合があるかも？次回以降大丈夫だろうけど。
+			document.body.dataset.nextThread = nextThread.url || "";
+		},
+		saveNextThreadInfo: function Navigator_saveNextThreadInfo(nextThread)
+		{
+			var saveStr = '{url: "{0}", id: "{1}", userDecided: {2}, linkedNode: {3} }'
+			              .format(nextThread.url, nextThread.id, nextThread.userDecided, nextThread.linkedNode);
+			Skin.CommonPref.writeThreadObject("nextThread", saveStr);
+		},
+		loadNextThreadInfo: function NavigatorloadNextThreadInfo(objStr)
+		{
+			objStr = objStr ? objStr : Skin.CommonPref.readThreadObject("nextThread");
+			try
+			{
+				if (objStr)
 				{
-					var tids = [];
-					for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-					PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
+					var n;
+					eval("n="+objStr);
+					return n;
 				}
-				else 
-				{	//TemplateLength = 0設定時はギアとして出す
-					if (t.enchantedGear)
+			}catch(e){}
+			return {url: null, id: null, userDecided: false, linkedNode: 0};	//デフォルト
+		},
+		searchPrevThread: function Navigator_searchPrevThread()
+		{
+			var This = this;
+			var ret = {url: null};
+			Skin.CommonPref.foreach("nextThread", function(key, dat)
+			{
+				var info = This.loadNextThreadInfo(dat);
+				if (info.id == Skin.Thread.threadId)
+				{	//URL => 今のアドレスの数字のところをkeyの末尾の数字で置き換えたもの
+					if (key.match(/(\d+)$/))
 					{
-						t.enchantedGear.close();
-					}
-					else
-					{
-						var pp = new GearPopup(t);
-						pp.showPopup(1, DOMUtil.getElementPagePos(t), true);
+						var num = RegExp.$1;
+						var url = Skin.Thread.Info.Url.replace(/\/(\d+)\/$/, function(a,$1){	return "/" + num + "/"; });
+						ret = {url: url};
 					}
 				}
-			},
-			Menu_Bookmark: function IdClickHandler_Menu_Bookmark(t, ev)
+			});
+			document.body.dataset.prevThread = ret.url || "";	//これがここでええのんかな？
+			return ret;
+		},
+	},
+},
+Services: {
+	Marker: {
+		service: new Array(),
+		
+		init: function MarkerServices_init()
+		{
+			Bookmark.init();
+			Pickup.init();
+			Tracker.init();
+			this.push(Bookmark);
+			this.push(Pickup);
+			this.push(Tracker);
+		},
+		
+		push: function MarkerServices_push(service)
+		{
+			if(service)
 			{
-				Bookmark.focus();
-			},
-			Menu_ResetBookmark: function IdClickHandler_Menu_ResetBookmark(t, ev)
+				this.service.push(service);
+				if(this.service.length==1)
+				{	//最初の一個登録時→ストレージイベントを追加
+					window.addEventListener("storage", this.onStorageChanged.bind(this), false);
+				}
+			}
+		},
+		nodeLoaded: function MarkerServices_nodeLoaded(node)
+		{
+			for(var i=0, j=this.service.length; i<j;i++)
 			{
-				Bookmark.add(0);
-			},
-			Menu_PopupPickups: function IdClickHandler_Menu_PopupPickups(t, ev)
+				var s = this.service[i].nodeLoaded(node);
+			}
+		},
+		onStorageChanged: function MarkerServices_onStorageChanged(ev)
+		{
+			if (e.newValue == e.oldValue) return;	//変化なしなら帰る（そんなことがあるかどうかは知らない）
+			for(var i=0, j=this.service.length; i<j;i++)
 			{
-				PopupUtil.toggleResPopup(t, Pickup.pickups, true, "Pickup");
-			},
-			Menu_ExtractPickups: function IdClickHandler_Menu_ExtractPickups(t, ev)
+				var s = this.service[i].onStorageChanged(ev);
+			}
+		},
+	},
+	OutLink: {
+		getOutlinkPlugin: function OutlinkServices_getOutlinkPlugin(node)
+		{	//適合するアウトリンクプラグインを求める。
+			//適合率1ならそれに決定。
+			//そうでなければ、より適合率の高そうなものが出るまで繰り返す。
+			if (node.className != "outLink") return null;
+			var mp = 0;
+			var mpt = null;
+			for(var i=0, j=this.plugins.length; i < j ; i++)
 			{
-				Skin.Finder.enterExpressMode();
-				$("fform").q.value = "";
-				$("fform").p.checked = true;
-				Skin.Finder.express();
-			},
-			Menu_Finder: function IdClickHandler_Menu_Finder(t, ev)
-			{
-				Skin.Finder.toggleExpressMode();
-			},
-			Menu_PreviewOutlinks: function IdClickHandler_Menu_PreviewOutlinks(t, ev)
-			{
-				Skin.Thread.Message.foreach(function(node)
+				var p = this.plugins[i].posivility(node.href);
+				if (p >= 1)
 				{
-					$M(node).previewLinks();
-				}, false, true);
-			},
-			Menu_Viewer: function IdClickHandler_Menu_Viewer(t, ev)
-			{
-				Skin.Viewer.show();
-			},
-			Menu_Deploy: function IdClickHandler_Menu_Deploy(t, ev)
-			{
-				if (Skin.Thread.Message.deployedAll)
-				{
-					Skin.Thread.checkNewMessage();
+					return this.plugins[i];
 				}
 				else
 				{
-					var focusTo = Skin.Thread.Message.deployedMax+1;
-					console.log(focusTo);
-					Skin.Thread.Message.deployTo(focusTo + Preference.MoreWidth);
-					$M(focusTo).focus();
+					if (mp < p)
+					{
+						mp = p;
+						mpt = this.plugins[i];
+					}
 				}
-			},
-			Menu_DeployBackward: function IdClickHandler_Menu_DeployBackward(t, ev)
+			}
+			return mpt;
+		},
+	},
+	AutoUpdate: {
+		begin: function AutoUpdate_begin()
+		{
+			if (this.running) return;
+			this.running = true;
+			document.body.dataset.autoload = "y";
+			this.autoTickCount = 0;
+			this.autoTimer = setInterval(this._check.bind(this), 1000);
+		},
+		end: function AutoUpdate_end()
+		{
+			if (!this.running) return;
+			this.running = false;
+			document.body.dataset.autoload = "";
+			clearInterval(this.autoTimer);
+			this.autoTimer = 0;
+		},
+		toggle: function AutoUpdate_toggle()
+		{
+			if (this.running)
 			{
-					var focusTo = Skin.Thread.Message.deployedMin-1;
-					Skin.Thread.Message.deployTo(focusTo - Preference.MoreWidth);
-					$M(focusTo).focus();
-			},
-			Menu_AutoCheck: function IdClickHandler_Menu_AutoCheck(t, ev)
+				this.end();
+			}
+			else
 			{
-				Skin.Services.AutoUpdate.toggle();
-			},
-			Menu_NewMark: function IdClickHandler_Menu_NewMark(t, ev)
+				this.begin();
+			}
+		},
+		_check: function AutoUpdate__check()
+		{
+			if (++this.autoTickCount >= Preference.AutoReloadInterval)
 			{
-				$M(Skin.Thread.Info.Fetched + 1).focus();
-			},
-			Menu_Navi: function IdClickHandler_Menu_Navi(t, ev)
+				Skin.Thread.checkNewMessage();
+			}
+		},
+	},
+},
+ResMenu: {
+	init: function ResMenu_init()
+	{
+		this._menu = $("resMenu");
+		this._menu.parentNode.removeChild(this._menu);
+	},
+	attach: function MessageMenu_attach(node)
+	{	//nodeはARTICLEでなければならない。ARTICLE以外(nullを含む)を指定すると、メニューはどこにも表示されなくなる。
+		var m = this._menu;		//参照コピ～
+		if (m == null) return;	//レスメニューなし
+		if (node == m.parentNode) return;	//同じとこに割り当て→無視
+		if (m.parentNode != null) m.parentNode.removeChild(m);	//デタッチ
+		this.popTrack = null;
+		if ((node != null) && (node.tagName == "ARTICLE"))
+		{
+			m.dataset.binding = node.dataset.no;
+			node.insertBefore(m, node.childNodes[1]);
+		}
+		else
+		{
+			m.dataset.binding = 0;
+		}
+	},
+},
+BoardPane: {
+	init: function BoardPane_init()
+	{
+		this.container = $("boardPane");
+		this.container.innerHTML = "";	//全子供殺す
+
+		this.boardList = document.createElement("IFRAME");
+		this.boardList.id = "boardList";
+
+		this.container.appendChild(this.boardList);
+	},
+	toggle: function BoardPane_toggle()
+	{
+		if (!this.container) this.init();
+		this._size = this._size ? 0 : window.innerHeight /2;
+		this.update();
+	},
+	update: function BoardPane_update()
+	{
+		if (!this.container) this.init();
+		this.container.style.height = this._size + "px";
+		if (this._size)
+		{
+			var url = "bbs2ch:board:" + Skin.Thread.Info.Board;
+			if (!this.boardList.src) this.boardList.src = url;
+		}
+	},
+},
+Finder: {
+	init: function Finder_init()
+	{
+		this.form = document.createElement("DIV");
+		this.form.id = "finder";
+		this.form.innerHTML =
+			'<form id="fform" onsubmit="Finder.express();return false;">' +
+			'<input type="text" size="40" name="q">' +
+			'<input type="submit" value="抽出">' +
+			'<br>' +
+			'<regend><input type="checkbox" name="r">正規表現</regend>' +
+			'<regend><input type="checkbox" name="i">大小区別</regend>' +
+			'<regend><input type="checkbox" name="p">pickupのみ</regend>' +
+			'<span id="fformerr"></span>' +
+			'</form>' ;
+	},
+	showing: function Finder_showing()
+	{
+		return (this.popup != null);
+	},
+	toggleExpressMode: function Finder_toggleExpressMode()
+	{
+		if (this.showing())
+		{
+			this.leaveExpressMode();
+		}
+		else
+		{
+			this.enterExpressMode();
+		}
+	},
+	enterExpressMode: function Finder_enterExpressMode()
+	{
+		if (!this.form) this.init();
+		if (document.body.dataset.expressMode != "y")
+		{
+			var content = this.form;
+			var p = new Popup();
+			p.closeOnMouseLeave = false;
+			p._init("Menu_Finder");
+			p.show(this.form);
+			$("fform").q.value = document.getSelection()
+			p.container.dataset.finder = "y";
+			this.popup = p;
+
+			this.pageY = window.scrollY;
+			document.body.dataset.expressMode="y";
+		}
+	},
+	leaveExpressMode: function Finder_leaveExpressMode()
+	{
+		document.body.dataset.expressMode="n";
+		window.scrollTo(0,this.pageY);
+		if (this.popup)
+		{
+			this.popup.close();
+			this.popup = null;
+		}
+	},
+	express: function Finder_express()
+	{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
+		var cond = $("fform").q.value;
+		var reg  = $("fform").r.checked;
+		var icase=!$("fform").i.checked;
+		var pick = $("fform").p.checked;
+		
+		if (cond.match(/\[resto:(\d+)\]/))
+		{
+			this.expressReffer(parseInt(RegExp.$1));
+			return;
+		}
+		if (cond == "[tracked]")
+		{
+			this.expressTracked();
+			return;
+		}
+		if (!reg) cond = this.escape(cond);
+		var flag = icase ? "i" : "";
+		var exp = null;
+		try
+		{
+			exp = new RegExp(cond, flag);
+		}
+		catch(e)
+		{
+			$("fformerr").innerHTML = "<br>" + e;
+			return;
+		}
+		Skin.Thread.Message.foreach(function(node){
+			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
+		}, false);
+	},
+	expressReffer: function Finder_expressReffer(no)
+	{
+		var t = Skin.Thread.Message.Structure.getReplyIdsByNo(no);
+		t = t ? t.clone() : [];
+		t.push(no);
+		Skin.Thread.Message.foreach(function(node){
+			node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
+		}, false);
+	},
+	expressTracked: function Finder_expressTracked()
+	{
+		Skin.Thread.Message.foreach(function(node){
+			node.dataset.express = Tracker.getMarkerClass(node) != "" ? "y" : "n";
+		},false);
+	},
+	escape: function Finder_escape(str)
+	{
+		var escapechar = "\\{}()[]*-+?.,^$|";
+		var ret = "";
+		for(var i=0; i< str.length; i++)
+		{
+			for(var j=0; j<escapechar.length; j++)
 			{
-				PopupUtil.toggle(t, Skin.Thread.Navigator.getNavigation(), true, "Navigation");
-			},
-			Menu_Config: function IdClickHandler_Menu_Config(t, ev)
-			{
-				Skin.Configulator.toggle(t);
-			},
-			RMenu_Ref: function IdClickhandler_RMenu_Ref(t, ev)
-			{
-				var node = DOMUtil.getDecendantNode(t, "ARTICLE");
-				if (node.dataset.popupRefShowing != "y")
+				if (escapechar[j] == str[i])
 				{
-					node.dataset.popupRefShowing = "y";
-					var pp = new ResPopup(null);
-					pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
-					pp.popup(Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no), "RMenu_Ref");
-					node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
+					ret += "\\";
+					break;
+				}
+			}
+			ret += str[i];
+		}
+		return ret;
+	},
+},
+Viewer: {
+	_entries: null,
+	_orderd: null,
+	init: function Viewer_init()
+	{
+		this.auto = false;
+		//表示範囲だけが対象なので・・・
+		this._entries = new Array();
+		this._orderd  = new Array();
+		var anchors = $("resContainer").getElementsByClassName("outLink");
+		for(var i=0, j = anchors.length; i<j; i++)
+		{
+			var a = anchors[i];
+			var op = Skin.Services.OutLink.getOutlinkPlugin(a);
+			if (op && op.type == OUTLINK_IMAGE)
+			{
+				var href = a.href;
+				if (!this._entries[href])
+				{
+					var entry = new ViewerEntry(href);
+					if (Preference.ViewerPreloadWidth < 0) entry.prepare();
+					this._entries[href] = entry;
+					this._orderd.push(entry);
+				}
+				this._entries[href].addRelation(parseInt(DOMUtil.getDecendantNode(a, "ARTICLE").dataset.no));
+			}
+		}
+	},
+	enterViewerMode: function Viewer_enterViewerMode()
+	{
+		if (document.body.dataset.mediaview != "y")
+		{
+			var c = document.createElement("DIV");
+			c.id = "ViewerContainer";
+			var buttons = [ {name: "home", onclick: "Skin.Viewer.home();"},
+				{name: "first", onclick: "Skin.Viewer.first();"},
+				{name: "prev", onclick: "Skin.Viewer.prev();"},
+				{name: "next", onclick: "Skin.Viewer.next();"},
+				{name: "last", onclick: "Skin.Viewer.last();"},
+				{name: "auto", onclick: "Skin.Viewer.toggleAuto();"},
+				{name: "close", onclick: "Skin.Viewer.close();"} ];
+			var bhtml = "";
+			for(var i=0, j=buttons.length; i < j; i++)
+			{
+				bhtml += '<button name="{0}" onclick="{1} return false;">'.format(buttons[i].name, buttons[i].onclick);
+			}
+			c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">' + bhtml + '</div></form>';
+			var cc = document.createElement("DIV");
+			this.container = cc;
+			c.appendChild(cc);
+			document.body.appendChild(c);
+			document.body.dataset.mediaview = "y";
+			document.body.dataset.contentsOverlay = "y";
+			Skin.EventHandler.enter("viewer");
+			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
+			this.cursorShowHandler = this.cursorShow.bind(this);
+			document.addEventListener("mousemove", this.cursorShowHandler, false);
+			this.cursorHideCount = 0;
+		}
+	},
+	leaveViewerMode: function Viewer_leaveViewerMode()
+	{
+		if (document.body.dataset.mediaview == "y")
+		{
+			document.body.removeChild($("ViewerContainer"));
+			this.container = null;
+			Skin.EventHandler.leave("viewer");
+			document.body.dataset.mediaview = "";
+			document.body.dataset.contentsOverlay = "";
+			clearInterval(this.cursorHideCheckTimer);
+			document.removeEventListener("mousemove", this.cursorShowHandler, false);
+		}
+	},
+	cursorHideCheck: function Viewer_cursorHideCheck()
+	{
+		this.cursorHideCount++;
+		if (this.cursorHideCount == Preference.ViewerCursorHideAt)
+		{
+			this.container.dataset.cursor="hide";
+		}
+	},
+	cursorShow: function Viewer_cursorShow()
+	{
+		this.cursorHideCount = 0;
+		this.container.dataset.cursor="shown";
+	},
+	_clearContainer: function Viewer__clearContainer()
+	{
+		var nodes = $A(this.container.childNodes);
+		for(var i=0, j=nodes.length; i<j; i++)
+		{
+			this.container.removeChild(nodes[i]);
+		}
+	},
+	home: function Viewer_home()
+	{
+		this.endSlideshow();
+		if(!this.homeCtrl)
+		{
+			var c = document.createElement("DIV");
+			c.id = "viewerHomeCtrl";
+			c.innerHTML = '<button name="play" onclick="Skin.Viewer.next();return false;"><button name="auto" onclick="Skin.Viewer.beginSlideshow();return false;">';
+			this.homeCtrl = c;
+		}
+		var home = this.homeCtrl;
+		home.dataset.images = this._orderd.length;
+		if (home.parentNode) home.parentNode.removeChild(home);
+		this._clearContainer();
+		this.container.appendChild(home);
+		this.index = -1;
+		this.showStatus();
+	},
+	prev: function Viewer_prev()
+	{
+		var index = this.index -1;
+		if (index < 0 ) index = this._orderd.length - 1;
+		this.showImage(this.errorSkipToPrev(index));
+	},
+	next: function Viewer_next()
+	{
+		var index = this.index +1;
+		if (index >= this._orderd.length) index = 0;
+		this.showImage(this.errorSkipToNext(index));
+	},
+	last: function Viewer_last()
+	{
+		this.showImage(this.errorSkipToPrev(this._orderd.length - 1));
+	},
+	first: function Viewer_first()
+	{
+		this.showImage(this.errorSkipToNext(0));
+	},
+	toggleAuto: function Viewer_toggleAuto()
+	{
+		return this.auto ? this.endSlideshow() : this.beginSlideshow();
+	},
+	beginSlideshow: function Viewer_beginSlideshow()
+	{
+		if (!this.auto)
+		{
+			this.auto = true;
+			this.slideshowTick = 0;
+			if (this.index < 0) this.first();
+			this.slideshowTimer = setInterval(this.slideshowUpdate.bind(this), 250);
+		}
+		$("viewerCtrls").dataset.auto = "y";
+		return this.auto;
+	},
+	endSlideshow: function Viewer_endSlideshow()
+	{
+		if (this.auto)
+		{
+			this.auto = false;
+			this.slideshowTick = 0;
+			clearInterval(this.slideshowTimer);
+		}
+		$("viewerCtrls").dataset.auto = "";
+		return this.auto;
+	},
+	slideshowUpdate: function Viewer_slideshowUpdate()
+	{
+		this.slideshowTick += 0.25;
+		if (this.slideshowTick >= Preference.SlideshowInterval)
+		{
+			this.next();
+			this.slideshowTick = 0;
+		}
+	},
+	errorSkipToNext: function Viewer_errorSkipToNext(index)
+	{
+		for (var j = this._orderd.length; index < j; index++)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	errorSkipToPrev: function Viewer_errorSkipToPrev(index)
+	{
+		for (; index >= 0; index--)
+		{
+			if (this._orderd[index].state != ViewerEntryState.Error)
+			{
+				return index;
+			}
+		}
+		return index;
+	},
+	showImage: function Viewer_showImage(index)
+	{
+		if ((index < 0) || (index >= this._orderd.length))
+		{
+			this.home();
+		}
+		else
+		{
+			this._clearContainer();
+			var e = this._orderd[index].getElement();
+			e.style.maxHeight = window.innerHeight + "px";
+			e.style.maxWidth  = window.innerWidth + "px";
+			this.container.appendChild(e);
+			this.index = index;
+		}
+		if (this.auto) this.slideshowTick = 0;	//スライドショー中に任意で飛ばしたらそこから計測
+		this.showStatus();
+	},
+	getStatus: function Viewer_getStatus()
+	{
+		var total=0, loading=0, loaded=0, error=0;
+		for(var i=0, j=this._orderd.length; i < j ; i++)
+		{
+			total++;
+			var s = this._orderd[i].state;
+			if (s == ViewerEntryState.Loading)
+			{
+				loading++;
+			}
+			else if (s == ViewerEntryState.Loaded)
+			{
+				loaded++;
+			}
+			else if (s == ViewerEntryState.Error)
+			{
+				error++;
+			}
+		}
+		return {total: total, loading: loading, loaded: loaded, error: error, index: this.index};
+	},
+	showStatus: function Viewer_showStatus()
+	{
+		var c = $("viewerState");
+		if (c)
+		{
+			var s = this.getStatus();
+			if (this.index >= 0)
+			{
+				var o = this._orderd[s.index];
+				c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+			}
+			else
+			{
+				c.innerHTML = "{0} Images.<br><br>".format(s.total);
+			}
+			var ctrl = $("ViewerCtrl");
+			DOMUtil.notifyRefreshInternal(ctrl);
+		}
+	},
+	show: function Viewer_show()
+	{
+		this.init();
+		this.enterViewerMode();
+		this.home();
+	},
+	close: function Viewer_close()
+	{
+		this.endSlideshow();
+		this.leaveViewerMode();
+	},
+},
+Notice: {
+	init: function Notice_init()
+	{
+		this.container = document.createElement("DIV");
+		this.container.id = "noticeContainer";
+		document.body.appendChild(this.container);
+	},
+	add: function Notice_add(msg)
+	{
+		if (!this.container) this.init();
+		if (this.container.childNodes.length == Preference.NoticeLength)
+		{
+			this.container.removeChild(this.container.firstChild);
+		}
+		var e = document.createElement("P");
+		e.innerHTML = msg;
+		this.container.appendChild(e);
+		DOMUtil.notifyRefreshInternal(this.container);
+	},
+},
+Util: {
+	Popup: {
+		toggle: function PopupUtil_toggle(target, content, closeOnMouseLeave, toTopBeforeHide, category)
+		{
+			if (target.__popup)
+			{
+				var p = target.__popup;
+				if (!toTopBeforeHide || (p.isTopLevelPopup(category)))
+				{	//トップレベルに一度出さないか、トップレベルのときクローズ
+					p.close();
 				}
 				else
-				{
-					if (node.refPopup) node.refPopup.close();
+				{	//トップレベルに一度出す
+					p.toTop();
 				}
-			},
-			RMenu_Track: function IdClickhandler_RMenu_Track(t, ev)
+			}
+			else
 			{
-				var node = DOMUtil.getDecendantNode(t, "ARTICLE");
-				var tracking = Tracker.getTracker(node.dataset.no);
-				if (tracking)
-				{
-					PopupUtil.toggleResPopup($("RMenu_Track"), tracking.getTrackingNumbers(), true, "追跡");
-				}
-			},
-			RMenu_Gear: function IdClickhandler_RMenu_Gear(t, ev)
+				var p = new Popup();
+				p.closeOnMouseLeave = closeOnMouseLeave;
+				p._init(target);
+				p.onClose = this._onCloseHandler.bind(target);
+				target.__popup = p;
+				p.show(content);
+			}
+		},
+		toggleResPopup: function PopupUtil_toggleResPopup(target, ids, closeOnMouseLeave, caption)
+		{
+			if (target.__popup)
 			{
+				target.__popup.close();
+			}
+			else if (ids)
+			{
+				ids = ($A(ids)).sort(function(a,b){return a-b;});
+				Skin.Thread.Message.prepare(ids);
+				var p = new ResPopup();
+				p.closeOnMouseLeave = closeOnMouseLeave;
+				p.onClose = this._onCloseHandler.bind(target);
+				target.__popup = p;
+				p.popup(ids, target, caption);
+			}
+		},
+		_onCloseHandler: function PopupUtil__onCloseHandler()
+		{
+			this.__popup = null;
+		},
+		isPopup: function PopupUtil_isPopup(e)
+		{
+			return this.getPopup(e) != null;
+		},
+		getPopup: function PopupUtil_getPopup(e)
+		{
+			while (e)
+			{
+				if (e.popup) return e.popup;
+				e = e.parentNode;
+			}
+			return null;
+		},
+	},
+	String: {
+		toNarrowString: function StringUtil_toNarrowString(src)
+		{
+			var str=new String;
+			var len=src.length;
+			for(var i=0;i<len;i++){
+				var c=src.charCodeAt(i);
+				if(c>=65281&&c<=65374&&c!=65340){
+					str+=String.fromCharCode(c-65248);
+				}else{
+					str+=src.charAt(i);
+				} 
+			}
+			return str;
+		},
+		timestamp: function StringUtil_timestamp(d)
+		{
+			if (!d) d = new Date();
+			var h=d.getHours();
+			var m=d.getMinutes();
+			var s=d.getSeconds();
+			if(m<10)m="0"+m;
+			if(s<10)s="0"+s;
+			return h+":"+m+":"+s;
+		},
+		splitResNumbers: function StringUtil_splitResNumbers(str)
+		{	//レス番号の切り分け（10-11とかを10,11,12,13,14...に分ける）。戻り値は数字の配列。
+			str=str.replace(/>/g,"");
+			var e=str.split(",");
+			var r=new Array();
+			for(var i=0;i<e.length;i++){
+				if(e[i].match(/(\d+)-(\d+)/)){
+					for(var j=parseInt(RegExp.$1);j <= parseInt(RegExp.$2);j++){
+						r.push(j);
+					}
+				}else if(!isNaN(parseInt(e[i])))r.push(parseInt(e[i]));
+			}
+			return r;
+		},
+	},
+	Dom: {
+		isDecendantOf: function DOMUtil_isDecendantOf(e, id)
+		{
+			if (e.id == id) return e;
+			if (e.parentNode  == null) return null;
+			return this.isDecendantOf(e.parentNode, id);
+		},
+		getDecendantNode: function DOMUtil_getDecendantNode(e, tagName)
+		{
+			if (e.tagName == tagName) return e;
+			if (e.parentNode  == null) return null;
+			return this.getDecendantNode(e.parentNode, tagName);
+		},
+		getDecendantNodeByData: function  DOMUtil_getDecendantNodeByClass(e, x, v)
+		{	//特定追加データの値を持つ親を帰す。
+			if (e.dataset && (e.dataset[x] == v))return e;
+			if (e.parentNode == null) return null;
+			return this.getDecendantNodeByData(e.parentNode, x, v);
+		},
+		isFixedElement: function DOMUtil_isFixedElement(e)
+		{
+			try
+			{
+				var style = document.defaultView.getComputedStyle(e, null);
+				if (style.position == "fixed") return true;
+				if (e.parentNode == null) return false;
+				return this.isFixedElement(e.parentNode);
+			} catch(e) { return false; }
+		},
+		getElementPagePos: function DOMUtil_getElementPagePos(e)
+		{	//要素の絶対座標を求める
+			rect = e.getBoundingClientRect();
+			rect.pageX = Math.round(rect.left);
+			rect.pageY = Math.round(rect.top);
+			rect.fixed = this.isFixedElement(e);
+			if (!rect.fixed)
+			{
+				rect.pageX += window.scrollX;
+				rect.pageY += window.scrollY;
+			}
+			return {pageX: rect.pageX, pageY: rect.pageY,
+			        width: Math.round(rect.right - rect.left), height: Math.round(rect.bottom - rect.top),
+			        fixed: rect.fixed};
+		},
+		notifyRefreshInternal: function DOMUtil_notifyRefreshInternal(e)
+		{
+			var element = e;
+			element.dataset.refreshState = "refresh";
+			setTimeout(function(){element.dataset.refreshState = "";}, 15);
+		},
+	},
+},
+EventHandler: {
+	init: function EventHandler_init()
+	{
+		this.mode = "thread";
+		document.addEventListener("keydown", this.keydown.bind(this),false);
+		document.addEventListener("mouseover", this.mouseOver.bind(this), false);
+		document.addEventListener("mousedown", this.mouseDown.bind(this), false);
+		document.addEventListener("mouseup", this.mouseUp.bind(this), false);
+		document.addEventListener("mousemove", this.mouseMove.bind(this), false);
+		document.addEventListener("click",     this.mouseClick.bind(this), false);
+		document.addEventListener("dblclick",  this.mouseDblClick.bind(this), false);
+		document.addEventListener("b2raboneadd", this.aboneImmidiate.bind(this), false);
+		document.addEventListener("DOMMouseScroll", this.mouseWheel.bind(this), false);
+		document.addEventListener("animationstart", this.animationStart.bind(this),false);
+		document.addEventListener("animationend", this.animationEnd.bind(this),false);
+	},
+	enter: function EventHandler_enter(mode)
+	{	//本当はしっかり画面遷移を定義してそれに合わせて勝手に追従すべきなんだろうけど面倒すぎるので普通にモード上書き
+		this.mode = mode;
+	},
+	leave: function EventHandler_leave(mode)
+	{
+		this.mode = "thread";
+	},
+	keydown: function EventHandler_keydown(e)
+	{
+	},
+	mouseDown: function EventHandler_mouseDown(aEvent)
+	{
+		if (this._dragDrop)return;
+		var t = aEvent.target;
+		if ((t.className == "popup") && (!t.popup.fixed))
+		{	//固定でないポップアップはヒゲのところをドラッグできる
+			this._dragDrop = new PopupDragDrop(t, aEvent);
+			aEvent.preventDefault();
+		}
+	},
+	mouseUp: function EventHandler_mouseDown(aEvent)
+	{
+		if (this._dragDrop && (this._dragDrop.which == aEvent.button))
+		{
+			this._dragDrop.drop(aEvent);
+			this._dragDrop = null;
+		}
+	},
+	mouseMove: function EventHandler_mosueMove(aEvent)
+	{
+		if (this._dragDrop)
+		{
+			this._dragDrop.drag(aEvent);
+			aEvent.preventDefault();
+			return;
+		}
+	},
+	mouseOver: function EventHandler_mouseOver(aEvent)
+	{
+		var t = aEvent.target;
+		if (DOMUtil.isDecendantOf(t, "resMenu"))
+		{	//レスメニューにポイント → 何もしない
+			//(resMenuがArticleの子要素になるので、これがないと干渉してしまう
+			return;
+		}
+		var res = DOMUtil.getDecendantNode(t, "ARTICLE");
+		if (res != null)
+		{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
+			var tid = setTimeout(Skin.ResMenu.attach.bind(Skin.ResMenu, res), Preference.ResMenuAttachDelay);
+			res.addEventListener("mouseout",
+				function(){
+					clearTimeout(tid);
+					res.removeEventListener("mouseout", arguments.callee, false);
+			}, false);
+		}
+		if (t.className=="resPointer")
+		{	//レスアンカーにポイント → レスポップアップ
+			new ResPopup(t);
+		}
+		else if (t.className == "outLink")
+		{	//リソース(画像とか動画とか)リンクにポイント → リソースポップアップ
+			var p = Skin.Services.OutLink.getOutlinkPlugin(t);
+			if (p) p.popupPreview(t, aEvent);
+		}
+	},
+	mouseClick: function EventHandler_mouseClick(e)
+	{
+		var t = e.target;
+		var cancel = false;
+		if (t.id && (this.IdClickHandler[t.id]))
+		{
+			cancel = this.IdClickHandler[t.id](t, e);
+		}
+		if (t.className && (this.ClassClickHandler[t.className]))
+		{
+			cancel = this.ClassClickHandler[t.className](t, e);
+		}
+		if (t.dataset.action)
+		{
+			var M = $M(DOMUtil.getDecendantNode(t, "ARTICLE"));
+			if (M[t.dataset.action]) M[t.dataset.action]();
+		}
+		if (Skin.Thread.Navigator.isNavigationElement(t))
+		{
+			Skin.Thread.Navigator.invokeNavigation(t);
+		}
+		if (PopupUtil.isPopup(t))
+		{
+			var popup = PopupUtil.getPopup(t);
+			if (popup.floating && !popup.isTopLevelPopup())
+			{
+				popup.toTop();
+			}
+		}
+		if(cancel){
+			aEvent.preventDefault();
+			aEvent.stopPropagation();
+		}
+	},
+	IdClickHandler: {
+		footer: function IdClickHandler_footer(t, ev)
+		{
+			if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
+			return false;
+		},
+		Menu_Template: function IdClickHandler_Menu_Template(t, ev)
+		{
+			if (Preference.TemplateLength)
+			{
+				var tids = [];
+				for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+				PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
+			}
+			else 
+			{	//TemplateLength = 0設定時はギアとして出す
 				if (t.enchantedGear)
 				{
 					t.enchantedGear.close();
 				}
 				else
 				{
-					var node = DOMUtil.getDecendantNode(t, "ARTICLE");
 					var pp = new GearPopup(t);
-					pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(t), false);
+					pp.showPopup(1, DOMUtil.getElementPagePos(t), true);
 				}
-			},
+			}
 		},
-		ClassClickHandler: {
-			resPointer: function ClassClickHandler_resPointer(t, ev)
-			{
-				if(t.textContent.match(/(\d+)/)) $M(RegExp.$1).focus();
-				return true;
-			},
-			no: function ClassClickHandler_no(t, ev)
-			{
-				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleRefferPopup(t);
-				return false;
-			},
-			id: function ClassClickHandler_id(t, ev)
-			{
-				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleIdPopup(t);
-				return false;
-			},
-		},
-		mouseDblClick: function EventHandler_mouseDblClick(e)
+		Menu_Bookmark: function IdClickHandler_Menu_Bookmark(t, ev)
 		{
-			var t = e.target;
-			if (t.tagName == "ARTICLE")
+			Bookmark.focus();
+		},
+		Menu_ResetBookmark: function IdClickHandler_Menu_ResetBookmark(t, ev)
+		{
+			Bookmark.add(0);
+		},
+		Menu_PopupPickups: function IdClickHandler_Menu_PopupPickups(t, ev)
+		{
+			PopupUtil.toggleResPopup(t, Pickup.pickups, true, "Pickup");
+		},
+		Menu_ExtractPickups: function IdClickHandler_Menu_ExtractPickups(t, ev)
+		{
+			Skin.Finder.enterExpressMode();
+			$("fform").q.value = "";
+			$("fform").p.checked = true;
+			Skin.Finder.express();
+		},
+		Menu_Finder: function IdClickHandler_Menu_Finder(t, ev)
+		{
+			Skin.Finder.toggleExpressMode();
+		},
+		Menu_PreviewOutlinks: function IdClickHandler_Menu_PreviewOutlinks(t, ev)
+		{
+			Skin.Thread.Message.foreach(function(node)
 			{
-				var flg = 0;
-				if (e.shiftKey) flg += 1;
-				if (e.ctrlKey) flg += 2;
-				if (e.altKey) flg += 4;
-				var method = Preference.OnResDblClick[flg];
-				$M(t).invoke(method);
+				$M(node).previewLinks();
+			}, false, true);
+		},
+		Menu_Viewer: function IdClickHandler_Menu_Viewer(t, ev)
+		{
+			Skin.Viewer.show();
+		},
+		Menu_Deploy: function IdClickHandler_Menu_Deploy(t, ev)
+		{
+			if (Skin.Thread.Message.deployedAll)
+			{
+				Skin.Thread.checkNewMessage();
 			}
-			else if (t.id == "bpHandle")
+			else
 			{
-				Skin.BoardPane.toggle();
-			}
-			else if (t.className == "resPointer")
-			{
-				if(t.textContent.match(/(\d+)/))
-				{
-					Skin.Thread.Message.deployTo(RegExp.$1);
-					$M(RegExp.$1).focus();
-				}
-			}
-			else if (t.className == "popup")
-			{
-				t.popup.close();
+				var focusTo = Skin.Thread.Message.deployedMax+1;
+				console.log(focusTo);
+				Skin.Thread.Message.deployTo(focusTo + Preference.MoreWidth);
+				$M(focusTo).focus();
 			}
 		},
-		mouseWheel: function EventHandler_mouseWheel(e)
+		Menu_DeployBackward: function IdClickHandler_Menu_DeployBackward(t, ev)
 		{
-			if (e.target.id == "RMenu_Gear")
+				var focusTo = Skin.Thread.Message.deployedMin-1;
+				Skin.Thread.Message.deployTo(focusTo - Preference.MoreWidth);
+				$M(focusTo).focus();
+		},
+		Menu_AutoCheck: function IdClickHandler_Menu_AutoCheck(t, ev)
+		{
+			Skin.Services.AutoUpdate.toggle();
+		},
+		Menu_NewMark: function IdClickHandler_Menu_NewMark(t, ev)
+		{
+			$M(Skin.Thread.Info.Fetched + 1).focus();
+		},
+		Menu_Navi: function IdClickHandler_Menu_Navi(t, ev)
+		{
+			PopupUtil.toggle(t, Skin.Thread.Navigator.getNavigation(), true, "Navigation");
+		},
+		Menu_Config: function IdClickHandler_Menu_Config(t, ev)
+		{
+			Skin.Configulator.toggle(t);
+		},
+		RMenu_Ref: function IdClickhandler_RMenu_Ref(t, ev)
+		{
+			var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+			if (node.dataset.popupRefShowing != "y")
 			{
-				var node = DOMUtil.getDecendantNode(e.target, "ARTICLE");
-				if (e.target.enchantedGear)
-				{
-					if (e.target.enchantedGear.origin != parseInt(node.dataset.no))
-					{	//adjust
-						e.target.enchantedGear.changePos(e.target);
-						e.target.enchantedGear.changeOrigin(parseInt(node.dataset.no));
-						e.preventDefault();
-						return;
-					}
-				}
-				else
-				{
-					var pp = new GearPopup(e.target);
-					pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(e.target), false);
+				node.dataset.popupRefShowing = "y";
+				var pp = new ResPopup(null);
+				pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
+				pp.popup(Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no), "RMenu_Ref");
+				node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
+			}
+			else
+			{
+				if (node.refPopup) node.refPopup.close();
+			}
+		},
+		RMenu_Track: function IdClickhandler_RMenu_Track(t, ev)
+		{
+			var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+			var tracking = Tracker.getTracker(node.dataset.no);
+			if (tracking)
+			{
+				PopupUtil.toggleResPopup($("RMenu_Track"), tracking.getTrackingNumbers(), true, "追跡");
+			}
+		},
+		RMenu_Gear: function IdClickhandler_RMenu_Gear(t, ev)
+		{
+			if (t.enchantedGear)
+			{
+				t.enchantedGear.close();
+			}
+			else
+			{
+				var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+				var pp = new GearPopup(t);
+				pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(t), false);
+			}
+		},
+	},
+	ClassClickHandler: {
+		resPointer: function ClassClickHandler_resPointer(t, ev)
+		{
+			if(t.textContent.match(/(\d+)/)) $M(RegExp.$1).focus();
+			return true;
+		},
+		no: function ClassClickHandler_no(t, ev)
+		{
+			$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleRefferPopup(t);
+			return false;
+		},
+		id: function ClassClickHandler_id(t, ev)
+		{
+			$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleIdPopup(t);
+			return false;
+		},
+	},
+	mouseDblClick: function EventHandler_mouseDblClick(e)
+	{
+		var t = e.target;
+		if (t.tagName == "ARTICLE")
+		{
+			var flg = 0;
+			if (e.shiftKey) flg += 1;
+			if (e.ctrlKey) flg += 2;
+			if (e.altKey) flg += 4;
+			var method = Preference.OnResDblClick[flg];
+			$M(t).invoke(method);
+		}
+		else if (t.id == "bpHandle")
+		{
+			Skin.BoardPane.toggle();
+		}
+		else if (t.className == "resPointer")
+		{
+			if(t.textContent.match(/(\d+)/))
+			{
+				Skin.Thread.Message.deployTo(RegExp.$1);
+				$M(RegExp.$1).focus();
+			}
+		}
+		else if (t.className == "popup")
+		{
+			t.popup.close();
+		}
+	},
+	mouseWheel: function EventHandler_mouseWheel(e)
+	{
+		if (e.target.id == "RMenu_Gear")
+		{
+			var node = DOMUtil.getDecendantNode(e.target, "ARTICLE");
+			if (e.target.enchantedGear)
+			{
+				if (e.target.enchantedGear.origin != parseInt(node.dataset.no))
+				{	//adjust
+					e.target.enchantedGear.changePos(e.target);
+					e.target.enchantedGear.changeOrigin(parseInt(node.dataset.no));
 					e.preventDefault();
 					return;
-				}
-			}
-			var t = DOMUtil.getDecendantNodeByData(e.target, "gearEnchanted", "y");
-			if (t)
-			{
-				t.enchantedGear.step(e.detail < 0 ? -1 : 1);
-				e.preventDefault();
-				return;
-			}
-			t = DOMUtil.getDecendantNodeByData(e.target, "popupEnchanted", "y");
-			if (t)
-			{
-				t = t.childNodes[0];
-				if(((e.detail<0)&&(t.scrollTop==0))||
-				   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
-					e.preventDefault();
-					return;
-				}
-			}
-			else if (this.mode=="thread")
-			{
-				if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
-			}
-		},
-		resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
-		{
-			if (Preference.LoadBackwardOnTopWheel 
-				&& (window.scrollY == 0)
-				&& (e.detail < 0)
-				&& (Skin.Thread.Message.deployedMin != 1))
-			{
-				if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
-				{
-					this.LoadOnWheelDelta = 0;
-					var focusTo = Skin.Thread.Message.deployedMin - 1;
-					Skin.Thread.Message.deployTo(focusTo-Preference.LoadOnWheelWidth);
-					$M(focusTo).focus();
-				}
-				e.preventDefault();
-			}
-			else if (Preference.LoadForwardOnBottomWheel
-				 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
-				 && (e.detail > 0)
-				 && (Skin.Thread.Message.deployedMax != Skin.Thread.Info.Total))
-			{
-				if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
-				{
-					this.LoadOnWheelDelta = 0;
-					var focusTo = Skin.Thread.Message.deployedMax + 1;
-					Skin.Thread.Message.deployTo(focusTo + Preference.LoadOnWheelWidth);
-					$M(focusTo).focus();
 				}
 			}
 			else
 			{
-				this.LoadOnWheelDelta = 0;
+				var pp = new GearPopup(e.target);
+				pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(e.target), false);
+				e.preventDefault();
+				return;
 			}
-		},
-		animationStart: function EventHandler_animationStart(aEvent)
+		}
+		var t = DOMUtil.getDecendantNodeByData(e.target, "gearEnchanted", "y");
+		if (t)
 		{
-			//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
-			if (aEvent.animationName.match(/AndClose$/))
-			{
-				aEvent.target.style.display = "";
+			t.enchantedGear.step(e.detail < 0 ? -1 : 1);
+			e.preventDefault();
+			return;
+		}
+		t = DOMUtil.getDecendantNodeByData(e.target, "popupEnchanted", "y");
+		if (t)
+		{
+			t = t.childNodes[0];
+			if(((e.detail<0)&&(t.scrollTop==0))||
+			   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
+				e.preventDefault();
+				return;
 			}
-		},
-		animationEnd: function EventHandler_animationEnd(aEvent)
+		}
+		else if (this.mode=="thread")
 		{
-			//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
-			if (aEvent.animationName.match(/AndClose$/))
-			{
-				aEvent.target.style.display = "none";
-			}
-		},
-		aboneImmidiate: function EventHandler_aboneImmidiate(aEvent)
-		{
-			var q   = aEvent.sourceEvent.type;	//クエリ
-			var filter = [
-				function(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
-				function(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
-				function(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
-				function(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
-			];
-			ThreadMessages.apply(function(node){
-				node.dataset.ng = "y";
-			}, filter[aEvent.detail], true);
-		},
+			if (Preference.LoadBackwardOnTopWheel || Preference.LoadForwardOnBottomWheel)this.resolveLoadOnWheel(e);
+		}
 	},
+	resolveLoadOnWheel: function EventHandlers_resolveLoadOnWheel(e)
+	{
+		if (Preference.LoadBackwardOnTopWheel 
+			&& (window.scrollY == 0)
+			&& (e.detail < 0)
+			&& (Skin.Thread.Message.deployedMin != 1))
+		{
+			if (--this.LoadOnWheelDelta < -Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				var focusTo = Skin.Thread.Message.deployedMin - 1;
+				Skin.Thread.Message.deployTo(focusTo-Preference.LoadOnWheelWidth);
+				$M(focusTo).focus();
+			}
+			e.preventDefault();
+		}
+		else if (Preference.LoadForwardOnBottomWheel
+			 && (window.scrollY >= document.body.offsetHeight - window.innerHeight - 20)
+			 && (e.detail > 0)
+			 && (Skin.Thread.Message.deployedMax != Skin.Thread.Info.Total))
+		{
+			if (++this.LoadOnWheelDelta > Preference.LoadOnWheelDelta)
+			{
+				this.LoadOnWheelDelta = 0;
+				var focusTo = Skin.Thread.Message.deployedMax + 1;
+				Skin.Thread.Message.deployTo(focusTo + Preference.LoadOnWheelWidth);
+				$M(focusTo).focus();
+			}
+		}
+		else
+		{
+			this.LoadOnWheelDelta = 0;
+		}
+	},
+	animationStart: function EventHandler_animationStart(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、開始時にdisplayを初期化（CSSの定義に従う）
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "";
+		}
+	},
+	animationEnd: function EventHandler_animationEnd(aEvent)
+	{
+		//アニメーション名のラストが「AndClose」である場合、終了時にdisplayをnoneにする
+		if (aEvent.animationName.match(/AndClose$/))
+		{
+			aEvent.target.style.display = "none";
+		}
+	},
+	aboneImmidiate: function EventHandler_aboneImmidiate(aEvent)
+	{
+		var q   = aEvent.sourceEvent.type;	//クエリ
+		var filter = [
+			function(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
+			function(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
+			function(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
+			function(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
+		];
+		ThreadMessages.apply(function(node){
+			node.dataset.ng = "y";
+		}, filter[aEvent.detail], true);
+	},
+},
 };
 
 
