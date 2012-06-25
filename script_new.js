@@ -1095,12 +1095,35 @@ var Skin = PP3 = {
 			},
 		},
 	},
-	Menu: {
-	},
 	ResMenu: {
 	},
-	BoardPane:{
-		//•Ê‚Ì‚Æ‚±‚©‚à
+	BoardPane: {
+		init: function BoardPane_init()
+		{
+			this.container = $("boardPane");
+			this.container.innerHTML = "";	//‘SŽq‹ŸŽE‚·
+	
+			this.boardList = document.createElement("IFRAME");
+			this.boardList.id = "boardList";
+	
+			this.container.appendChild(this.boardList);
+		},
+		toggle: function BoardPane_toggle()
+		{
+			if (!this.container) this.init();
+			this._size = this._size ? 0 : window.innerHeight /2;
+			this.update();
+		},
+		update: function BoardPane_update()
+		{
+			if (!this.container) this.init();
+			this.container.style.height = this._size + "px";
+			if (this._size)
+			{
+				var url = "bbs2ch:board:" + Skin.Thread.Info.Board;
+				if (!this.boardList.src) this.boardList.src = url;
+			}
+		},
 	},
 	Finder: {
 		init: function Finder_init()
@@ -1884,6 +1907,10 @@ var Skin = PP3 = {
 				if (e.altKey) flg += 4;
 				var method = Preference.OnResDblClick[flg];
 				$M(t).invoke(method);
+			}
+			else if (t.id == "bpHandle")
+			{
+				Skin.BoardPane.toggle();
 			}
 			else if (t.className == "resPointer")
 			{
