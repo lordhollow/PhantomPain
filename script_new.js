@@ -530,9 +530,6 @@ var Skin = PP3 = {
 			{	//旧NodeUtil相当のオブジェクトを返すよ
 				return new ResManipulator(NodeOrNo);
 			},
-			getDeployMode: function Message_getDeployMode(no)
-			{	//bmしか使ってないので廃止する
-			},
 			foreach: function Message_foreach(func, includeNotDeployed, includePopup)
 			{
 				if (includeNotDeployed)
@@ -1183,6 +1180,265 @@ var Skin = PP3 = {
 		},
 	},
 	Viewer: {
+		_entries: null,
+		_orderd: null,
+		init: function Viewer_init()
+		{
+			this.auto = false;
+			//表示範囲だけが対象なので・・・
+			this._entries = new Array();
+			this._orderd  = new Array();
+			var anchors = $("resContainer").getElementsByClassName("outLink");
+			for(var i=0, j = anchors.length; i<j; i++)
+			{
+				var a = anchors[i];
+				var op = Skin.Services.OutLink..getOutlinkPlugin(a);
+				if (op && op.type == OUTLINK_IMAGE)
+				{
+					var href = a.href;
+					if (!this._entries[href])
+					{
+						var entry = new ViewerEntry(href);
+						if (Preference.ViewerPreloadWidth < 0) entry.prepare();
+						this._entries[href] = entry;
+						this._orderd.push(entry);
+					}
+					this._entries[href].addRelation(parseInt(Util.getDecendantNode(a, "ARTICLE").dataset.no));
+				}
+			}
+		},
+		enterViewerMode: function Viewer_enterViewerMode()
+		{
+			if (document.body.dataset.mediaview != "y")
+			{
+				var c = document.createElement("DIV");
+				c.id = "ViewerContainer";
+				var buttons = [ {name: "home", onclick: "Skin.Viewer.home();"},
+					{name: "first", onclick: "Skin.Viewer.first();"},
+					{name: "prev", onclick: "Skin.Viewer.prev();"},
+					{name: "next", onclick: "Skin.Viewer.next();"},
+					{name: "last", onclick: "Skin.Viewer.last();"},
+					{name: "auto", onclick: "Skin.Viewer.toggleAuto();"},
+					{name: "close", onclick: "Skin.Viewer.close();"} ];
+				var bhtml = "";
+				for(var i=0, j=buttons.length; i < j; i++)
+				{
+					bhtml += '<button name="{0}" onclick="{1} return false;">'.format(buttons[i].name, buttons[i].onclick);
+				}
+				c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">' + bhtml + '</div></form>';
+				var cc = document.createElement("DIV");
+				this.container = cc;
+				c.appendChild(cc);
+				document.body.appendChild(c);
+				document.body.dataset.mediaview = "y";
+				document.body.dataset.contentsOverlay = "y";
+				Skin.EventHandler.enter("viewer");
+				this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
+				this.cursorShowHandler = this.cursorShow.bind(this);
+				document.addEventListener("mousemove", this.cursorShowHandler, false);
+				this.cursorHideCount = 0;
+			}
+		},
+		leaveViewerMode: function Viewer_leaveViewerMode()
+		{
+			if (document.body.dataset.mediaview == "y")
+			{
+				document.body.removeChild($("ViewerContainer"));
+				this.container = null;
+				Skin.EventHandler.leave("viewer");
+				document.body.dataset.mediaview = "";
+				document.body.dataset.contentsOverlay = "";
+				clearInterval(this.cursorHideCheckTimer);
+				document.removeEventListener("mousemove", this.cursorShowHandler, false);
+			}
+		},
+		cursorHideCheck: function Viewer_cursorHideCheck()
+		{
+			this.cursorHideCount++;
+			if (this.cursorHideCount == Preference.ViewerCursorHideAt)
+			{
+				this.container.dataset.cursor="hide";
+			}
+		},
+		cursorShow: function Viewer_cursorShow()
+		{
+			this.cursorHideCount = 0;
+			this.container.dataset.cursor="shown";
+		},
+		_clearContainer: function Viewer__clearContainer()
+		{
+			var nodes = $A(this.container.childNodes);
+			for(var i=0, j=nodes.length; i<j; i++)
+			{
+				this.container.removeChild(nodes[i]);
+			}
+		},
+		home: function Viewer_home()
+		{
+			this.endSlideshow();
+			if(!this.homeCtrl)
+			{
+				var c = document.createElement("DIV");
+				c.id = "viewerHomeCtrl";
+				c.innerHTML = '<button name="play" onclick="Skin.Viewer.next();return false;"><button name="auto" onclick="Skin.Viewer.beginSlideshow();return false;">';
+				this.homeCtrl = c;
+			}
+			var home = this.homeCtrl;
+			home.dataset.images = this._orderd.length;
+			if (home.parentNode) home.parentNode.removeChild(home);
+			this._clearContainer();
+			this.container.appendChild(home);
+			this.index = -1;
+			this.showStatus();
+		},
+		prev: function Viewer_prev()
+		{
+			var index = this.index -1;
+			if (index < 0 ) index = this._orderd.length - 1;
+			this.showImage(this.errorSkipToPrev(index));
+		},
+		next: function Viewer_next()
+		{
+			var index = this.index +1;
+			if (index >= this._orderd.length) index = 0;
+			this.showImage(this.errorSkipToNext(index));
+		},
+		last: function Viewer_last()
+		{
+			this.showImage(this.errorSkipToPrev(this._orderd.length - 1));
+		},
+		first: function Viewer_first()
+		{
+			this.showImage(this.errorSkipToNext(0));
+		},
+		toggleAuto: function Viewer_toggleAuto()
+		{
+			return this.auto ? this.endSlideshow() : this.beginSlideshow();
+		},
+		beginSlideshow: function Viewer_beginSlideshow()
+		{
+			if (!this.auto)
+			{
+				this.auto = true;
+				this.slideshowTick = 0;
+				if (this.index < 0) this.first();
+				this.slideshowTimer = setInterval(this.slideshowUpdate.bind(this), 250);
+			}
+			$("viewerCtrls").dataset.auto = "y";
+			return this.auto;
+		},
+		endSlideshow: function Viewer_endSlideshow()
+		{
+			if (this.auto)
+			{
+				this.auto = false;
+				this.slideshowTick = 0;
+				clearInterval(this.slideshowTimer);
+			}
+			$("viewerCtrls").dataset.auto = "";
+			return this.auto;
+		},
+		slideshowUpdate: function Viewer_slideshowUpdate()
+		{
+			this.slideshowTick += 0.25;
+			if (this.slideshowTick >= Preference.SlideshowInterval)
+			{
+				this.next();
+				this.slideshowTick = 0;
+			}
+		},
+		errorSkipToNext: function Viewer_errorSkipToNext(index)
+		{
+			for (var j = this._orderd.length; index < j; index++)
+			{
+				if (this._orderd[index].state != ViewerEntryState.Error)
+				{
+					return index;
+				}
+			}
+			return index;
+		},
+		errorSkipToPrev: function Viewer_errorSkipToPrev(index)
+		{
+			for (; index >= 0; index--)
+			{
+				if (this._orderd[index].state != ViewerEntryState.Error)
+				{
+					return index;
+				}
+			}
+			return index;
+		},
+		showImage: function Viewer_showImage(index)
+		{
+			if ((index < 0) || (index >= this._orderd.length))
+			{
+				this.home();
+			}
+			else
+			{
+				this._clearContainer();
+				var e = this._orderd[index].getElement();
+				e.style.maxHeight = window.innerHeight + "px";
+				e.style.maxWidth  = window.innerWidth + "px";
+				this.container.appendChild(e);
+				this.index = index;
+			}
+			if (this.auto) this.slideshowTick = 0;	//スライドショー中に任意で飛ばしたらそこから計測
+			this.showStatus();
+		},
+		getStatus: function Viewer_getStatus()
+		{
+			var total=0, loading=0, loaded=0, error=0;
+			for(var i=0, j=this._orderd.length; i < j ; i++)
+			{
+				total++;
+				var s = this._orderd[i].state;
+				if (s == ViewerEntryState.Loading)
+				{
+					loading++;
+				}
+				else if (s == ViewerEntryState.Loaded)
+				{
+					loaded++;
+				}
+				else if (s == ViewerEntryState.Error)
+				{
+					error++;
+				}
+			}
+			return {total: total, loading: loading, loaded: loaded, error: error, index: this.index};
+		},
+		showStatus: function Viewer_showStatus()
+		{
+			var c = $("viewerState");
+			if (c)
+			{
+				var s = this.getStatus();
+				if (this.index >= 0)
+				{
+					var o = this._orderd[s.index];
+					c.innerHTML = '{1}/{0} {5}<BR><a class="resPointer">&gt;&gt;{6}</a>'.format(s.total, s.index+1, s.loading, s.loaded, s.error, o.href, o.relations+"");
+				}
+				else
+				{
+					c.innerHTML = "{0} Images.<br><br>".format(s.total);
+				}
+				var ctrl = $("ViewerCtrl");
+				Util.notifyRefreshInternal(ctrl);
+			}
+		},
+		show: function Viewer_show()
+		{
+			this.init();
+			this.enterViewerMode();
+			this.home();
+		},
+		close: function Viewer_close()
+		{
+			this.endSlideshow();
+			this.leaveViewerMode();
+		},
 	},
 	Notice: {
 		init: function Notice_init()
@@ -1428,33 +1684,19 @@ var Skin = PP3 = {
 		{
 			var t = e.target;
 			var cancel = false;
-			if (t.className == "resPointer")
+			if (t.id && (this.IdClickHandler[t.id]))
 			{
-				//jumpTo
-				if(t.textContent.match(/(\d+)/))
-				{
-					var id = parseInt(RegExp.$1);
-					$M(RegExp.$1).focus();
-				}
-				cancel = true;
+				cancel = this.IdClickHandler[t.id](t, e);
 			}
-			else if(t.className == "no")
+			if (t.className && (this.ClassClickHandler[t.className]))
 			{
-				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleRefferPopup(t);
+				cancel = this.ClassClickHandler[t.className](t, e);
 			}
-			else if(t.className == "id")
-			{	//IDポップアップ
-				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleIdPopup(t);
-			}
-			else if (t.id == "footer")
-			{
-				if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
-			}
-			else if (Skin.Thread.Navigator.isNavigationElement(t))
+			if (Skin.Thread.Navigator.isNavigationElement(t))
 			{
 				Skin.Thread.Navigator.invokeNavigation(t);
 			}
-			else if (PopupUtil.isPopup(t))
+			if (PopupUtil.isPopup(t))
 			{
 				var popup = PopupUtil.getPopup(t);
 				if (popup.floating && !popup.isTopLevelPopup())
@@ -1466,6 +1708,30 @@ var Skin = PP3 = {
 				aEvent.preventDefault();
 				aEvent.stopPropagation();
 			}
+		},
+		IdClickHandler: {
+			footer: function IdClickHandler_footer(t, ev)
+			{
+				if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
+				return false;
+			},
+		},
+		ClassClickHandler: {
+			resPointer: function ClassClickHandler_resPointer(t, ev)
+			{
+				if(t.textContent.match(/(\d+)/)) $M(RegExp.$1).focus();
+				return true;
+			},
+			no: function ClassClickHandler_no(t, ev)
+			{
+				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleRefferPopup(t);
+				return false;
+			},
+			id: function ClassClickHandler_id(t, ev)
+			{
+				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleIdPopup(t);
+				return false;
+			},
 		},
 		mouseDblClick: function EventHandler_mouseDblClick(e)
 		{
