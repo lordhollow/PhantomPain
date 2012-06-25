@@ -31,6 +31,137 @@ var _Preference =
 	//中身は none(これがデフォルト), それ以外はManipulatorのメソッド名。
  
 };
+
+var Macro = {
+	_entries: ["Write", "Template", "Viewer", "Config", "Finder", "Navigation", "Notice", "Preview", "Jump", 
+	           "Check", "AutoCheck", "ExpressPickup", "BoardPane",
+	           "FocusEnd", "FocusTop", "FocusBookmark", "FocusNew", "ResetBookmark",
+	           "M_resTo","M_toggleRefferPopup","M_toggleIdPopup","M_expressReffer",
+	           "M_toggleRefTree","M_openRefTree","M_closeRefTree","M_toggleBookmark",
+	           "M_setBookmark","M_resetBookmark","M_togglePickup","M_setPickup",
+	           "M_resetPickup","M_toggleTracking","M_beginTracking","M_endTracking",
+	           "M_previewLinks","M_focus","M_closeIfPopup",
+	],
+	exprain: {
+		Write: "書き込みダイアログ",
+		Template: "テンプレ表示",
+		Viewer: "ビューアー表示",
+		Config: "設定",
+		Finder: "検索",
+		Navigation: "ナビゲーションメニュー",
+		Notice: "お知らせ表示",
+		Preview: "プレビュー展開",
+		Jump: "番号指定ジャンプ",
+		Check: "新着チェック",
+		AutoCheck: "自動新着チェック",
+		ExpressPickup: "ピックアップ抽出",
+		BoardPane: "スレ一覧",
+		FocusEnd: "最後にフォーカス",
+		FocusTop: "最初にフォーカス",
+		FocusBookmark: "ブックマークにフォーカス",
+		FocusNew: "新着にフォーカス",
+		ResetBookmark: "ブックマーク解除",
+		M_resTo: "返信",
+		M_toggleRefferPopup: "逆参照ポップアップ",
+		M_toggleIdPopup: "IDポップアップ",
+		M_expressReffer: "逆参照抽出",
+		M_toggleRefTree: "逆参照ツリー",
+		M_openRefTree: "逆参照ツリー構築",
+		M_closeRefTree: "逆参照ツリー解体",
+		M_toggleBookmark: "ブックマーク",
+		M_setBookmark: "ブックマーク設定",
+		M_resetBookmark: "ブックマーク解除",
+		M_togglePickup: "ピックアップ",
+		M_setPickup: "ピックアップ設定",
+		M_resetPickup: "ピックアップ解除",
+		M_toggleTracking: "トラッキング",
+		M_beginTracking: "トラッキング開始",
+		M_endTracking: "トラッキング解除",
+		M_previewLinks: "プレビュー(単一)",
+		M_focus: "フォーカス",
+		M_closeIfPopup: "ポップアップなら閉じる",
+	},
+	_invoke: function(command, t)
+	{	//Manipulatorコマンド時はtにnode(またはその子要素)を指定すること。
+		//なければ、レスメニューがあるノード。
+		if (command.substr(0,2) == "M_")
+		{
+			if (!t) t = Skin.ResMenu._menu.parentNode;
+			if (t)
+			{
+				var n = DOMUtil.getDecendantNode(t, "ARTICLE");
+				if (n) $M(n).invoke(command.substr(2));
+			}
+		}
+		else if (this[command]) this[command]();
+	},
+	//以下、tはイベントが発生した要素。nullならなんかデフォルトを使う。
+	Write: function(){ Skin.Thread.openWriteDialog(); },
+	Template: function(t)
+	{
+		t = t || $("Menu_Template");
+		if (Preference.TemplateLength)
+		{
+			var tids = [];
+			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+			PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
+		}
+		else 
+		{	//TemplateLength = 0設定時はギアとして出す
+			if (t.enchantedGear)
+			{
+				t.enchantedGear.close();
+			}
+			else
+			{
+				var pp = new GearPopup(t);
+				pp.showPopup(1, DOMUtil.getElementPagePos(t), true);
+			}
+		}
+	},
+	Viewer: function(){ Skin.Viewer.show(); },
+	Config: function(t){ Skin.Configulator.toggle(t || $("Menu_Config"));},
+	Finder: function(){ Skin.Finder.toggleExpressMode();},
+	Navigation: function(t){ PopupUtil.toggle(t || $("Menu_Navi"), Skin.Thread.Navigator.getNavigation(), true, "Navigation");},
+	Notice: function(){ if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container); },
+	Preview: function(){ Skin.Thread.Message.foreach(function(node){ $M(node).previewLinks(); }, false, true); },
+	Jump: function(){},
+	DeployBackward: function()
+	{
+		var focusTo = Skin.Thread.Message.deployedMin-1;
+		Skin.Thread.Message.deployTo(focusTo - Preference.MoreWidth);
+		$M(focusTo).focus();
+	},
+	Check: function()
+	{
+		if (Skin.Thread.Message.deployedAll)
+		{
+			Skin.Thread.checkNewMessage();
+		}
+		else
+		{
+			var focusTo = Skin.Thread.Message.deployedMax+1;
+			Skin.Thread.Message.deployTo(focusTo + Preference.MoreWidth);
+			$M(focusTo).focus();
+		}
+	},
+	AutoCheck: function(){ Skin.Services.AutoUpdate.toggle(); },
+	PopupPickup: function(t){ PopupUtil.toggleResPopup(t || $("Menu_PopupPickups"), Pickup.pickups, true, "Pickup")},
+	ExpressPickup: function()
+	{
+		Skin.Finder.enterExpressMode();
+		$("fform").q.value = "";
+		$("fform").p.checked = true;
+		Skin.Finder.express();
+	},
+	BoardPane: function(){ Skin.BoardPane.toggle(); },
+	FocusEnd: function(){ $M(Skin.Thread.Message.deployedMax).focus(); },
+	FocusTop: function(){ $M(Skin.Thread.Message.deployedMin).focus(); },
+	FocusBookmark: function(){ Bookmark.focus(); },
+	FocusNew: function(){ $M(Skin.Thread.Info.Fetched + 1).focus(); },
+	ResetBookmark: function(){ Bookmark.add(0); },
+};
+
 const OUTLINK_NON   = 0;	//outlinkじゃない
 const OUTLINK_IMAGE = 1;	//画像
 const OUTLINK_MOVIE = 2;	//動画
@@ -147,7 +278,8 @@ init: function()
 	this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
 	document.title = Skin.Thread.Info.Title + " - {0}({1})".format(this.ownerApp, this.skinName);				//タイトル修正
-	//★if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
+	
+	if (Preference.FocusNewResAfterLoad) Macro.FocusNew();			//新着あればジャンプ
 
 	this.EventHandler.init();
 
@@ -1779,7 +1911,7 @@ EventHandler: {
 			AltZ:	"Finder",
 			AltI:	"Preview",
 			AltJ:	"Jump",
-			AltN:	"JumpToNew",
+			AltN:	"FocusNew",
 			AltR:	"Check",
 			AltP:	"expressPickup",
 			AltX:	"BoardPane",
@@ -1936,102 +2068,21 @@ EventHandler: {
 		}
 	},
 	IdClickHandler: {
-		footer: function IdClickHandler_footer(t, ev)
-		{
-			if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
-			return false;
-		},
-		Menu_Template: function IdClickHandler_Menu_Template(t, ev)
-		{
-			if (Preference.TemplateLength)
-			{
-				var tids = [];
-				for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-				PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
-			}
-			else 
-			{	//TemplateLength = 0設定時はギアとして出す
-				if (t.enchantedGear)
-				{
-					t.enchantedGear.close();
-				}
-				else
-				{
-					var pp = new GearPopup(t);
-					pp.showPopup(1, DOMUtil.getElementPagePos(t), true);
-				}
-			}
-		},
-		Menu_Bookmark: function IdClickHandler_Menu_Bookmark(t, ev)
-		{
-			Bookmark.focus();
-		},
-		Menu_ResetBookmark: function IdClickHandler_Menu_ResetBookmark(t, ev)
-		{
-			Bookmark.add(0);
-		},
-		Menu_PopupPickups: function IdClickHandler_Menu_PopupPickups(t, ev)
-		{
-			PopupUtil.toggleResPopup(t, Pickup.pickups, true, "Pickup");
-		},
-		Menu_ExtractPickups: function IdClickHandler_Menu_ExtractPickups(t, ev)
-		{
-			Skin.Finder.enterExpressMode();
-			$("fform").q.value = "";
-			$("fform").p.checked = true;
-			Skin.Finder.express();
-		},
-		Menu_Finder: function IdClickHandler_Menu_Finder(t, ev)
-		{
-			Skin.Finder.toggleExpressMode();
-		},
-		Menu_PreviewOutlinks: function IdClickHandler_Menu_PreviewOutlinks(t, ev)
-		{
-			Skin.Thread.Message.foreach(function(node)
-			{
-				$M(node).previewLinks();
-			}, false, true);
-		},
-		Menu_Viewer: function IdClickHandler_Menu_Viewer(t, ev)
-		{
-			Skin.Viewer.show();
-		},
-		Menu_Deploy: function IdClickHandler_Menu_Deploy(t, ev)
-		{
-			if (Skin.Thread.Message.deployedAll)
-			{
-				Skin.Thread.checkNewMessage();
-			}
-			else
-			{
-				var focusTo = Skin.Thread.Message.deployedMax+1;
-				console.log(focusTo);
-				Skin.Thread.Message.deployTo(focusTo + Preference.MoreWidth);
-				$M(focusTo).focus();
-			}
-		},
-		Menu_DeployBackward: function IdClickHandler_Menu_DeployBackward(t, ev)
-		{
-				var focusTo = Skin.Thread.Message.deployedMin-1;
-				Skin.Thread.Message.deployTo(focusTo - Preference.MoreWidth);
-				$M(focusTo).focus();
-		},
-		Menu_AutoCheck: function IdClickHandler_Menu_AutoCheck(t, ev)
-		{
-			Skin.Services.AutoUpdate.toggle();
-		},
-		Menu_NewMark: function IdClickHandler_Menu_NewMark(t, ev)
-		{
-			$M(Skin.Thread.Info.Fetched + 1).focus();
-		},
-		Menu_Navi: function IdClickHandler_Menu_Navi(t, ev)
-		{
-			PopupUtil.toggle(t, Skin.Thread.Navigator.getNavigation(), true, "Navigation");
-		},
-		Menu_Config: function IdClickHandler_Menu_Config(t, ev)
-		{
-			Skin.Configulator.toggle(t);
-		},
+		footer: 			Macro.Notice,
+		Menu_Template: 		Macro.Template,
+		Menu_Bookmark: 		Macro.FocusBookmark,
+		Menu_ResetBookmark:	Macro.ResetBookmark,
+		Menu_PopupPickups:	Macro.PopupPickup,
+		Menu_ExpressPickups: Macro.ExpressPickup,
+		Menu_Finder:		Macro.Finder,
+		Menu_PreviewOutlinks: Macro.Preview,
+		Menu_Viewer:		Macro.Viewer,
+		Menu_Deploy:		Macro.Check,
+		Menu_DeployBackward: Macro.DeployBackward,
+		Menu_AutoCheck:		Macro.AutoCheck,
+		Menu_NewMark:		Macro.FocusNew,
+		Menu_Navi:			Macro.Navigation,
+		Menu_Config:		Macro.Config,
 		RMenu_Ref: function IdClickhandler_RMenu_Ref(t, ev)
 		{
 			var node = DOMUtil.getDecendantNode(t, "ARTICLE");
@@ -3689,79 +3740,5 @@ var $M = function GetManipulator(NodeOrNo)
 {
 	return Skin.Thread.Message.getManipulator(NodeOrNo);
 }
-var Macro = {
-	_entries: ["Write", "Viewer", "Config", "Finder", "Preview", "Jump", 
-	           "Check", "AutoCheck", "expressPickup", "BoardPane",
-	           "FocusEnd", "FocusTop", "FocusBookmark", "FocusNew",
-	           "M_resTo","M_toggleRefferPopup","M_toggleIdPopup","M_expressReffer",
-	           "M_toggleRefTree","M_openRefTree","M_closeRefTree","M_toggleBookmark",
-	           "M_setBookmark","M_resetBookmark","M_togglePickup","M_setPickup",
-	           "M_resetPickup","M_toggleTracking","M_beginTracking","M_endTracking",
-	           "M_previewLinks","M_focus","M_closeIfPopup",
-	],
-	exprain: {
-		Write: "書き込みダイアログ",
-		Viewer: "ビューアー表示",
-		Config: "設定",
-		Finder: "検索",
-		Preview: "プレビュー展開",
-		Jump: "番号指定ジャンプ",
-		Check: "新着チェック",
-		AutoCheck: "自動新着チェック",
-		expressPickup: "ピックアップ抽出",
-		BoardPane: "スレ一覧",
-		FocusEnd: "最後にフォーカス",
-		FocusTop: "最初にフォーカス",
-		FocusBookmark: "ブックマークにフォーカス",
-		FocusNew: "新着にフォーカス",
-		M_resTo: "返信",
-		M_toggleRefferPopup: "逆参照ポップアップ",
-		M_toggleIdPopup: "IDポップアップ",
-		M_expressReffer: "逆参照抽出",
-		M_toggleRefTree: "逆参照ツリー",
-		M_openRefTree: "逆参照ツリー構築",
-		M_closeRefTree: "逆参照ツリー解体",
-		M_toggleBookmark: "ブックマーク",
-		M_setBookmark: "ブックマーク設定",
-		M_resetBookmark: "ブックマーク解除",
-		M_togglePickup: "ピックアップ",
-		M_setPickup: "ピックアップ設定",
-		M_resetPickup: "ピックアップ解除",
-		M_toggleTracking: "トラッキング",
-		M_beginTracking: "トラッキング開始",
-		M_endTracking: "トラッキング解除",
-		M_previewLinks: "プレビュー(単一)",
-		M_focus: "フォーカス",
-		M_closeIfPopup: "ポップアップなら閉じる",
-	},
-	_invoke: function(command, t)
-	{	//Manipulatorコマンド時はtにnode(またはその子要素)を指定すること。
-		//なければ、レスメニューがあるノード。
-		if (command.substr(0,2) == "M_")
-		{
-			if (!t) t = Skin.ResMenu._menu.parentNode;
-			if (t)
-			{
-				var n = DOMUtil.getDecendantNode(t, "ARTICLE");
-				if (n) $M(n).invoke(command.substr(2));
-			}
-		}
-		else if (this[command]) this[command]();
-	},
-	Write: function(){ Skin.Thread.openWriteDialog(); },
-	Viewer: function(){},
-	Config: function(){},
-	Finder: function(){},
-	Preview: function(){},
-	Jump: function(){},
-	JumpToNew: function(){},
-	Check: function(){},
-	AutoCheck: function(){},
-	expressPickup: function(){},
-	BoardPane: function(){},
-	FocusEnd: function(){},
-	FocusTop: function(){},
-	FocusBookmark: function(){},
-	FocusNew: function(){},
-}
+
 window.addEventListener("load", function pp3initializer(){ PP3.init(); });
