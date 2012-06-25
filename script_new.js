@@ -1224,7 +1224,7 @@ var Skin = PP3 = {
 				else if (ids)
 				{
 					ids = ($A(ids)).sort(function(a,b){return a-b;});
-					MessageLoader.load(ids);
+					Skin.Thread.Message.prepare(ids);
 					var p = new ResPopup();
 					p.closeOnMouseLeave = closeOnMouseLeave;
 					p.onClose = this._onCloseHandler.bind(target);
@@ -1409,8 +1409,48 @@ var Skin = PP3 = {
 				if (p) p.popupPreview(t, aEvent);
 			}
 		},
-		mouseClick: function EventHandler_mouseClick(aEvent)
+		mouseClick: function EventHandler_mouseClick(e)
 		{
+			var t = e.target;
+			var cancel = false;
+			if (t.className == "resPointer")
+			{
+				//jumpTo
+				if(t.textContent.match(/(\d+)/))
+				{
+					var id = parseInt(RegExp.$1);
+					$M(RegExp.$1).focus();
+				}
+				cancel = true;
+			}
+			else if(t.className == "no")
+			{
+				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleRefferPopup(t);
+			}
+			else if(t.className == "id")
+			{	//IDポップアップ
+				$M(DOMUtil.getDecendantNode(t, "ARTICLE")).toggleIdPopup(t);
+			}
+			else if (t.id == "footer")
+			{
+				if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
+			}
+			else if (Skin.Thread.Navigator.isNavigationElement(t))
+			{
+				Skin.Thread.Navigator.invokeNavigation(t);
+			}
+			else if (PopupUtil.isPopup(t))
+			{
+				var popup = PopupUtil.getPopup(t);
+				if (popup.floating && !popup.isTopLevelPopup())
+				{
+					popup.toTop();
+				}
+			}
+			if(cancel){
+				aEvent.preventDefault();
+				aEvent.stopPropagation();
+			}
 		},
 		mouseDblClick: function EventHandler_mouseDblClick(e)
 		{
@@ -2728,16 +2768,16 @@ ResManipulator.prototype = {
 	{
 		if (this.node)
 		{
-			if (!t) t = node.children[1].children[0];	//Noのとこ
-			PopupUtil.toggleResPopup(t, Skin.Thread.Message.Structure.getReplyIdsByNo(this.no), true,  "ResTo>>"+node.dataset.no);
+			if (!t) t = this.node.children[1].children[0];	//Noのとこ
+			PopupUtil.toggleResPopup(t, Skin.Thread.Message.Structure.getReplyIdsByNo(this.no), true,  "ResTo>>"+ this.no);
 		}
 	},
 	toggleIdPopup: function ResManipulator_toggleIdPopup(t)
 	{
 		if (this.node)
 		{
-			if (!t) t = node.children[1].children[2];	//IDのとこ
-			PopupUtil.toggleResPopup(t,Skin.Thread.Message.Structure.getNodeIdsById(this.no),true, "ID>>" + t.textContent);
+			if (!t) t = this.node.children[1].children[2];	//IDのとこ
+			PopupUtil.toggleResPopup(t,Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid),true, "ID>>" + t.textContent);
 		}
 	},
 	expressReffer: function ResManipulator_expressReffer()
