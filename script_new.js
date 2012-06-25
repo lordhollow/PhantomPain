@@ -2607,8 +2607,8 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 	}
 	Pickup.marked = function Pickup_marked()
 	{
-		$("Menu_PopupPickups").dataset.pk = this.pickups.length ? "y" : "n";
-		$("Menu_PopupPickups").dataset.pkc= this.pickups.length;
+		$("Menu_Pickup").dataset.pk = this.pickups.length ? "y" : "n";
+		$("Menu_Pickup").dataset.pkc= this.pickups.length;
 	}
 
 /* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
