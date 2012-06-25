@@ -1085,14 +1085,26 @@ var Skin = PP3 = {
 		{
 			return (this.popup != null);
 		},
+		toggleExpressMode: function Finder_toggleExpressMode()
+		{
+			if (this.showing())
+			{
+				this.leaveExpressMode();
+			}
+			else
+			{
+				this.enterExpressMode();
+			}
+		},
 		enterExpressMode: function Finder_enterExpressMode()
 		{
+			if (!this.form) this.init();
 			if (document.body.dataset.expressMode != "y")
 			{
 				var content = this.form;
 				var p = new Popup();
 				p.closeOnMouseLeave = false;
-				p._init("Menu.Finder");
+				p._init("Menu_Finder");
 				p.show(this.form);
 				$("fform").q.value = document.getSelection()
 				p.container.dataset.finder = "y";
@@ -1192,7 +1204,7 @@ var Skin = PP3 = {
 			for(var i=0, j = anchors.length; i<j; i++)
 			{
 				var a = anchors[i];
-				var op = Skin.Services.OutLink..getOutlinkPlugin(a);
+				var op = Skin.Services.OutLink.getOutlinkPlugin(a);
 				if (op && op.type == OUTLINK_IMAGE)
 				{
 					var href = a.href;
@@ -1714,6 +1726,97 @@ var Skin = PP3 = {
 			{
 				if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container);
 				return false;
+			},
+			Menu_Template: function IdClickHandler_Menu_Template(t, ev)
+			{
+				if (Preference.TemplateLength)
+				{
+					var tids = [];
+					for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
+					PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
+				}
+				else 
+				{	//TemplateLength = 0設定時はギアとして出す
+					if (t.enchantedGear)
+					{
+						t.enchantedGear.close();
+					}
+					else
+					{
+						var pp = new GearPopup(t);
+						pp.showPopup(1, DOMUtil.getElementPagePos(t), true);
+					}
+				}
+			},
+			Menu_Bookmark: function IdClickHandler_Menu_Bookmark(t, ev)
+			{
+				Bookmark.focus();
+			},
+			Menu_ResetBookmark: function IdClickHandler_Menu_ResetBookmark(t, ev)
+			{
+				Bookmark.add(0);
+			},
+			Menu_PopupPickups: function IdClickHandler_Menu_PopupPickups(t, ev)
+			{
+				PopupUtil.toggleResPopup(t, Pickup.pickups, true, "Pickup");
+			},
+			Menu_ExtractPickups: function IdClickHandler_Menu_ExtractPickups(t, ev)
+			{
+				Skin.Finder.enterExpressMode();
+				$("fform").q.value = "";
+				$("fform").p.checked = true;
+				Skin.Finder.express();
+			},
+			Menu_Finder: function IdClickHandler_Menu_Finder(t, ev)
+			{
+				Skin.Finder.toggleExpressMode();
+			},
+			Menu_PreviewOutlinks: function IdClickHandler_Menu_PreviewOutlinks(t, ev)
+			{
+				Skin.Thread.Message.foreach(function(node)
+				{
+					$M(node).previewLinks();
+				}, false, true);
+			},
+			Menu_Viewer: function IdClickHandler_Menu_Viewer(t, ev)
+			{
+				Skin.Viewer.show();
+			},
+			Menu_Deploy: function IdClickHandler_Menu_Deploy(t, ev)
+			{
+				if (Skin.Thread.Message.deployedAll)
+				{
+					Skin.Thread.checkNewMessage();
+				}
+				else
+				{
+					var focusTo = Skin.Thread.Message.deployedMax+1;
+					console.log(focusTo);
+					Skin.Thread.Message.deployTo(focusTo + Preference.MoreWidth);
+					$M(focusTo).focus();
+				}
+			},
+			Menu_DeployBackward: function IdClickHandler_Menu_DeployBackward(t, ev)
+			{
+					var focusTo = Skin.Thread.Message.deployedMin-1;
+					Skin.Thread.Message.deployTo(focusTo - Preference.MoreWidth);
+					$M(focusTo).focus();
+			},
+			Menu_AutoCheck: function IdClickHandler_Menu_AutoCheck(t, ev)
+			{
+				Skin.Services.AutoUpdate.toggle();
+			},
+			Menu_NewMark: function IdClickHandler_Menu_NewMark(t, ev)
+			{
+				$M(Skin.Thread.Info.Fetched + 1).focus();
+			},
+			Menu_Navi: function IdClickHandler_Menu_Navi(t, ev)
+			{
+				PopupUtil.toggle(t, Skin.Thread.Navigator.getNavigation(), true, "Navigation");
+			},
+			Menu_Config: function IdClickHandler_Menu_Config(t, ev)
+			{
+				Skin.Configulator.toggle();
 			},
 		},
 		ClassClickHandler: {
@@ -2924,7 +3027,7 @@ GearPopup.prototype = new Popup();
 	GearPopup.prototype.getNode = function GearPopup_getNode(no)
 	{
 		if (no < 1) no = 1;
-		if (no > ThreadInfo.Total) no = ThreadInfo.Total;
+		if (no > Skin.Thread.Info.Total) no = Skin.Thread.Info.Total;
 		Skin.Thread.Message.prepare(no, no);
 		this.no = no;
 		return Skin.Thread.Message.getNode(no, true);

@@ -40,40 +40,39 @@ Skin.Thread.Info = {
 </h1>
 <div id="ctrlbox" class="menu">
 	<ul>
-	<li><button class="icon_template" title="テンプレ" onclick="Menu.PopupTemplate();" id="Menu.Template"></button></li>
-	<li><button class="icon_bookmark" title="しおり" onclick="Menu.JumpToBookmark();" id="Menu_Bookmark"></button>
+	<li><button class="icon_template" title="テンプレ" id="Menu_Template"></button></li>
+	<li><button class="icon_bookmark" title="しおり"   id="Menu_Bookmark"></button>
 		<ul>
-		<li><button class="bmon icon_bookmarkn" title="しおり解除" onclick="Menu.ResetBookmark();"></button></li>
+		<li><button class="bmon icon_bookmarkn" title="しおり解除" id="Menu_ResetBookmark"></button></li>
 		</ul>
 	</li>
 	<li id="Menu.Pickup">
-		<button class="pickon icon_pickup" title="Pickup" onclick="Menu.PopupPickups();"/></button>
+		<button class="pickon icon_pickup" title="Pickup" id="Menu_PopupPickups"/></button>
 		<button class="pickoff icon_nopickup" title="Pickup"></button>
 		<ul>
-		<li><button class="pickoff icon_expickup" title="Pickup抽出" onclick="Menu.ExpressPickups();"></button></li>
+		<li><button class="pickoff icon_expickup" title="Pickup抽出" id="Menu_ExtractPickups"></button></li>
 		</ul>
 	</li>
-	<li><button class="icon_find" title="抽出" onclick="Menu.ToggleFinder();" id="Menu.Finder"></button></li>
-	<li><button class="icon_image" title="画像展開か閲覧"></button>
+	<li><button class="icon_find" title="抽出" id="Menu_Finder"></button></li>
+	<li><button class="icon_image" title="画像展開" id="Menu_PreviewOutlinks"></button>
 		<ul>
-		<li><button class="icon_image" title="画像展開" onclick="Menu.PreviewOutlinks();"></button></li>
-		<li><button class="icon_eximage" title="画像閲覧" onclick="Menu.ShowViewer();"></button></li>
+		<li><button class="icon_eximage" title="画像閲覧" id="Menu_Viewer"></button></li>
 		</ul>
 	</li>
 	<li>
-		<button class="icon_more" title="More" onclick="Menu.More();"></button>
+		<button class="icon_more" title="More" id="Menu_Deploy"></button>
 		<ul>
-		<li><button class="icon_backward" title="MoreBack" onclick="Menu.MoreBack();"></button></li>
-		<li><button class="icon_automore" title="自動更新" onclick="Menu.ToggleAutoMore();"></button></li>
+		<li><button class="icon_backward" title="MoreBack" id="Menu_DeployBackward"></button></li>
+		<li><button class="icon_automore" title="自動更新" id="Menu_AutoCheck"></button></li>
 		</ul>
 	</li>
 	<li>
-		<button class="nron  icon_new" title="新着あり(クリックでジャンプ)" onclick="Menu.JumpToNewMark();"></button>
+		<button class="nron  icon_new" title="新着あり(クリックでジャンプ)" id="Menu_NewMark"></button>
 		<button class="nroff icon_nonew" title="新着なし"></button>
 	</li>
-	<li><button class="icon_navi" title="ナビゲーション" onclick="Menu.ToggleNavigationPopup();" id="Menu_Navi"></button>
+	<li><button class="icon_navi" title="ナビゲーション" id="Menu_Navi"></button>
 	<li><a href="bbs2ch:post:<THREADURL/>" id="wa"><button class="icon_write" title="書き込み"></button></a></li>
-	<li><button class="icon_config" title="設定" onclick="Configulator.toggle(event.target);"></button></li>
+	<li><button class="icon_config" title="設定" id="Menu_Config"></button></li>
 	</ul>
 </div><!-- ctrlbox -->
 </div><!-- headBar -->
