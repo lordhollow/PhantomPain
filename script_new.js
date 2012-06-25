@@ -1009,6 +1009,42 @@ var Skin = PP3 = {
 				return mpt;
 			},
 		},
+		AutoUpdate: {
+			begin: function AutoUpdate_begin()
+			{
+				if (this.running) return;
+				this.running = true;
+				document.body.dataset.autoload = "y";
+				this.autoTickCount = 0;
+				this.autoTimer = setInterval(this._check.bind(this), 1000);
+			},
+			end: function AutoUpdate_end()
+			{
+				if (!this.running) return;
+				this.running = false;
+				document.body.dataset.autoload = "";
+				clearInterval(this.autoTimer);
+				this.autoTimer = 0;
+			},
+			toggle: function AutoUpdate_toggle()
+			{
+				if (this.running)
+				{
+					this.end();
+				}
+				else
+				{
+					this.begin();
+				}
+			},
+			_check: function AutoUpdate__check()
+			{
+				if (++this.autoTickCount >= Preference.AutoReloadInterval)
+				{
+					Skin.Thread.checkNewMessage();
+				}
+			},
+		},
 	},
 	Menu: {
 	},
@@ -2666,10 +2702,6 @@ ResManipulator.prototype = {
 	focus: function NodeUtil_focus(no){},
 	closeIfPopup: function NodeUtil_closeIfPopup(){},
 };
-
-//どこにおくか決めかねているもの
-//AutoLoad.start, end, toggle
-//MessageLoader_loadByAnchorStr(アンカー文字列からのThread.Message.prepare)
 
 //ショートカット
 var Preference = Skin.Preference = clone(_Preference);
