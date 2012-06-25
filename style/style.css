@@ -254,11 +254,11 @@ h2
 		border-top: solid 1px #9F9;
 		border-left: solid 2px #9F9;
 	}
-	h2.pre
+	h2.res
 	{
 		border-color: #99F;
 	}
-	h2.new
+	article[data-new="y"] > h2.res
 	{
 		border-color: #F99;
 	}

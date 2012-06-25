@@ -754,7 +754,7 @@ Thread: {
 					this.domobj[no] = node;
 					this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
 					//V’…”»’è
-					if(node.childNodes[0].className=="new")
+					if(node.dataset.new == "y")
 					{
 						document.body.dataset.hasNew = "y";
 					}
