@@ -85,6 +85,11 @@ Array.prototype.include = function prototype_include(val)
 	return false;
 }
 
+Array.prototype.clone = function prototype_clone()
+{
+	return Array.apply(null, this);
+}
+
 function clone(obj)
 {
 	var f = function(){};
@@ -962,6 +967,118 @@ var Skin = PP3 = {
 		//別のとこかも
 	},
 	Finder: {
+		init: function Finder_init()
+		{
+			this.form = document.createElement("DIV");
+			this.form.id = "finder";
+			this.form.innerHTML =
+				'<form id="fform" onsubmit="Finder.express();return false;">' +
+				'<input type="text" size="40" name="q">' +
+				'<input type="submit" value="抽出">' +
+				'<br>' +
+				'<regend><input type="checkbox" name="r">正規表現</regend>' +
+				'<regend><input type="checkbox" name="i">大小区別</regend>' +
+				'<regend><input type="checkbox" name="p">pickupのみ</regend>' +
+				'<span id="fformerr"></span>' +
+				'</form>' ;
+		},
+		showing: function Finder_showing()
+		{
+			return (this.popup != null);
+		},
+		enterExpressMode: function Finder_enterExpressMode()
+		{
+			if (document.body.dataset.expressMode != "y")
+			{
+				var content = this.form;
+				var p = new Popup();
+				p.closeOnMouseLeave = false;
+				p._init("Menu.Finder");
+				p.show(this.form);
+				$("fform").q.value = document.getSelection()
+				p.container.dataset.finder = "y";
+				this.popup = p;
+	
+				this.pageY = window.scrollY;
+				document.body.dataset.expressMode="y";
+			}
+		},
+		leaveExpressMode: function Finder_leaveExpressMode()
+		{
+			document.body.dataset.expressMode="n";
+			window.scrollTo(0,this.pageY);
+			if (this.popup)
+			{
+				this.popup.close();
+				this.popup = null;
+			}
+		},
+		express: function Finder_express()
+		{	//条件セットしてからコレを呼ぶと、条件に合致するものとしないものでarticleに印をつける
+			var cond = $("fform").q.value;
+			var reg  = $("fform").r.checked;
+			var icase=!$("fform").i.checked;
+			var pick = $("fform").p.checked;
+			
+			if (cond.match(/\[resto:(\d+)\]/))
+			{
+				this.expressReffer(parseInt(RegExp.$1));
+				return;
+			}
+			if (cond == "[tracked]")
+			{
+				this.expressTracked();
+				return;
+			}
+			if (!reg) cond = this.escape(cond);
+			var flag = icase ? "i" : "";
+			var exp = null;
+			try
+			{
+				exp = new RegExp(cond, flag);
+			}
+			catch(e)
+			{
+				$("fformerr").innerHTML = "<br>" + e;
+				return;
+			}
+			Skin.Thread.Message.foreach(function(node){
+				node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
+			}, false);
+		},
+		expressReffer: function Finder_expressReffer(no)
+		{
+			var t = Skin.Thread.Message.Structure.getReplyIdsByNo(no);
+			t = t ? t.clone() : [];
+			t.push(no);
+			Skin.Thread.Message.foreach(function(node){
+				node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
+			}, false);
+		},
+		expressTracked: function Finder_expressTracked()
+		{
+			Skin.Thread.Message.foreach(function(node){
+				node.dataset.express = Tracker.getMarkerClass(node) != "" ? "y" : "n";
+			},false);
+		},
+		escape: function Finder_escape(str)
+		{
+			var escapechar = "\\{}()[]*-+?.,^$|";
+			var ret = "";
+			for(var i=0; i< str.length; i++)
+			{
+				for(var j=0; j<escapechar.length; j++)
+				{
+					if (escapechar[j] == str[i])
+					{
+						ret += "\\";
+						break;
+					}
+				}
+				ret += str[i];
+			}
+			return ret;
+		},
 	},
 	Viewer: {
 	},
