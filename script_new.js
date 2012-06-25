@@ -291,11 +291,62 @@ var Skin = PP3 = {
 		openWriteDialog: function Thread_openWriteDialog(to)
 		{
 			if (!to) to = "";
-			var url = Preference.PostScheme + Skin.Thread.Info.Url + to
+			var url = Preference.PostScheme + this.Info.Url + to
 			window.location.href = url;
 		},
 		checkNewMessage: function Thread_checkNewMessage()
 		{
+			this.autoTickCount = 0;	//一回読み込んだらそのときに自動ロードカウンタリセット
+			if (this.Message.deployedMax != this.Info.Total)
+			{	//最後まで表示されていないときは全部表示してから。
+				this.Message.deployTo(ThreadInfo.Total);
+			}
+			if (!this.checking)
+			{
+				this.checking = true;
+				document.body.dataset.loading = "y";
+				TextLoadManager.push(ThreadInfo.Server + ThreadInfo.Url + "l1n", this._loaded.bind(this));
+			}
+		},
+		_loaded: function Thread__loaded(obj)
+		{
+			if (!obj || obj.status == "NG")
+			{
+				Notice.add("Load Error.");
+			}
+			else
+			{
+				var html = obj.responseText;
+				this._checkNewMessage(html);
+			}
+			document.body.dataset.loading = "";
+			this.checking = false;
+		},
+		_checkNewMessage: function Thread__checkNewMessage(html)
+		{
+			if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
+			{
+				var obj;
+				EVAL("obj = "+ RegExp.$1, {});	//{ status, total, new }
+				if (obj.new)
+				{	//新着があるとき～
+					if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
+					{
+						var nc = document.createElement("DIV");
+						nc.innerHTML = RegExp.$1;
+						this.Message.onLoad($A(nc.getElementsByTagName("ARTICLE")));
+					}
+					//TODO::既存の新着マーク除去
+					
+					this.Info.Total = obj.total;
+					this.Info.New = obj.new;
+					this.Info.Fetched = obj.total - obj.new;
+					this.Info.Status = obj.status;
+					this.Message.deployTo(this.Info.Total);
+					$M(this.Info.Fetched + 1).focus();
+				}
+				Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", Util.timestamp()));
+			}
 		},
 		Message: {
 			domobj: new Array(),	//DOMオブジェクト。indexはレス番号
@@ -1534,7 +1585,6 @@ var TextLoadManager = new loadManager();
 		if (req.readyState==4)
 		{
 			obj.responseText = req.responseText;
-			obj.status = req.status;
 			this.response(obj, ((req.status >= 200) && (req.status<300)) ? "OK" : "NG");
 		}
 	}
