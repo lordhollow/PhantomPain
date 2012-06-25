@@ -512,7 +512,7 @@ Thread: {
 		if (html.match(/<\!\-\- INFO(\{.+?\})\-\->/))
 		{
 			var obj;
-			EVAL("obj = "+ RegExp.$1, {});	//{ status, total, new }
+			eval("obj = "+ RegExp.$1);	//{ status, total, new }
 			if (obj.new)
 			{	//新着があるとき～
 				if (html.match(/<!--BODY.START-->([\s\S]+)<!--BODY.END-->/))
@@ -521,13 +521,12 @@ Thread: {
 					nc.innerHTML = RegExp.$1;
 					this.Message.onLoad($A(nc.getElementsByTagName("ARTICLE")));
 				}
-				//TODO::既存の新着マーク除去
-				
 				this.Info.Total = obj.total;
 				this.Info.New = obj.new;
 				this.Info.Fetched = obj.total - obj.new;
 				this.Info.Status = obj.status;
 				this.Message.deployTo(this.Info.Total);
+				NewMark.setMark();
 				$M(this.Info.Fetched + 1).focus();
 			}
 			Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", StringUtil.timestamp()));
@@ -786,6 +785,10 @@ Thread: {
 				if ((this.deployedMin == 0) || (n < this.deployedMin)) this.deployedMin = n;
 				if ((n==2) && (this.isDeployed(2))) this.deployedMin = 1;
 				if (this.deployedMax < n) this.deployedMax = n;
+				this.deployedFirst = (this.deployedMin == 1);
+				this.deployedAll   = (this.deployedMax == Skin.Thread.Info.Total);
+				document.body.dataset.deployedFirst = this.deployedFirst ? "y" : "";
+				document.body.dataset.deployedAll   = this.deployedAll   ? "y" : "";
 				if (Preference.AutoPreviewOutLinks)
 				{
 					$M(node).previewLinks();
@@ -1128,9 +1131,11 @@ Services: {
 		
 		init: function MarkerServices_init()
 		{
+			NewMark.init();
 			Bookmark.init();
 			Pickup.init();
 			Tracker.init();
+			this.push(NewMark);
 			this.push(Bookmark);
 			this.push(Pickup);
 			this.push(Tracker);
@@ -2601,18 +2606,14 @@ MarkerService.prototype = {
 	},
 	save: function MarkserService_save()
 	{
+		if (!this.storageKey) return;
 		var str = this.getSaveStr();
-		if (this.global)
-		{
-			Skin.CommonPref.writeGlobalObject(this.storageKey, str);
-		}
-		else
-		{
-			Skin.CommonPref.writeThreadObject(this.storageKey, str);
-		}
+		(this.global) ?
+			Skin.CommonPref.writeGlobalObject(this.storageKey, str) : Skin.CommonPref.writeThreadObject(this.storageKey, str);
 	},
 	load: function MarkerService_load()
 	{
+		if (!this.storageKey) return;
 		return (this.global) ?
 			Skin.CommonPref.readGlobalObject(this.storageKey) : Skin.CommonPref.readThreadObject(this.storageKey);
 	},
@@ -2666,6 +2667,18 @@ MarkerService.prototype = {
 		if(this.marked) this.marked();	//マーク後処理
 	},
 };
+
+/* ■新着マーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var NewMark = new MarkerService(false, null, "new", true);
+	NewMark.init = NewMark.getSaveStr = NewMark._add = NewMark._del = function NewMark_dmy(){}
+	NewMark.getMarkerClass = function NewMark_getMarkerClass(node)
+	{
+		return (parseInt(node.dataset.no) > Skin.Thread.Info.Fetched) ? "y" : "";
+	}
+	NewMark.marked = function NewMark_marked()
+	{
+	}
+
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = new MarkerService(false, "bm", "bm", true);
 	Bookmark.init = function Bookmark_init()
