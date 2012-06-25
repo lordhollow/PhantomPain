@@ -1733,6 +1733,118 @@ EventHandler: {
 	},
 	keydown: function EventHandler_keydown(e)
 	{
+		var vk = "";
+		if (e.shiftKey) vk += "Shift";
+		if (e.ctrlKey)  vk += "Ctrl";
+		if (e.altKey)   vk += "Alt";
+		var c = e.which;
+		if (this.specialKey[c])
+		{
+			vk += this.specialKey[c];
+		}
+		else if ((c >= 48) && (c<=90))
+		{
+			vk += String.fromCharCode(c);
+		}
+		else if ((c >= 96) && (c <= 105))
+		{
+			vk += "NUM" + (c-96);
+		}
+		else if ((c >=112) && (c <= 123))
+		{
+			vk += "F" + (c-111);
+		}
+		if (e.target.className == "KeyCheck")
+		{
+			e.target.value = vk;
+		}
+		else if (e.target.tagName == "INPUT")
+		{
+		}
+		else if (this.keyAssign[this.mode] && this.keyAssign[this.mode][vk])
+		{
+			var command = this.keyAssign[this.mode][vk];
+			Macro._invoke(command);
+			e.preventDefault();
+		}
+	},
+	keyAssign: {
+		thread: {
+			//ここはPreferenceで上書きできるようにしたいな～
+			Enter:	"Write",
+			AltEnter:	"Write",
+			AltW:	"Write",
+			AltA:	"Viewer",
+			AltD:	"Config",
+			AltZ:	"Finder",
+			AltI:	"Preview",
+			AltJ:	"Jump",
+			AltN:	"JumpToNew",
+			AltR:	"Check",
+			AltP:	"expressPickup",
+			AltX:	"BoardPane",
+			AltNum0:	"FocusEnd",
+			AltNum1:	"FocusTop",
+			AltNum2:	"FocusBookmark",
+			AltNum3:	"FocusNew",
+			CtrlSpace:	"Check",
+			ShiftCtrlSpace:	"AutoCheck",
+		},
+		viewer: {
+			Escape:	"Viewer.Exit",
+			Left:	"Viewer.Prev",
+			PageUp:	"Viewer.Prev",
+			Enter:	"Viewer.Next",
+			Space:	"Viewer.Next",
+			Right:	"Viewer.Next",
+			PageDown:	"Viewer.Next",
+			End:	"Viewer.Last",
+			Down:	"Viewer.Last",
+			Home:	"Viewer.First",
+			Up: 	"Viewer.First",
+		},
+	},
+	specialKey: {
+		8: "BS",
+		9: "Tab",
+		13: "Enter",
+		19: "Pause",
+		27: "Esc",
+		28: "Convert",		//	変換
+		29: "NonConvert",	//	無変換
+		32: "Space",
+		33: "PageUp",
+		34: "PageDown",
+		35: "End",
+		36: "Home",
+		37: "Left",
+		38: "Up",
+		39: "Right",
+		40: "Down",
+		45: "Insert",
+		46: "Delete",
+		91: "LeftWin",
+		92: "RigthWin",
+		93: "App",
+		106: "*",
+		107: ";",
+		107: "+",
+		109: "-",
+		110: ".",
+		111: "/",
+		144: "NumLock",
+		145: "ScrollLock",
+		188: ",",
+		190: ".",
+		191: "/",
+		192: "@",
+		219: "[",
+		220: "BackSlash",
+		221: "]",
+		222: "^",
+		226: "_",
+		240: "CapsLock",
+		242: "Hiragana",
 	},
 	mouseDown: function EventHandler_mouseDown(aEvent)
 	{
@@ -3577,5 +3689,79 @@ var $M = function GetManipulator(NodeOrNo)
 {
 	return Skin.Thread.Message.getManipulator(NodeOrNo);
 }
-
+var Macro = {
+	_entries: ["Write", "Viewer", "Config", "Finder", "Preview", "Jump", 
+	           "Check", "AutoCheck", "expressPickup", "BoardPane",
+	           "FocusEnd", "FocusTop", "FocusBookmark", "FocusNew",
+	           "M_resTo","M_toggleRefferPopup","M_toggleIdPopup","M_expressReffer",
+	           "M_toggleRefTree","M_openRefTree","M_closeRefTree","M_toggleBookmark",
+	           "M_setBookmark","M_resetBookmark","M_togglePickup","M_setPickup",
+	           "M_resetPickup","M_toggleTracking","M_beginTracking","M_endTracking",
+	           "M_previewLinks","M_focus","M_closeIfPopup",
+	],
+	exprain: {
+		Write: "書き込みダイアログ",
+		Viewer: "ビューアー表示",
+		Config: "設定",
+		Finder: "検索",
+		Preview: "プレビュー展開",
+		Jump: "番号指定ジャンプ",
+		Check: "新着チェック",
+		AutoCheck: "自動新着チェック",
+		expressPickup: "ピックアップ抽出",
+		BoardPane: "スレ一覧",
+		FocusEnd: "最後にフォーカス",
+		FocusTop: "最初にフォーカス",
+		FocusBookmark: "ブックマークにフォーカス",
+		FocusNew: "新着にフォーカス",
+		M_resTo: "返信",
+		M_toggleRefferPopup: "逆参照ポップアップ",
+		M_toggleIdPopup: "IDポップアップ",
+		M_expressReffer: "逆参照抽出",
+		M_toggleRefTree: "逆参照ツリー",
+		M_openRefTree: "逆参照ツリー構築",
+		M_closeRefTree: "逆参照ツリー解体",
+		M_toggleBookmark: "ブックマーク",
+		M_setBookmark: "ブックマーク設定",
+		M_resetBookmark: "ブックマーク解除",
+		M_togglePickup: "ピックアップ",
+		M_setPickup: "ピックアップ設定",
+		M_resetPickup: "ピックアップ解除",
+		M_toggleTracking: "トラッキング",
+		M_beginTracking: "トラッキング開始",
+		M_endTracking: "トラッキング解除",
+		M_previewLinks: "プレビュー(単一)",
+		M_focus: "フォーカス",
+		M_closeIfPopup: "ポップアップなら閉じる",
+	},
+	_invoke: function(command, t)
+	{	//Manipulatorコマンド時はtにnode(またはその子要素)を指定すること。
+		//なければ、レスメニューがあるノード。
+		if (command.substr(0,2) == "M_")
+		{
+			if (!t) t = Skin.ResMenu._menu.parentNode;
+			if (t)
+			{
+				var n = DOMUtil.getDecendantNode(t, "ARTICLE");
+				if (n) $M(n).invoke(command.substr(2));
+			}
+		}
+		else if (this[command]) this[command]();
+	},
+	Write: function(){ Skin.Thread.openWriteDialog(); },
+	Viewer: function(){},
+	Config: function(){},
+	Finder: function(){},
+	Preview: function(){},
+	Jump: function(){},
+	JumpToNew: function(){},
+	Check: function(){},
+	AutoCheck: function(){},
+	expressPickup: function(){},
+	BoardPane: function(){},
+	FocusEnd: function(){},
+	FocusTop: function(){},
+	FocusBookmark: function(){},
+	FocusNew: function(){},
+}
 window.addEventListener("load", function pp3initializer(){ PP3.init(); });
