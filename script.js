@@ -775,7 +775,7 @@ Thread: {
 			//構造解析
 			this.Structure.analyze(nodes);
 			//マーカー登録
-			//★MarkerServices.nodeLoaded(nodes);
+			Skin.Services.Marker.nodeLoaded(nodes);
 		},
 		onDeploy: function Message_onDeploy(nodes)
 		{
