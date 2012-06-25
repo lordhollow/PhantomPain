@@ -136,12 +136,27 @@ var Skin = PP3 = {
 	skinVer: "ver. \"closed alpha\"",
 	init: function()
 	{
+		var dt1 = new Date();
+
 		//loadPref
 		this.BoardList.init();
-		this.Thread.init();		//ThreadInit
+		this.Thread.init();
 		this.Services.Marker.init();
 		
+		this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
+		$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
+		document.title = Skin.Thread.Info.Title + " - {0}({1})".format(this.ownerApp, this.skinName);				//タイトル修正
+		//★if (Preference.FocusNewResAfterLoad) Menu.JumpToNewMark();			//新着あればジャンプ
+
 		this.EventHandler.init();
+
+		Notice.add(Skin.Thread.Info.Status);
+		Notice.add("{0} messages.".format(Skin.Thread.Info.Total));
+		if (Skin.Thread.Info.New) Notice.add("({0} new messages.)".format(Skin.Thread.Info.New));
+	
+		var dt2 = new Date();
+		Notice.add("{0} ms for initialize".format(dt2-dt1));
+
 	},
 	Configulator: {
 	},
