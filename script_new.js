@@ -2680,8 +2680,20 @@ ViewerEntry.prototype = {
 	typename: "ViewerEntry",
 };
 
-function ResManipulator(){}
+function ResManipulator(NodeOrNo){ this.init(NodeOrNo);}
 ResManipulator.prototype = {
+	init: function ResManipulator_init(NodeOrNo)
+	{
+		if (NodeOrNo.tagName && (NodeOrNo.TagName == "ARTICLE"))
+		{
+			this.node = NodeOrNo;
+			this.no = parseInt(node.dataset.no);
+		}
+		else
+		{
+			this.no = parseInt(NodeOrNo);
+		}
+	},
 	resTo: function NodeUtil_resTo(){},
 	toggleRefferPopup: function NodeUtil_toggleRefferPopup( t){},
 	toggleIdPopup: function NodeUtil_toggleIdPopup( t){},
