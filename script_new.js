@@ -826,7 +826,7 @@ var Skin = PP3 = {
 					}
 					//その他
 					html += '<h1>etc.</h1><ul>';
-					html += '<li><form onsubmit="Thread.loadFocus(jumpto.value);return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
+					html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
 					html += '<li><a class="navboardlist">スレ一覧</a></li>';
 					html += '<li><a class="navprevthread">前スレ</a></li>';
 					html += '<li><a class="navnextthread">次スレ</a></li>';
