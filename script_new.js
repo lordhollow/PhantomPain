@@ -1802,6 +1802,11 @@ var Skin = PP3 = {
 			{
 				cancel = this.ClassClickHandler[t.className](t, e);
 			}
+			if (t.dataset.action)
+			{
+				var M = $M(DOMUtil.getDecendantNode(t, "ARTICLE"));
+				if (M[t.dataset.action]) M[t.dataset.action]();
+			}
 			if (Skin.Thread.Navigator.isNavigationElement(t))
 			{
 				Skin.Thread.Navigator.invokeNavigation(t);
@@ -1915,6 +1920,44 @@ var Skin = PP3 = {
 			Menu_Config: function IdClickHandler_Menu_Config(t, ev)
 			{
 				Skin.Configulator.toggle(t);
+			},
+			RMenu_Ref: function IdClickhandler_RMenu_Ref(t, ev)
+			{
+				var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+				if (node.dataset.popupRefShowing != "y")
+				{
+					node.dataset.popupRefShowing = "y";
+					var pp = new ResPopup(null);
+					pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
+					pp.popup(Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no), "RMenu_Ref");
+					node.refPopup = pp;	//Ç‚Ç‚Ç±ÇµÇ≠Ç»ÇÈÇ©ÇÁdomÇ…objÇéùÇΩÇπÇΩÇ≠Ç»Ç¢ÇØÇ«Ç»ÇüÅEÅEÅE
+				}
+				else
+				{
+					if (node.refPopup) node.refPopup.close();
+				}
+			},
+			RMenu_Track: function IdClickhandler_RMenu_Track(t, ev)
+			{
+				var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+				var tracking = Tracker.getTracker(node.dataset.no);
+				if (tracking)
+				{
+					PopupUtil.toggleResPopup($("RMenu_Track"), tracking.getTrackingNumbers(), true, "í«ê’");
+				}
+			},
+			RMenu_Gear: function IdClickhandler_RMenu_Gear(t, ev)
+			{
+				if (t.enchantedGear)
+				{
+					t.enchantedGear.close();
+				}
+				else
+				{
+					var node = DOMUtil.getDecendantNode(t, "ARTICLE");
+					var pp = new GearPopup(t);
+					pp.showPopup(parseInt(node.dataset.no), DOMUtil.getElementPagePos(t), false);
+				}
 			},
 		},
 		ClassClickHandler: {
