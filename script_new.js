@@ -2694,25 +2694,207 @@ ResManipulator.prototype = {
 			this.no = parseInt(NodeOrNo);
 		}
 	},
-	resTo: function NodeUtil_resTo(){},
-	toggleRefferPopup: function NodeUtil_toggleRefferPopup( t){},
-	toggleIdPopup: function NodeUtil_toggleIdPopup( t){},
-	expressReffer: function NodeUtil_expressReffer(){},
-	closeRefTree: function NodeUtil_closeRefTree(){},
-	toggleRefTree: function NodeUtil_toggleRefTree(){},
-	openRefTree: function NodeUtil_openRefTree(){},
-	toggleBookmark: function NodeUtil_toggleBookmark(){},
-	setBookmark: function NodeUtil_setBookmark(){},
-	resetBookmark: function NodeUtil_resetBookmark(){},
-	togglePickup: function NodeUtil_togglePickup(){},
-	setPickup: function NodeUtil_setPickup(){},
-	resetPickup: function NodeUtil_resetPickup(){},
-	previewLinks: function NodeUtil_previewLinks(){},
-	toggleTracking: function NodeUtil_toggleTracking(){},
-	beginTracking: function NodeUtil_beginTracking(){},
-	endTracking: function NodeUtil_endTracking(){},
-	focus: function NodeUtil_focus(no){},
-	closeIfPopup: function NodeUtil_closeIfPopup(){},
+	resTo: function ResManipulator_resTo()
+	{
+		if (this.no) Skin.Thread.openWriteDialog(this.no);
+	},
+	toggleRefferPopup: function ResManipulator_toggleRefferPopup(t)
+	{
+		if (this.node)
+		{
+			if (!t) t = node.children[1].children[0];	//Noのとこ
+			PopupUtil.toggleResPopup(t, Skin.Thread.Message.Structure.getReplyIdsByNo(this.no), true,  "ResTo>>"+node.dataset.no);
+		}
+	},
+	toggleIdPopup: function ResManipulator_toggleIdPopup(t)
+	{
+		if (this.node)
+		{
+			if (!t) t = node.children[1].children[2];	//IDのとこ
+			PopupUtil.toggleResPopup(t,Skin.Thread.Message.Structure.getNodeIdsById(this.no),true, "ID>>" + t.textContent);
+		}
+	},
+	expressReffer: function ResManipulator_expressReffer()
+	{
+		Skin.Finder.enterExpressMode();
+		$("fform").q.value = "[resto:{0}]".format(this.no);
+		Skin.Finder.express();
+	},
+	toggleRefTree: function ResManipulator_toggleRefTree()
+	{
+		if (this.node)
+		{
+			if (this.node.dataset.treed == "y")
+			{
+				this.closeRefTree(this.node);
+			}
+			else
+			{
+				this.openRefTree(this.node);
+			}
+		}
+	},
+	openRefTree: function ResManipulator_openRefTree()
+	{
+		if (this.node)
+		{
+			this.closeRefTree();	//一度閉じる
+			this.node.dataset.treed = "y";
+			this._openRefTreeEx(this.no, this.node);
+		}
+	},
+	closeRefTree: function ResManipulator_closeRefTree()
+	{
+		if (this.node)
+		{
+			var nodes = $A(this.node.childNodes).filter(function(x){ return x.tagName == "ARTICLE"; });
+			for(var i=0,j=nodes.length; i<j; i++)
+			{
+				this.node.removeChild(nodes[i]);
+			}
+			this.node.dataset.treed = "";
+		}
+	},
+	toggleBookmark: function ResManipulator_toggleBookmark()
+	{
+		if (this.no)
+		{
+			if (Bookmark.no == no)
+			{
+				Bookmark.del(no);
+			}
+			else
+			{
+				Bookmark.add(no);
+			}
+		}
+	},
+	setBookmark: function ResManipulator_setBookmark()
+	{
+		if (this.no) Bookmark.add(this.no);
+	},
+	resetBookmark: function ResManipulator_resetBookmark()
+	{
+		if (this.no == Bookmark.no) Bookmark.del(this.no);
+	},
+	togglePickup: function ResManipulator_togglePickup()
+	{
+		if (this.no)
+		{
+			if (Pickup.pickups.include(no))
+			{
+				Pickup.del(no);
+			}
+			else
+			{
+				Pickup.add(no);
+			}
+		}
+	},
+	setPickup: function ResManipulator_setPickup()
+	{
+		if (this.no) Pickup.add(this.no);
+	},
+	resetPickup: function ResManipulator_resetPickup()
+	{
+		if (this.no) Pickup.del(this.no);
+	},
+	toggleTracking: function ResManipulator_toggleTracking()
+	{
+		var node = this.node || Skin.Thread.Message.getNode(this.no, false);
+		if (node)
+		{
+			if (node.datset.track == "")
+			{
+				Tracker.add(this.no);
+			}
+			else
+			{
+				Tracker.del(this.no);
+			}
+		}
+	},
+	beginTracking: function ResManipulator_beginTracking()
+	{
+		if (this.no) Tracker.add(this.no);
+	},
+	endTracking: function ResManipulator_endTracking()
+	{
+		if (this.no) Tracker.del(this.no);
+	},
+	previewLinks: function ResManipulator_previewLinks()
+	{
+		if (this.node)
+		{
+			var outlinks = this.node.getElementsByClassName("outLink");
+			var container = this.node.getElementsByClassName("outLinkPreview");
+			if ((outlinks.length > 0) && (container.length == 0))
+			{
+				container = document.createElement("DIV");
+				container.className = "outLinkPreview";
+				this.node.appendChild(container);
+				for(var i=0,j=outlinks.length; i<j; i++)
+				{
+					var plugin = Skin.Services.OutLink.getOutlinkPlugin(outlinks[i]);
+					var c = plugin.getPreview(outlinks[i].href, null, false);
+					if (c) container.appendChild(c);
+				}
+			}
+			else
+			{	//展開済み or Outlinkなし
+				return;
+			}
+		}
+	},
+	focus: function ResManipulator_focus()
+	{
+		if (Skin.Thread.Message.isDeployed(this.no))
+		{
+			var node = this.node || Skin.Thread.Message.getNode(this.no, false);
+			if (node)
+			{
+				window.scrollTo(0, DOMUtil.getElementPagePos(node).pageY - (window.innerHeight * 0.3));
+				//目立たせる
+				node.dataset.focus = "on";
+				setTimeout(function(){ node.dataset.focus = ""; }, 1000)
+			}
+		}
+	},
+	closeIfPopup: function ResManipulator_closeIfPopup()
+	{
+		var node = this.node;
+		while(node)
+		{
+			if (node.popup)
+			{
+				node.popup.close();
+			}
+			node = node.parentNode;
+		}
+	},
+	
+	_openRefTreeEx: function ResManipulator__openRefTreeEx(from, c)
+	{
+		var rf = Skin.Thread.Message.Structure.getReplyIdsByNo(from);
+		if(rf)
+		{
+			for(var i=0, j = rf.length; i < j; i++)
+			{
+				var node = Skin.Thread.Message.getNode(rf[i], true);	//ARTICLE
+				if (rf[i] > from)
+				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
+					this._openRefTreeEx(rf[i], node);
+				}
+				else
+				{
+					node.dataset.backward = "y";
+				}
+				node.dataset.treed = "y";
+				c.appendChild(node);
+			}
+		}
+	},
+
 };
 
 //ショートカット
