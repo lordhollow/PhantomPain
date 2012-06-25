@@ -397,7 +397,7 @@ var Skin = PP3 = {
 					this.Message.deployTo(this.Info.Total);
 					$M(this.Info.Fetched + 1).focus();
 				}
-				Notice.add("{1} êVíÖ{0}".format(obj.new ? obj.new + "åè" : "Ç»Çµ", Util.timestamp()));
+				Notice.add("{1} êVíÖ{0}".format(obj.new ? obj.new + "åè" : "Ç»Çµ", StringUtil.timestamp()));
 			}
 		},
 		Message: {
@@ -1252,7 +1252,7 @@ var Skin = PP3 = {
 						this._entries[href] = entry;
 						this._orderd.push(entry);
 					}
-					this._entries[href].addRelation(parseInt(Util.getDecendantNode(a, "ARTICLE").dataset.no));
+					this._entries[href].addRelation(parseInt(DOMUtil.getDecendantNode(a, "ARTICLE").dataset.no));
 				}
 			}
 		},
@@ -1474,7 +1474,7 @@ var Skin = PP3 = {
 					c.innerHTML = "{0} Images.<br><br>".format(s.total);
 				}
 				var ctrl = $("ViewerCtrl");
-				Util.notifyRefreshInternal(ctrl);
+				DOMUtil.notifyRefreshInternal(ctrl);
 			}
 		},
 		show: function Viewer_show()
