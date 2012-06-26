@@ -2255,8 +2255,8 @@ EventHandler: {
 			}
 		}
 		if(cancel){
-			aEvent.preventDefault();
-			aEvent.stopPropagation();
+			e.preventDefault();
+			e.stopPropagation();
 		}
 	},
 	IdClickHandler: {
@@ -2347,18 +2347,24 @@ EventHandler: {
 		{
 			Skin.BoardPane.toggle();
 		}
-		else if (t.className == "resPointer")
+		else if (t.className && (this.ClassDblClickHandler[t.className]))
+		{
+			this.ClassDblClickHandler[t.className](t, e);
+		}
+	},
+	ClassDblClickHandler: {
+		resPointer: function ClassDblClickHandler_resPointer(t, e)
 		{
 			if(t.textContent.match(/(\d+)/))
 			{
 				Skin.Thread.Message.deployTo(RegExp.$1);
 				$M(RegExp.$1).focus();
 			}
-		}
-		else if (t.className == "popup")
+		},
+		popup: function ClassDblClickHandler_popup(t, e)
 		{
 			t.popup.close();
-		}
+		},
 	},
 	mouseWheel: function EventHandler_mouseWheel(e)
 	{
