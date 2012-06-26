@@ -253,16 +253,13 @@ h2
 	{
 		border-top: solid 1px #9F9;
 		border-left: solid 2px #9F9;
-	}
-	h2.res
-	{
 		border-color: #99F;
 	}
-	article[data-new="y"] > h2.res
+	article[data-new="y"] > h2
 	{
 		border-color: #F99;
 	}
-	h2.ng
+	article[data-ng="y"] > h2
 	{
 		border-color: #CCC;
 	}
