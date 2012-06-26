@@ -23,6 +23,7 @@ var _Preference =
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	ChapterWidth: 100,			//Naviのチャプター幅
 	EnableNextThreadSearch: true,	//次スレ検索有効？
+	UseReplaceStrTxt: false,		//ReplaceStr.txtを使用する？
 	NextThreadSearchBeginsAt: 900,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
 	//レスをダブルクリックしたらどうなる？
@@ -59,7 +60,7 @@ var Content = {
 		messageCheckedWithNew: "{0} 新着{1}件",
 		messageNextThreadSet: "次スレを {0} に設定しました。",
 		messagePopupInitializedError: "PopupInitializedError",
-		
+		messageInvalidReplaceStr: "\"{0}\"をReplaceStrの書式として認識できませんでした。",
 		navigatorChapterTitle: "CHAPTER",
 		navigatorChapterNext: "next.",
 		navigatorChapterPrev: "prev.",
@@ -590,6 +591,7 @@ Thread: {
 		deployedMax: 0,
 		init: function Message_init()
 		{
+			this._replaceStr.init();
 			var nodes = $A($("resContainer").children);
 			this.onLoad(nodes);
 			this.onDeploy(nodes);
@@ -800,7 +802,7 @@ Thread: {
 					var no = parseInt(node.dataset.no);
 					var msgNode = node.childNodes[1];
 					this._extendAnchor(msgNode);
-					this._replaceStr(msgNode);
+					this._replaceStr.replace(node);
 					this.domobj[no] = node;
 					this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
 					//新着判定
@@ -890,9 +892,6 @@ Thread: {
 			}
 		},
 		_dblSizeAnchorRegExp: new RegExp("(＞＞|＞|&gt;&gt;|&gt;)([0-9０-９,\-]+)","g"),
-		_replaceStr: function Message__replaceStr(node)
-		{
-		},
 		Structure: {
 			nodesById: new Array(),		//いわゆるID
 			nodesReplyFrom: new Array(),	//いわゆる逆参照情報
@@ -973,6 +972,93 @@ Thread: {
 					if (replyTo[i]) ret.push(i);
 				}
 				return ret;	
+			},
+		},
+		_replaceStr: {
+			info: new Array(),
+			init: function ReplaceStr_init()
+			{
+				if (!Preference.UseReplaceStrTxt) return;
+				var txt = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "ReplaceStr.txt");
+				if (txt=="")return;
+				txt = txt.replace(/\r/g, "\n");
+				var d=txt.split("\n");
+				for(var i=0,j=d.length;i<j;i++)
+				{
+					if (d[i].length && (!d[i].match(/^('|;|\/\/)/)))
+					{
+						this.addPattern(d[i]);
+					}
+				}
+			},
+			addPattern: function ReplaceStr_addPattern(ptn)
+			{
+				//<ex>?置換対象の文字列\t置換文字列?\t?置換対象?\t?<n>?対象URL/タイトル?
+				if(ptn.match(/^(<([^>]*)>)?([^\t]*)\t([^\t]*)\t?([^\t]*)\t?(<([0-5])>)?(.*)/i))
+				{
+					var c = {
+						mode: RegExp.$2.toLowerCase() || "ex",
+						ptn:  RegExp.$3, str:  RegExp.$4,
+						tgt:  RegExp.$5 || "all",
+						n:    RegExp.$7 || "6",  url:  RegExp.$8,
+					};
+					if (!c.ptn.length || (this.urlFilter[c.n] && (this.urlFilter[c.n](c.url, Skin.Thread.Info.Url + "/" + Skin.Thread.Info.Title))))
+					{
+						 c.convert = this.createConverter(c);
+						this.info.push(c);
+						return;
+					}
+				}
+				Notice.add($C("messageInvalidReplaceStr").format(ptn));
+			},
+			replace: function ReplaceStr_replace(node)
+			{
+				if (node.tagName != "ARTICLE") return;
+				for (var i=0; i< this.info.length; i++)
+				{
+					this.info[i].convert(node);
+				}
+			},
+			createConverter: function Replace_str(c)
+			{
+				var ptn = this.pattern[c.mode] || this.pattern.ex;
+				var reg = ptn(c.ptn, this.escapeRegPtn);
+				var sel = this.selector[c.tgt] || this.selector.all;
+				var str = c.str;
+				return function(node)
+				{
+					var s = sel(node);
+					s.innerHTML = s.innerHTML.replace(reg, str);
+				};
+			},
+			escapeRegPtn: function(ptn)
+			{
+				return ptn.replace(/([\\\/\.\+\-\*\[\(\)\]\{\}\$\|])/g,"\\$1");
+			},
+			urlFilter: [
+				function urlFilter_n0(p, u){ return u.indexOf(p) >= 0; },
+				function urlFilter_n1(p, u){ return u.indexOf(p) <  0; },
+				function urlFilter_n2(p, u){ return u == p; },
+				function urlFilter_n3(p, u){ return u != p; },
+				function urlFilter_n4(p, u){ return u.match(p); },
+				function urlFilter_n5(p, u){ return !u.match(p); },
+				function urlFilter_n6(p, u){ return true; },
+			],
+			selector: {
+				all:  function ReplaceStr_nodeSelector_all(node){ return node; },
+				name: function ReplaceStr_nodeSelector_name(node){ return node.children[0].children[3]; },
+				mail: function ReplaceStr_nodeSelector_mail(node){ return node.children[0].children[5]; },
+				date: function ReplaceStr_nodeSelector_date(node){ return node.children[0].children[1]; },
+				msg:  function ReplaceStr_nodeSelector_msg(node){ return node.children[1]; },
+				id:   function ReplaceStr_nodeSelector_id(node){ return node.children[0].children[2]; },
+				be:   function ReplaceStr_nodeSelector_id(node){ return node.children[0].children[4]; },
+			},
+			pattern: {
+				ex: function ReplaceStr_pattern_ex(ptn, esc){ return new RegExp(esc(ptn), "g"); },
+				ex2: function ReplaceStr_pattern_ex2(ptn, esc){ return new RegExp(esc(ptn), "ig"); },
+				rx: function ReplaceStr_pattern_rx(ptn, esc){ return new RegExp(ptn, "g"); },
+				rx2: function ReplaceStr_pattern_rx2(ptn, esc){ return new RegExp(ptn, "ig"); },
+				rx3: function ReplaceStr_pattern_rx2(ptn, esc){ return new RegExp(ptn, "igm"); },
 			},
 		},
 	},
