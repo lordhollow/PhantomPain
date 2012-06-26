@@ -283,6 +283,7 @@ var $=function prototype_getElementById(id){return document.getElementById(id);}
 
 String.format = function String_format(p_txt)
 {
+/*
 	if ( arguments.length <= 1 ) {
 		return p_txt;
 	}
@@ -291,6 +292,10 @@ String.format = function String_format(p_txt)
 		p_txt = p_txt.replace(new RegExp("\\{" + (v_idx - 1) + "\\}", "gi"), arguments[v_idx]);
 	}
 	return p_txt;
+*/
+	if ( arguments.length <= 1 ) return p_txt;
+	var A=arguments;
+	return p_txt.replace(/{(\d+)}/g, function StringFormat_Replacement(all,$1) {return A[parseInt($1)+1];});
 };
 
 String.prototype.format = function StringPrototype_format()
@@ -975,10 +980,16 @@ Thread: {
 			},
 		},
 		_replaceStr: {
-			info: new Array(),
+			info: null,
 			init: function ReplaceStr_init()
 			{
 				if (!Preference.UseReplaceStrTxt) return;
+				this.info = EVAL("[" + (Skin.CommonPref.readGlobalObject("ReplaceStr") || "") + "]", [])[0];
+				if (!this.info) this.reloadDefine();
+			},
+			reloadDefine: function ReplaceStr_reloadDefine()
+			{
+				this.info = new Array();
 				var txt = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "ReplaceStr.txt");
 				if (txt=="")return;
 				txt = txt.replace(/\r/g, "\n");
@@ -990,6 +1001,25 @@ Thread: {
 						this.addPattern(d[i]);
 					}
 				}
+				this.saveDefine();
+			},
+			saveDefine: function ReplaceStr_saveDefine()
+			{
+				var saveStr = "[";
+				var e = function (s)
+				{
+					s = s.replace(/\\/g, "\\\\");
+					s = s.replace(/"/g, "\\\"");
+					return s;
+				};
+				for(var i=0; i<this.info.length; i++)
+				{
+					var ii = this.info[i];
+					saveStr += '{ mode: "{0}", ptn: "{1}", str: "{2}", tgt: "{3}", n: "{4}", url: "{5}"}, '.format(
+						e(ii.mode), e(ii.ptn), e(ii.str), e(ii.tgt), e(ii.n), e(ii.url) );
+				}
+				saveStr += "]";
+				Skin.CommonPref.writeGlobalObject("ReplaceStr", saveStr);
 			},
 			addPattern: function ReplaceStr_addPattern(ptn)
 			{
@@ -1004,7 +1034,6 @@ Thread: {
 					};
 					if (!c.ptn.length || (this.urlFilter[c.n] && (this.urlFilter[c.n](c.url, Skin.Thread.Info.Url + "/" + Skin.Thread.Info.Title))))
 					{
-						 c.convert = this.createConverter(c);
 						this.info.push(c);
 						return;
 					}
@@ -1016,7 +1045,9 @@ Thread: {
 				if (node.tagName != "ARTICLE") return;
 				for (var i=0; i< this.info.length; i++)
 				{
-					this.info[i].convert(node);
+					var c = this.info[i];
+					if(!c.convert) c.convert = this.createConverter(c);
+					c.convert(node);
 				}
 			},
 			createConverter: function Replace_str(c)
