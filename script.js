@@ -32,6 +32,56 @@ var _Preference =
  
 };
 
+var Content = {
+	mode: "jp",
+	_jp: {
+		title: "{0} - {1}({2})",
+		defaultBoardName: "その他の掲示板",
+
+		popupCaptionTemplate: "テンプレ",
+		popupCaptionNavigation: "Navigation",
+		popupCaptionPickup: "Pickup",
+		popupCaptionTracking: "追跡", 
+		popupCaptionGear: "GEAR>>{0}",
+		popupCaptionResTo: "ResTo>>{0}",
+		popupCaptionId: "ID>>{0}",
+		popupContentThreadDefault: "(スレタイ未取得)",
+		popupContentThreadError: "(スレッドロードエラー)",
+		popupContentThreadTitle: "スレタイを取得。未読スレの場合、既読になります。",
+		popupContentThreadSetNext: "次スレに指定",
+		
+		messageLoaded: "{0} messages.",
+		messageNewResDetected: "({0} new messages.)",
+		messageResetPreference: "設定をクリアしました",
+		messageInitialized: "{0} ms for initialize",
+		messageLoadError: "Load Error.",
+		messageCheckedWithoutNew: "{0} 新着なし",
+		messageCheckedWithNew: "{0} 新着{1}件",
+		messageNextThreadSet: "次スレを {0} に設定しました。",
+		messagePopupInitializedError: "PopupInitializedError",
+		
+		navigatorChapterTitle: "CHAPTER",
+		navigatorChapterNext: "next.",
+		navigatorChapterPrev: "prev.",
+		navigatorBacklogTitle: "BACKLOG",
+		navigatorBacklogAll: "全て",
+		navigatorMiscTitle: "etc.",
+		navigatorMiscJump: "JumpTo:",
+		navigatorMiscList: "スレ一覧",
+		navigatorMiscNext: "次スレ",
+		navigatorMiscPrev: "前スレ",
+		
+		finderSubmit: "抽出",
+		finderRegExp: "正規表現",
+		finderCheckCase: "大小区別",
+		finderOnlyPickup: "pickupのみ",
+	},
+	get: function Content_get(id)
+	{
+		return this["_" + this.mode][id] || this["_jp"][id] || "";
+	},
+}
+
 var Macro = {
 	_entries: ["Write", "Template", "Viewer", "Config", "Finder", "Navigation", "Notice", "Preview", "Jump", 
 	           "Check", "AutoCheck", "ExpressPickup", "BoardPane",
@@ -104,7 +154,7 @@ var Macro = {
 		{
 			var tids = [];
 			for(var i=1; i<=Preference.TemplateLength; i++) tids.push(i);
-			PopupUtil.toggleResPopup(t, tids, true, "テンプレ");
+			PopupUtil.toggleResPopup(t, tids, true, $C("popupCaptionTemplate"));
 		}
 		else 
 		{	//TemplateLength = 0設定時はギアとして出す
@@ -122,7 +172,7 @@ var Macro = {
 	Viewer: function(){ Skin.Viewer.show(); },
 	Config: function(t){ Skin.Configulator.toggle(t || $("Menu_Config"));},
 	Finder: function(){ Skin.Finder.toggleExpressMode();},
-	Navigation: function(t){ PopupUtil.toggle(t || $("Menu_Navi"), Skin.Thread.Navigator.getNavigation(), true, "Navigation");},
+	Navigation: function(t){ PopupUtil.toggle(t || $("Menu_Navi"), Skin.Thread.Navigator.getNavigation(), true, $C("popupCaptionNavigation"));},
 	Notice: function(){ if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container); },
 	Preview: function(){ Skin.Thread.Message.foreach(function(node){ $M(node).previewLinks(); }, false, true); },
 	Jump: function(){},
@@ -146,7 +196,7 @@ var Macro = {
 		}
 	},
 	AutoCheck: function(){ Skin.Services.AutoUpdate.toggle(); },
-	PopupPickup: function(t){ PopupUtil.toggleResPopup(t || $("Menu_PopupPickups"), Pickup.pickups, true, "Pickup")},
+	PopupPickup: function(t){ PopupUtil.toggleResPopup(t || $("Menu_PopupPickups"), Pickup.pickups, true, $C("popupCaptionPickup"))},
 	ExpressPickup: function()
 	{
 		Skin.Finder.enterExpressMode();
@@ -170,7 +220,7 @@ const OUTLINK_ETC   = 4;	//その他
 
 function PP3ResetPreference()
 {	//ブックマークレットとして javascript:PP3ResetPreference(); を登録しておくと、リセットすることができます。
-	console.log("設定をクリアしました");
+	console.log($C("messageResetPreference"));
 }
 
 Function.prototype.bind = function prototype_bind()
@@ -277,18 +327,18 @@ init: function()
 	
 	this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
-	document.title = Skin.Thread.Info.Title + " - {0}({1})".format(this.ownerApp, this.skinName);				//タイトル修正
+	document.title = $C("title").format(Skin.Thread.Info.Title, this.ownerApp, this.skinName);				//タイトル修正
 	
 	if (Preference.FocusNewResAfterLoad) Macro.FocusNew();			//新着あればジャンプ
 
 	this.EventHandler.init();
 
 	Notice.add(Skin.Thread.Info.Status);
-	Notice.add("{0} messages.".format(Skin.Thread.Info.Total));
-	if (Skin.Thread.Info.New) Notice.add("({0} new messages.)".format(Skin.Thread.Info.New));
+	Notice.add($C("messageLoaded").format(Skin.Thread.Info.Total));
+	if (Skin.Thread.Info.New) Notice.add($C("messageNewResDetected").format(Skin.Thread.Info.New));
 
 	var dt2 = new Date();
-	Notice.add("{0} ms for initialize".format(dt2-dt1));
+	Notice.add($C("messageInitialized").format(dt2-dt1));
 
 },
 Configulator: {
@@ -417,7 +467,7 @@ BoardList: {
 		{
 			return  this.boardNameListSys[boardId];
 		}
-		return "その他の掲示板";
+		return $C("defaultBoardName").format(boardId);
 	},
 	setBoardName: function BoardList_setBoardName(id, name)
 	{
@@ -497,7 +547,7 @@ Thread: {
 	{
 		if (!obj || obj.status == "NG")
 		{
-			Notice.add("Load Error.");
+			Notice.add($C("messageLoadError"));
 		}
 		else
 		{
@@ -529,7 +579,8 @@ Thread: {
 				NewMark.setMark();
 				$M(this.Info.Fetched + 1).focus();
 			}
-			Notice.add("{1} 新着{0}".format(obj.new ? obj.new + "件" : "なし", StringUtil.timestamp()));
+			var format = obj.new ? "messageCheckedWithNew" : "messageCheckedWithoutNew";
+			Notice.add($C(format).format(StringUtil.timestamp(), obj.new));
 		}
 	},
 	Message: {
@@ -941,30 +992,31 @@ Thread: {
 				var html = "";
 				
 				//Chapter
-				html += '<h1>CHAPTER</h1><ul>';
+				html += '<h1>' +$C("navigatorChapterTitle")+ '</h1><ul>';
 				var w = Preference.ChapterWidth;
 				var m = Skin.Thread.Info.Total;
 				for (var i=0; i< (m/w); i++)
 				{
 					html+= '<li><a class="navchapter">{0}-{1}</a></li>'.format(i*w+1, (i+1)*w);
 				}
-				html += '<li><a class="navprevchapter">prev.</a></li>';
-				html += '<li><a class="navnextchapter">next.</a></li>';
+				html += '<li><a class="navprevchapter">' +$C("navigatorChapterNext")+ '</a></li>';
+				html += '<li><a class="navnextchapter">' +$C("navigatorChapterPrev")+ '</a></li>';
 				html += '</ul>';
 				
 				//BacklogWidth
-				html += '<h1>BACKLOG</h1><ul>';
-				var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750", "*ALL*" ];
+				html += '<h1>' +$C("navigatorBacklogTitle")+ '</h1><ul>';
+				var backlogWidths = ["l10", "l50", "l100", "l250", "l500", "l750"];
 				for (var i=0; i<backlogWidths.length; i++)
 				{
 					html+= '<li><a class="navbacklog">{0}</a></li>'.format(backlogWidths[i]);
 				}
+				html+= '<li><a class="navbacklogall">' +$C("navigatorBacklogAll")+ '</a></li>';
 				//その他
-				html += '<h1>etc.</h1><ul>';
-				html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">JumpTo:<input type="text" size="4" name="jumpto"></form></li>';
-				html += '<li><a class="navboardlist">スレ一覧</a></li>';
-				html += '<li><a class="navprevthread">前スレ</a></li>';
-				html += '<li><a class="navnextthread">次スレ</a></li>';
+				html += '<h1>' +$C("navigatorMiscTitle")+ '</h1><ul>';
+				html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">' +$C("navigatorMiscJump")+ '<input type="text" size="4" name="jumpto"></form></li>';
+				html += '<li><a class="navboardlist">' +$C("navigatorMiscList")+ '</a></li>';
+				html += '<li><a class="navprevthread">' +$C("navigatorMiscPrev")+ '</a></li>';
+				html += '<li><a class="navnextthread">' +$C("navigatorMiscNext")+ '</a></li>';
 				html += '</ul>';
 	
 				navi.innerHTML = html;
@@ -980,6 +1032,7 @@ Thread: {
 				case "navprevchapter":
 				case "navnextchapter":
 				case "navbacklog":
+				case "navbacklogall":
 				case "navboardlist":
 				case "navprevthread":
 				case "navnextthread":
@@ -995,22 +1048,25 @@ Thread: {
 			{
 				case "navchapter":
 				case "navbacklog":
-					this.reload(c == "*ALL*" ? "" : c);
+					this.goto(c);
+					break;
+				case "navbacklogall":
+					this.goto("");
 					break;
 				case "navprevchapter":
-					this.reloadToPrevChapter();
+					this.gotoPrevChapter();
 					break;
 				case "navnextchapter":
-					this.reloadToNextChapter();
+					this.gotoNextChapter();
 					break;
 				case "navboardlist":
-					this.transitToThreadList();
+					this.gotoThreadList();
 					break;
 				case "navprevthread":
-					this.transitToPrevThread();
+					this.gotoPrevThread();
 					break;
 				case "navnextthread":
-					this.transitToNextThread();
+					this.gotoNextThread();
 					break;
 				default:
 					return;
@@ -1292,11 +1348,11 @@ Finder: {
 		this.form.innerHTML =
 			'<form id="fform" onsubmit="Finder.express();return false;">' +
 			'<input type="text" size="40" name="q">' +
-			'<input type="submit" value="抽出">' +
+			'<input type="submit" value="' +$C("finderSubmit")+ '">' +
 			'<br>' +
-			'<regend><input type="checkbox" name="r">正規表現</regend>' +
-			'<regend><input type="checkbox" name="i">大小区別</regend>' +
-			'<regend><input type="checkbox" name="p">pickupのみ</regend>' +
+			'<regend><input type="checkbox" name="r">' +$C("finderRegExp")+ '</regend>' +
+			'<regend><input type="checkbox" name="i">' +$C("finderCheckCase")+ '</regend>' +
+			'<regend><input type="checkbox" name="p">' +$C("finderOnlyPickup")+ '</regend>' +
 			'<span id="fformerr"></span>' +
 			'</form>' ;
 	},
@@ -1907,7 +1963,6 @@ EventHandler: {
 	},
 	keyAssign: {
 		thread: {
-			//ここはPreferenceで上書きできるようにしたいな～
 			Enter:	"Write",
 			AltEnter:	"Write",
 			AltW:	"Write",
@@ -2110,7 +2165,7 @@ EventHandler: {
 			var tracking = Tracker.getTracker(node.dataset.no);
 			if (tracking)
 			{
-				PopupUtil.toggleResPopup($("RMenu_Track"), tracking.getTrackingNumbers(), true, "追跡");
+				PopupUtil.toggleResPopup($("RMenu_Track"), tracking.getTrackingNumbers(), true, $C("popupCaptionTracking"));
 			}
 		},
 		RMenu_Gear: function IdClickhandler_RMenu_Gear(t, ev)
@@ -3079,12 +3134,12 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		if (!isPopup) return null;	//ポップアップにしか表示しない
 		var url = new URL(href);
 		href = url.threadUrl;
-		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onClick="OutlinkPluginForThread.getThreadTitle(event)" title="スレタイを取得。未読スレの場合、既読になります。">';
+		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onClick="OutlinkPluginForThread.getThreadTitle(event)" title="' +$C("popupContentThreadTitle")+ '">';
 		if (url.boardId == Skin.Thread.boardId)
 		{
-			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="次スレに指定">';
+			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="' +$C("popupContentThreadSetNext")+ '">';
 		}
-		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : "(スレタイ未取得)";
+		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : $C("popupContentThreadDefault");
 		var b = Skin.BoardList.getBoardName(url.boardId);
 		html = html.format(href, t, b);
 		var preview = document.createElement("DIV");
@@ -3103,7 +3158,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		{
 			this._titleBuffer[href]  = RegExp.$1;
 		}
-		var t = this._titleBuffer[href] || "(スレッドロードエラー)";
+		var t = this._titleBuffer[href] || $C("popupContentThreadError");
 		var preview = aEvent.target.parentNode;
 		preview.dataset.thread = t;
 		preview.dataset.titleState = (this._titleBuffer[href]) ? "y" : "e";
@@ -3111,7 +3166,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 	OutlinkPluginForThread.setToNextThread =  function OutlinkPluginForThread_setToNextThread(aEvent)
 	{
 		Skin.Thread.Navigator.setNextThread(aEvent.target.dataset.ref, true, 0);
-		Notice.add("次スレを {0} に設定しました。".format(aEvent.target.dataset.ref));
+		Notice.add($C("messageNextThreadSet").format(aEvent.target.dataset.ref));
 	}
 	OutlinkPluginForThread._titleBuffer = {};
 
@@ -3139,7 +3194,7 @@ Popup.prototype = {
 		if (!e.tagName) e = $(e);
 		if (!e)
 		{
-			console.log("PopupInitializedError");
+			console.log($C("messagePopupInitializedError"));
 			console.log(e);
 			e = document.body;	//なんもないならとりあえずエラーにならないようにBodyにつけとく
 		}
@@ -3402,7 +3457,7 @@ GearPopup.prototype = new Popup();
 		this.show(this.content);
 		var c = this.container;
 		c.dataset.gearEnchanted = "y";
-		c.dataset.popupCaption = "GEAR>>" + n.dataset.no;
+		c.dataset.popupCaption = $C("popupCaptionGear").format(n.dataset.no);
 		c.enchantedGear = this;
 	};
 	GearPopup.prototype.to = function GearPopup_to(no)
@@ -3413,7 +3468,7 @@ GearPopup.prototype = new Popup();
 		if (n)
 		{
 			this.content.innerHTML = "";
-			this.container.dataset.popupCaption = "GEAR>>" + n.dataset.no;
+			this.container.dataset.popupCaption = $C("popupCaptionGear").format(n.dataset.no);
 			this.content.appendChild(n);
 			if (!this.floating) this.adjust();
 		}
@@ -3552,7 +3607,7 @@ ResManipulator.prototype = {
 		if (this.node)
 		{
 			if (!t) t = this.node.children[1].children[0];	//Noのとこ
-			PopupUtil.toggleResPopup(t, Skin.Thread.Message.Structure.getReplyIdsByNo(this.no), true,  "ResTo>>"+ this.no);
+			PopupUtil.toggleResPopup(t, Skin.Thread.Message.Structure.getReplyIdsByNo(this.no), true,  $C("popupCaptionResTo").format(this.no));
 		}
 	},
 	toggleIdPopup: function ResManipulator_toggleIdPopup(t)
@@ -3560,7 +3615,7 @@ ResManipulator.prototype = {
 		if (this.node)
 		{
 			if (!t) t = this.node.children[1].children[2];	//IDのとこ
-			PopupUtil.toggleResPopup(t,Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid),true, "ID>>" + t.textContent);
+			PopupUtil.toggleResPopup(t,Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid),true, $C("popupCaptionId").format(t.textContent));
 		}
 	},
 	expressReffer: function ResManipulator_expressReffer()
@@ -3752,9 +3807,7 @@ var Notice = Skin.Notice;
 var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
 var DOMUtil = Skin.Util.Dom;
-var $M = function GetManipulator(NodeOrNo)
-{
-	return Skin.Thread.Message.getManipulator(NodeOrNo);
-}
+var $M = Skin.Thread.Message.getManipulator.bind(Skin.Thread.Message);
+var $C = Content.get.bind(Content);
 
 window.addEventListener("load", function pp3initializer(){ PP3.init(); });
