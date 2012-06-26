@@ -211,6 +211,8 @@ var Macro = {
 	FocusBookmark: function(){ Bookmark.focus(); },
 	FocusNew: function(){ $M(Skin.Thread.Info.Fetched + 1).focus(); },
 	ResetBookmark: function(){ Bookmark.add(0); },
+	ClearTracking: function(){ Tracker.refresh("[]", ""); },
+	ReloadReplaceStr: function() { Skin.Thread.Message._replaceStr.reloadDefine(); },
 };
 
 const OUTLINK_NON   = 0;	//outlink‚¶‚á‚È‚¢
@@ -1042,6 +1044,7 @@ Thread: {
 			},
 			replace: function ReplaceStr_replace(node)
 			{
+				if (!this.info) return;
 				if (node.tagName != "ARTICLE") return;
 				for (var i=0; i< this.info.length; i++)
 				{
