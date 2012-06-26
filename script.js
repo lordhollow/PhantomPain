@@ -173,10 +173,10 @@ var Macro = {
 	Viewer: function(){ Skin.Viewer.show(); },
 	Config: function(t){ Skin.Configulator.toggle(t || $("Menu_Config"));},
 	Finder: function(){ Skin.Finder.toggleExpressMode();},
-	Navigation: function(t){ PopupUtil.toggle(t || $("Menu_Navi"), Skin.Thread.Navigator.getNavigation(), true, $C("popupCaptionNavigation"));},
+	Navigation: function(){ Skin.Thread.Navigator.toggle();},
 	Notice: function(){ if (Notice.container) DOMUtil.notifyRefreshInternal(Notice.container); },
 	Preview: function(){ Skin.Thread.Message.foreach(function(node){ $M(node).previewLinks(); }, false, true); },
-	Jump: function(){},
+	Jump: function(){ Skin.Thread.Navigator.open(); $("navjumpto").focus(); },
 	DeployBackward: function()
 	{
 		var focusTo = Skin.Thread.Message.deployedMin-1;
@@ -1103,6 +1103,18 @@ Thread: {
 			this.nextThread = this.loadNextThreadInfo();
 			this.prevThread = this.searchPrevThread();
 		},
+		toggle: function Navigator_toggle()
+		{
+ 			PopupUtil.toggle($("Menu_Navi"), Skin.Thread.Navigator.getNavigation(), true, $C("popupCaptionNavigation"));
+ 		},
+ 		open: function Navigator_open()
+ 		{
+ 			if (!$("navigation")) this.toggle();
+ 		},
+ 		close: function Navigator_close()
+ 		{
+ 			if ($("navigation")) this.toggle();
+ 		},
 		getNavigation: function Navigation_getNavigation()
 		{
 			if (!this._navi)
@@ -1133,7 +1145,7 @@ Thread: {
 				html+= '<li><a class="navbacklogall">' +$C("navigatorBacklogAll")+ '</a></li>';
 				//‚»‚Ì‘¼
 				html += '<h1>' +$C("navigatorMiscTitle")+ '</h1><ul>';
-				html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">' +$C("navigatorMiscJump")+ '<input type="text" size="4" name="jumpto"></form></li>';
+				html += '<li><form onsubmit="Skin.Thread.Message.deployTo(jumpto.value);$M(jumpto.value).focus();return false;">' +$C("navigatorMiscJump")+ '<input type="text" size="4" name="jumpto" id="navjumpto"></form></li>';
 				html += '<li><a class="navboardlist">' +$C("navigatorMiscList")+ '</a></li>';
 				html += '<li><a class="navprevthread">' +$C("navigatorMiscPrev")+ '</a></li>';
 				html += '<li><a class="navnextthread">' +$C("navigatorMiscNext")+ '</a></li>';
