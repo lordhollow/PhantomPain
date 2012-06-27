@@ -608,33 +608,15 @@ Thread: {
 			this.onDeploy(nodes);
 		},
 		prepare: function Message_prepare(from, to)
-		{	//minにはidsまたはアンカーの文字列を指定可能。
+		{	//今のスレの既読レスをロード。minにはidsまたはアンカーの文字列を指定可能。
 			//alert([min, max]);
 			if (from instanceof Array)
 			{
-				var b = true;
-				for(var i=0; i<from.length; i++)
-				{
-					b &= this.prepare(from[i],from[i]);
-				}
-				return b;
+				return this.prepareIds(from);
 			}
 			else if ((from+"").substr(1) == ">")
 			{
-				var str = from+"";
-				str=str.replace(/>/g,"");
-				var e=str.split(",");
-				var r=new Array();
-				for(var i=0;i<e.length;i++)
-				{
-					if(e[i].match(/(\d+)(-(\d+))?/))
-					{
-						var min = parseInt(RegExp.$1);
-						var max = parseInt(RegExp.$3);
-						if (!max) max = min;
-						this.load(min, max);
-					}
-				}
+				return this.prepareAnchorStr(from+"");
 			}
 			var tmin = parseInt(from);
 			if (!tmin)return false;
@@ -665,6 +647,49 @@ Thread: {
 				}
 			}
 			return true;
+		},
+		prepareIds: function Message_prepareIds(ids)
+		{	//idsをできるだけ少ない回数でロードするようにする。
+			//本当はちょっとぐらいの間隙なら分けずにロードしたほうが早い場面もあるんだろうけど？
+			ids = ids.sort(function(a,b){return a-b;});
+			var from = 0;
+			var b = true;
+			for(var i=0; i<ids.length; i++)
+			{
+				var no = ids[i];
+				if (from == 0)
+				{
+					if (!this.isReady(no)) from = no;
+				}
+				else
+				{
+					if (this.isReady(no))
+					{
+						b &= this.prepare(from, no-1);
+						from = 0;
+					}
+				}
+			}
+			if (from) b &= this.prepare(from, ids[ids.length-1]);
+			return b;
+		},
+		prepareAnchorStr: function message_prepareAnchorStr(str)
+		{
+			str=str.replace(/>/g,"");
+			var e=str.split(",");
+			var r=new Array();
+			var b = true;
+			for(var i=0;i<e.length;i++)
+			{
+				if(e[i].match(/(\d+)(-(\d+))?/))
+				{
+					var min = parseInt(RegExp.$1);
+					var max = parseInt(RegExp.$3);
+					if (!max) max = min;
+					b &= this.prepare(min, max);
+				}
+			}
+			return b;
 		},
 		deployAll: function message_deployAll()
 		{
