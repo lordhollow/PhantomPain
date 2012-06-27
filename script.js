@@ -20,6 +20,7 @@ var _Preference =
 	LoadOnWheelWidth: 30,		//LoadOnWheelで読み出すレスの数
 	LoadOnWheelCheckNew: false,	//LoadOnWheelで新着チェックするか？
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数
+	AutoOpenBoardPane: false,	//板一覧ペインの自動展開
 	AutoPreviewOutlinks: false,	//Outlinkを自動展開
 	ChapterWidth: 100,			//Naviのチャプター幅
 	EnableNextThreadSearch: true,	//次スレ検索有効？
@@ -328,6 +329,7 @@ init: function()
 	var dt1 = new Date();
 
 	//loadPref
+	if (Preference.AutoOpenBoardPane) this.BoardPane.toggle();
 	this.BoardList.init();
 	this.Thread.init();
 	this.Services.Marker.init();
