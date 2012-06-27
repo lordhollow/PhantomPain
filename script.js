@@ -11,7 +11,8 @@ var _Preference =
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	AutoAutoReloadPtn: "",		//オートロードを自動開始するスレッドURLのパターン
-	ResPopupTabWidth: 10,		//レスポップアップをタブ化する幅
+	ResPopupPageWidth: 5,		//レスポップアップをタブ化する幅
+	ResPopupAlwaysShowTabs: false,	//レスポップアップを常時タブで表示
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
@@ -615,7 +616,7 @@ Thread: {
 			{
 				return this.prepareIds(from);
 			}
-			else if ((from+"").substr(1) == ">")
+			else if ((from+"").substr(0,1) == ">")
 			{
 				return this.prepareAnchorStr(from+"");
 			}
@@ -2693,6 +2694,45 @@ var ImageLoadManager = new loadManager();
 	}
 
 
+/* ■タブコントロール■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+function TabElement(contents){ this.init(contents); }
+TabElement.prototype = {
+	init: function TabElement_init(contents)
+	{	//contentsは[{title, content}]であり、titleはstring, contentはノード(のクローン)]
+		var tabButtonContainer = document.createElement("DIV");
+		tabButtonContainer.className="tabButtons";
+		var tabPageContainer = document.createElement("DIV");
+		tabPageContainer.className="tabPages";
+		var container = document.createElement("DIV");
+		container.className = "tabContainer";
+
+		for(var i=0; i<contents.length; i++)
+		{
+			var t = contents[i].title;
+			var c = contents[i].content;
+			if (c.parentNode) c = c.clone(true);	//誰かのものならクローニングして使う
+			c.style.display = i==0 ? "" : "none";
+			var button = document.createElement("BUTTON");
+			button.innerHTML = t;
+			button.addEventListener("click", this.click.bind(this, i), false);
+			
+			tabButtonContainer.appendChild(button);
+			tabPageContainer.appendChild(c);
+		}
+		container.appendChild(tabButtonContainer);
+		container.appendChild(tabPageContainer);
+		this.container = container;
+	},
+	click: function TabElement_click(activeNo)
+	{
+		var nodes = this.container.children[1].children;
+		for(var i=0,j=nodes.length; i<j; i++)
+		{
+			nodes[i].style.display = i == activeNo ? "" : "none";
+		}
+	},
+};
+
 /* ■画像サムネイル■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 function ImageThumbnail(url, sz){this.thumbSize = sz; if(url) {this.init(url);}}
 ImageThumbnail.prototype = {
@@ -3302,7 +3342,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		if (!isPopup) return null;	//ポップアップにしか表示しない
 		var url = new URL(href);
 		href = url.threadUrl;
-		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onClick="OutlinkPluginForThread.getThreadTitle(event)" title="' +$C("popupContentThreadTitle")+ '">';
+		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onclick="OutlinkPluginForThread.getThreadTitle(event)" title="' +$C("popupContentThreadTitle")+ '">';
 		if (url.boardId == Skin.Thread.boardId)
 		{
 			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="' +$C("popupContentThreadSetNext")+ '">';
@@ -3577,16 +3617,28 @@ ResPopup.prototype = new Popup();
 	}
 	ResPopup.prototype.createContent = function resPopup_createContent(ids)
 	{
-		var innerContainer = document.createElement("DIV");
-		for(var i=0, len=ids.length; i < len ; i++)
+		var pageWidth = Preference.ResPopupPageWidth || ids.length;
+		var tabContents = new Array();
+		var pageCount = Math.ceil(ids.length / pageWidth);
+		for (var i=0; i<pageCount; i++)
 		{
-			var node = Skin.Thread.Message.getNode(ids[i], true);
-			if (node != null)
+			var content = document.createElement("DIV");
+			for(var index=i*pageWidth; (index < ids.length) && (index < (i+1)*pageWidth) ; index++)
 			{
-				innerContainer.appendChild(node);
+				var node = Skin.Thread.Message.getNode(ids[index], true);
+				if (node != null) content.appendChild(node);
 			}
+			tabContents.push({title: ids[i*pageWidth] + "-", content: content});
 		}
-		return innerContainer; 
+		if ((pageCount == 1) && !Preference.ResPopupAlwaysShowTabs)
+		{
+			return tabContents[0].content;
+		}
+		else
+		{
+			var tab = new TabElement(tabContents);
+			return innerContent= tab.container;
+		}
 	}
 
 function GearPopup(enchantElement) { this.init(enchantElement); }
