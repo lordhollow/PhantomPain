@@ -10,6 +10,7 @@ var _Preference =
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	AutoReloadInterval: 300,	//オートロード間隔(秒)
+	AutoAutoReloadPtn: "",		//オートロードを自動開始するスレッドURLのパターン
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
@@ -350,6 +351,7 @@ init: function()
 	var dt2 = new Date();
 	Notice.add($C("messageInitialized").format(dt2-dt1));
 
+	if (Preference.AutoAutoReloadPtn && (Skin.Thread.Info.Url.match(Preference.AutoAutoReloadPtn))) this.Services.AutoUpdate.begin();
 },
 Configulator: {
 	toggle: function Configulator_toggle(t)
