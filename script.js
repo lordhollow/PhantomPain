@@ -4,13 +4,14 @@ var _Preference =
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
-	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
+	TemplateLength: 50,			//テンプレポップアップで表示するレスの数
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	AutoAutoReloadPtn: "",		//オートロードを自動開始するスレッドURLのパターン
+	ResPopupTabWidth: 10,		//レスポップアップをタブ化する幅
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
@@ -3535,7 +3536,6 @@ Popup.prototype = {
 
 function ResPopup(anchor){ this.init(anchor); }
 ResPopup.prototype = new Popup();
-
 	ResPopup.prototype.init = function ResPopup_init(anchor)
 	{
 		//Delayを仕掛ける
@@ -3548,8 +3548,7 @@ ResPopup.prototype = new Popup();
 					anchor.removeEventListener("mouseout", arguments.callee, false);
 				},false);
 		}
-	};
-	
+	}	
 	ResPopup.prototype.popup =  function ResPopup_popup(obj, e, caption)
 	{
 		var ids;
@@ -3574,6 +3573,10 @@ ResPopup.prototype = new Popup();
 			this.container.dataset.popupCaption = caption;
 		}
 		
+		this.show(this.createContent(ids));
+	}
+	ResPopup.prototype.createContent = function resPopup_createContent(ids)
+	{
 		var innerContainer = document.createElement("DIV");
 		for(var i=0, len=ids.length; i < len ; i++)
 		{
@@ -3583,8 +3586,8 @@ ResPopup.prototype = new Popup();
 				innerContainer.appendChild(node);
 			}
 		}
-		this.show(innerContainer);
-	};
+		return innerContainer; 
+	}
 
 function GearPopup(enchantElement) { this.init(enchantElement); }
 GearPopup.prototype = new Popup();
