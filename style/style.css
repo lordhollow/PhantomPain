@@ -401,6 +401,7 @@ h2
 			-moz-animation: turnImage 1s linear infinite;
 		}
 
+
 article article
 {
 	margin-left: 2em;
@@ -596,6 +597,8 @@ body[data-express-mode="y"] { background-color: #FEE; }
 body[data-express-mode="y"] > #resContainer > article { display: none; }
 body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display: block !important; }
 #fformerr { font-size: 70%; color: red }
+.only_expressMode { display: none; }
+body[data-express-mode="y"] .only_expressMode { display: inherit; }
 
 /* Viewer */
 #ViewerContainer

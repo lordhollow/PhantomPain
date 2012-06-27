@@ -95,7 +95,7 @@ var Macro = {
 	           "M_toggleRefTree","M_openRefTree","M_closeRefTree","M_toggleBookmark",
 	           "M_setBookmark","M_resetBookmark","M_togglePickup","M_setPickup",
 	           "M_resetPickup","M_toggleTracking","M_beginTracking","M_endTracking",
-	           "M_previewLinks","M_focus","M_closeIfPopup",
+	           "M_previewLinks","M_focus","M_closeIfPopup", "M_exitExpressMode",
 	],
 	exprain: {
 		Write: "書き込みダイアログ",
@@ -135,6 +135,7 @@ var Macro = {
 		M_previewLinks: "プレビュー(単一)",
 		M_focus: "フォーカス",
 		M_closeIfPopup: "ポップアップなら閉じる",
+		M_exitExpressMode: "これに注目して抽出モードを終了",
 	},
 	_invoke: function(command, t)
 	{	//Manipulatorコマンド時はtにnode(またはその子要素)を指定すること。
@@ -1509,7 +1510,7 @@ Finder: {
 		this.form = document.createElement("DIV");
 		this.form.id = "finder";
 		this.form.innerHTML =
-			'<form id="fform" onsubmit="Finder.express();return false;">' +
+			'<form id="fform" onsubmit="Skin.Finder.express();return false;">' +
 			'<input type="text" size="40" name="q">' +
 			'<input type="submit" value="' +$C("finderSubmit")+ '">' +
 			'<br>' +
@@ -3998,7 +3999,11 @@ ResManipulator.prototype = {
 			node = node.parentNode;
 		}
 	},
-	
+	exitExpressMode: function ResManipulator_exitExpressMode()
+	{
+		Skin.Finder.leaveExpressMode();
+		this.focus();
+	},
 	_openRefTreeEx: function ResManipulator__openRefTreeEx(from, c)
 	{
 		var rf = Skin.Thread.Message.Structure.getReplyIdsByNo(from);
