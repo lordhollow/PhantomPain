@@ -588,10 +588,22 @@ Thread: {
 				}
 				this.Info.Total = obj.total;
 				this.Info.New = obj.new;
+			}
+			this.Info.Status = obj.status;
+			if (this.updateFetchedOnCheckNewMessage)
+			{
+				this.updateFetchedOnCheckNewMessage = false;	//マウスの移動とホイール操作を検知してtrueになる。
 				this.Info.Fetched = obj.total - obj.new;
-				this.Info.Status = obj.status;
+				NewMark.add(this.Info.Fetched);
+				Notice.add("withFetchedUpdate");
+			}
+			else
+			{
+				Notice.add("withoutFetchedUpdate");
+			}
+			if (obj.new)
+			{
 				this.Message.deployTo(this.Info.Total);
-				NewMark.setMark();
 				$M(this.Info.Fetched + 1).focus();
 			}
 			var format = obj.new ? "messageCheckedWithNew" : "messageCheckedWithoutNew";
@@ -844,11 +856,6 @@ Thread: {
 					this._replaceStr.replace(node);
 					this.domobj[no] = node;
 					this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
-					//新着判定
-					if(node.dataset.new == "y")
-					{
-						document.body.dataset.hasNew = "y";
-					}
 					
 					//名前とトリップの抽出
 					var name = node.childNodes[0].childNodes[3].textContent;
@@ -1448,6 +1455,7 @@ Services: {
 			if (++this.autoTickCount >= Preference.AutoReloadInterval)
 			{
 				Skin.Thread.checkNewMessage();
+				this.autoTickCount = 0;
 			}
 		},
 	},
@@ -2204,6 +2212,7 @@ EventHandler: {
 	},
 	mouseDown: function EventHandler_mouseDown(aEvent)
 	{
+		Skin.Thread.updateFetchedOnCheckNewMessage = true;
 		if (this._dragDrop)return;
 		var t = aEvent.target;
 		if ((t.className == "popup") && (!t.popup.fixed))
@@ -2222,6 +2231,7 @@ EventHandler: {
 	},
 	mouseMove: function EventHandler_mosueMove(aEvent)
 	{
+		Skin.Thread.updateFetchedOnCheckNewMessage = true;
 		if (this._dragDrop)
 		{
 			this._dragDrop.drag(aEvent);
@@ -2400,6 +2410,7 @@ EventHandler: {
 	},
 	mouseWheel: function EventHandler_mouseWheel(e)
 	{
+		Skin.Thread.updateFetchedOnCheckNewMessage = true;
 		if (e.target.id == "RMenu_Gear")
 		{
 			var node = DOMUtil.getDecendantNode(e.target, "ARTICLE");
@@ -2934,14 +2945,25 @@ MarkerService.prototype = {
 
 /* ■新着マーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var NewMark = new MarkerService(false, null, "new", true);
-	NewMark.init = NewMark.getSaveStr = NewMark._add = NewMark._del = function NewMark_dmy(){}
+	NewMark.init = function NewMark_init()
+	{
+		//本来はsetMarkをやるべきなんだろうが、resNew.htmlによてマーク済み状態になっているはずなので省略できる。
+		this.fetched = Skin.Thread.Info.Fetched;
+		this.marked();
+	}
 	NewMark.getMarkerClass = function NewMark_getMarkerClass(node)
 	{
-		return (parseInt(node.dataset.no) > Skin.Thread.Info.Fetched) ? "y" : "";
+		return (parseInt(node.dataset.no) > this.fetched) ? "y" : "";
+	}
+	NewMark._add = function NewMark_add(no)
+	{
+		this.fetched = no;
 	}
 	NewMark.marked = function NewMark_marked()
 	{
+		document.body.dataset.hasNew = (this.fetched == Skin.Thread.Info.Total) ? "" : "y";
 	}
+	NewMark.getSaveStr = NewMark._del = function NewMark_dmy(){}
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = new MarkerService(false, "bm", "bm", true);
