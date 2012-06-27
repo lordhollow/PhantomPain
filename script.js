@@ -4,7 +4,7 @@ var _Preference =
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
-	TemplateLength: 50,			//テンプレポップアップで表示するレスの数
+	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
