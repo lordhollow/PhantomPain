@@ -252,7 +252,7 @@ h2
 	h2
 	{
 		border-top: solid 1px #9F9;
-		border-left: solid 2px #9F9;
+		border-left: solid 3px #9F9;
 		border-color: #99F;
 	}
 	article[data-new="y"] > h2
@@ -273,7 +273,9 @@ h2
 	}
 	.no
 	{
+		padding-left: 2px;
 		width: 4em;
+		font-family: monospace;
 	}
 	.dt
 	{
