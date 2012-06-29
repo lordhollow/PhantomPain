@@ -267,6 +267,10 @@ h2
 	{
 		border-color: #F9F;
 	}
+	article[data-pickuped="y"] > h2
+	{
+		border-color: #00C;
+	}
 	.no
 	{
 		width: 4em;
