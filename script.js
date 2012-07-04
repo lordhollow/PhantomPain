@@ -916,6 +916,7 @@ Thread: {
 					{
 						node.parentNode.dataset.hasImage = "y";
 					}
+					node.parentNode.dataset.hasLink = "y";
 					Skin.Thread.Navigator.checkNextThread(a);
 				}
 				//長すぎるoutLinkを適当に刈り込み
@@ -986,11 +987,9 @@ Thread: {
 					if(!this.nodesReplyFrom[t])
 					{
 						this.nodesReplyFrom[t] = new Array();
-						//逆参照ありの強調表示。とりあえず逆参照がないときはメニューが表示されない（わかりにくいので強調は必要）
-						this._scriptedStyle.innerHTML += 
-						html += ("article[data-no=\"{0}\"] > .menu > ul > .resto { display:table-cell; }\n"
-						       + "article[data-no=\"{0}\"] > h2 > .no { font-weight: bold; }\n")
-						       .format(t);
+						//逆参照ありの強調表示
+						//これMarkerでも良い気がしてきた。
+						node.dataset.hasReply = "y";
 					}
 					this.nodesReplyFrom[t].push(obj.no);
 				}
