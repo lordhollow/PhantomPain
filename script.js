@@ -895,6 +895,27 @@ Thread: {
 			}
 		},
 		_extendAnchor: function Message__extendAnchor(node)
+		{	//<a href="#res1" class="resPointer">&gt;&gt;1</a>,3,5,7 
+			var msg = node.innerHTML;
+			var oldmsg = msg;
+			msg = msg.replace(this._extendPtn, function(all, dblDigit, dblFirstDigit, trPre, trDigit, exclude)
+			{
+				if (exclude)
+				{
+					return all;
+				}
+				else if (trPre)
+				{
+					return trPre + StringUtil.toNarrowString(trDigit) + "</a>";
+				}
+				else
+				{
+					return '<a href="#res{1}" class="resPointer">&gt;&gt;{0}</a>'.format(StringUtil.toNarrowString(dblDigit), StringUtil.toNarrowString(dblFirstDigit));
+				}
+			});
+			if(oldmsg != msg) node.innerHTML = msg;
+		},
+		_extendAnchor_: function Message__extendAnchor_(node)
 		{
 			var as=node.getElementsByTagName("A");
 			//var ml=Profiles.maxLinkContent.value;
@@ -938,6 +959,7 @@ Thread: {
 				node.innerHTML=res;
 			}
 		},
+		_extendPtn: new RegExp(/(?:(?:ÅÑÅÑ|ÅÑ|&gt;&gt;|&gt;)(([\dÇO-ÇX]+)(?:[0\dÇO-ÇX,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\dÇO-ÇX]+))|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
 		_dblSizeAnchorRegExp: new RegExp("(ÅÑÅÑ|ÅÑ|&gt;&gt;|&gt;)([0-9ÇO-ÇX,\-]+)","g"),
 		Structure: {
 			nodesById: new Array(),		//Ç¢ÇÌÇ‰ÇÈID
