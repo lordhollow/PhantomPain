@@ -23,6 +23,8 @@ var _Preference =
 	LoadOnWheelWidth: 30,		//LoadOnWheel‚Å“Ç‚İo‚·ƒŒƒX‚Ì”
 	LoadOnWheelCheckNew: false,	//LoadOnWheel‚ÅV’…ƒ`ƒFƒbƒN‚·‚é‚©H
 	LoadOnWheelDelta: 10,		//LoadBackwardOnTopWheel,LoadForwardOnBottomWheel‚Ì‚©‚©‚é‰ñ“]”
+	ExtendAnchor: true,			//ƒAƒ“ƒJ[Šg’£
+	URLShortenLength: 40,		//URL•\¦‚ğ’Z‚­‚·‚é’·‚³
 	AutoOpenBoardPane: false,	//”Âˆê——ƒyƒCƒ“‚Ì©“®“WŠJ
 	AutoPreviewOutlinks: false,	//Outlink‚ğ©“®“WŠJ
 	ChapterWidth: 100,			//Navi‚Ìƒ`ƒƒƒvƒ^[•
@@ -898,69 +900,40 @@ Thread: {
 		{	//<a href="#res1" class="resPointer">&gt;&gt;1</a>,3,5,7 
 			var msg = node.innerHTML;
 			var oldmsg = msg;
-			msg = msg.replace(this._extendPtn, function(all, dblDigit, dblFirstDigit, trPre, trDigit, exclude)
+			var hasImage = false;
+			var hasLink  = false;
+			msg = msg.replace(this._extendPtn, function(all, dblDigit, dblFirstDigit, trPre, trDigit, anchorPre, href, anchorStr, exclude)
 			{
-				if (exclude)
+				if (exclude) return all;
+				if (anchorStr)
 				{
+					hasLink = true;
+					if (OutlinkPluginForImage.posivility(href))
+					{
+						hasImage = true;
+					}
+					else
+					{
+						Skin.Thread.Navigator.checkNextThread({href: href}, node.parentNode);
+					}
+					if (anchorStr.length > Preference.URLShortenLength)
+					{
+						var url = new URL(anchorStr);
+						return anchorPre + url.shorten() + "</a>";
+					}
 					return all;
 				}
 				else if (trPre)
 				{
 					return trPre + StringUtil.toNarrowString(trDigit) + "</a>";
 				}
-				else
-				{
-					return '<a href="#res{1}" class="resPointer">&gt;&gt;{0}</a>'.format(StringUtil.toNarrowString(dblDigit), StringUtil.toNarrowString(dblFirstDigit));
-				}
+				return '<a href="#res{1}" class="resPointer">&gt;&gt;{0}</a>'.format(StringUtil.toNarrowString(dblDigit), StringUtil.toNarrowString(dblFirstDigit));
 			});
-			if(oldmsg != msg) node.innerHTML = msg;
+			if(hasImage) node.parentNode.dataset.hasImage = "y";
+			if(hasLink)  node.parentNode.dataset.hasLink  = "y";
+			if((Preference.ExtendAnchor) && (oldmsg != msg)) node.innerHTML = msg;
 		},
-		_extendAnchor_: function Message__extendAnchor_(node)
-		{
-			var as=node.getElementsByTagName("A");
-			//var ml=Profiles.maxLinkContent.value;
-			for(var i=0;i<as.length;i++){
-				var a=as[i];
-				//ƒRƒ“ƒ}‚ğŠg’£
-				if(a.className=="resPointer"){
-					var bro=a.nextSibling;
-					var n=bro.textContent;
-					if((n)&&(n.match(/^([0-9,\-]+)/))){
-						var c=RegExp.$1;
-						a.appendChild(document.createTextNode(c));
-						bro.data=n.substr(c.length);
-					}
-				}
-				else if (a.className=="outLink")
-				{	//‚ ‚Ü‚è‚æ‚ë‚µ‚­‚È‚¢‚¯‚Ç‚±‚±‚ªˆê”ÔŒø—¦“I‚©‚à
-					if (OutlinkPluginForImage.posivility(a.href))
-					{
-						node.parentNode.dataset.hasImage = "y";
-					}
-					node.parentNode.dataset.hasLink = "y";
-					Skin.Thread.Navigator.checkNextThread(a);
-				}
-				//’·‚·‚¬‚éoutLink‚ğ“K“–‚ÉŠ ‚è‚İ
-				//else if(a.textContent.length>ml){
-				//	var t=a.textContent;
-				//	if(t.match(/(h?[ft]?tp:\/\/[^\/]+\/)/)){
-				//		a.textContent=RegExp.$1+Message.longUrl;
-				//		a.title=t;
-				//		classTokenPlus(a,"trimedURL")
-				//	}
-				//}
-			}
-			//‘SŠpƒAƒ“ƒJ[‚ğE‚¤("‚O-‚X"‚ÍFx3‚¾‚Æ\d‚¾‚¯‚ÅE‚¦‚È‚©‚Á‚½‚©‚ç’Ç‰Á)
-			var res=node.innerHTML;
-			if(this._dblSizeAnchorRegExp.test(res)){
-				res=res.replace(this._dblSizeAnchorRegExp,function (a,$1,$2){
-					$2=StringUtil.toNarrowString($2);
-					return "<a href='#"+$2+"' class='resPointer'>&gt;&gt;"+$2+"</a>";});
-				node.innerHTML=res;
-			}
-		},
-		_extendPtn: new RegExp(/(?:(?:„„|„|&gt;&gt;|&gt;)(([\d‚O-‚X]+)(?:[0\d‚O-‚X,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\d‚O-‚X]+))|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
-		_dblSizeAnchorRegExp: new RegExp("(„„|„|&gt;&gt;|&gt;)([0-9‚O-‚X,\-]+)","g"),
+		_extendPtn: new RegExp(/(?:(?:„„|„|&gt;&gt;|&gt;)(([\d‚O-‚X]+)(?:[0\d‚O-‚X,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\d‚O-‚X]+))|(?:(<a\s[^<]*href="([^"]+)" class="outLink">)([^<]+)<\/a>)|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
 		Structure: {
 			nodesById: new Array(),		//‚¢‚í‚ä‚éID
 			nodesReplyFrom: new Array(),	//‚¢‚í‚ä‚é‹tQÆî•ñ
@@ -2547,7 +2520,7 @@ function URL(url){ this.init(url); }
 URL.prototype = {
 	init: function URL_init(url)
 	{
-//		try
+		try
 		{
 			this.url = url;
 			//bbs2chreader/chaika ƒXƒŒƒbƒh•\¦URL
@@ -2627,16 +2600,25 @@ URL.prototype = {
 				this.threadId = this.boardId + "." + this.threadNo;
 			}
 		}
-//		catch(e)
-//		{
-//			this.invalidUrl = true;
-//		}
+		catch(e)
+		{
+			this.invalidUrl = true;
+			console.log("INVALID URL\t:" + url);
+		}
 		
 		//console.log(this);
 	},
 	startWith: function URL_startWith(x)
 	{
 		return this.url.substr(0, x.length) == x;
+	},
+	shorten: function URL_shorten()
+	{
+		if (this.url.match(/^(([a-z]+):\/\/[^\/]+)(.+?)?([^\/]*\/?)$/i))
+		{
+			return RegExp.$1 + "/.../" + RegExp.$4;
+		}
+		return this.url;
 	},
 };
 
