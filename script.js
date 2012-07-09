@@ -1355,10 +1355,12 @@ Services: {
 			NewMark.init();
 			Bookmark.init();
 			Pickup.init();
+			Ignore.init();
 			Tracker.init();
 			this.push(NewMark);
 			this.push(Bookmark);
 			this.push(Pickup);
+			this.push(Ignore);
 			this.push(Tracker);
 		},
 		
@@ -2507,7 +2509,7 @@ EventHandler: {
 			function aboneHelper_Id(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
 			function aboneHelper_Ct(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
 		];
-		ThreadMessages.apply(function aboneHelper(node){
+		Skin.Thread.Message.apply(function aboneHelper(node){
 			node.dataset.ng = "y";
 		}, filter[aEvent.detail], true);
 	},
@@ -3077,6 +3079,47 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 	{
 		$("Menu_Pickup").dataset.pk = this.pickups.length ? "y" : "n";
 		$("Menu_Pickup").dataset.pkc= this.pickups.length;
+	}
+
+/* ■個別無視■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var Ignore = new MarkerService(false, "ig", "ignored", true);
+	Ignore.init = function Ignore_init()
+	{
+		var ignores = this.load();
+		if (!ignores) ignores = "";
+		this.refresh(ignores, ignores);
+	}
+	Ignore.getSaveStr = function Ignore_getSaveStr()
+	{
+		return this.ignores + "";
+	}
+	Ignore._add = function Ignore_add(no)
+	{
+		if (!this.ignores.include(no))
+		{
+			this.ignores.push(no);
+			this.ignores.sort(function _sort(a,b){return a-b;});
+			return true;
+		}
+		return false;
+	}
+	Ignore._del = function Ignore_del(no)
+	{
+		if (this.ignoress.include(no))
+		{
+			this.ignores = this.ignores.filter(function Ignore_delFilter(item, index, array){ return item != no });
+			return true;
+		}
+		return false;
+	}
+	Ignore.refresh = function Ignore_refresh(nV, oV)
+	{
+		this.ignores = eval("[" + nV + "]");
+		this.setMark();
+	}
+	Ignore.getMarkerClass = function Ignore_getMarkerClass(node)
+	{
+		return (this.ignores.include(node.dataset.no)) ? "y" : "";
 	}
 
 /* ■トラッカー■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
