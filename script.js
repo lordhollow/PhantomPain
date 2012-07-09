@@ -99,7 +99,7 @@ var Macro = {
 	           "M_togglePickup","M_setPickup", "M_resetPickup",
 	           "M_toggleIgnore", "M_setIgnore", "M_resetIgnore",
 	           "M_toggleTracking","M_beginTracking","M_endTracking",
-	           "M_previewLinks","M_focus","M_closeIfPopup", "M_exitExpressMode",
+	           "M_previewLinks","M_focus","M_focusNextId", "M_focusPrevId", "M_closeIfPopup", "M_exitExpressMode",
 	],
 	exprain: {
 		Write: "書き込みダイアログ",
@@ -141,6 +141,8 @@ var Macro = {
 		M_endTracking: "トラッキング解除",
 		M_previewLinks: "プレビュー(単一)",
 		M_focus: "フォーカス",
+		M_focusNextId: "IDの次のレスにフォーカス",
+		M_focusPrevId: "IDの前のレスにフォーカス",
 		M_closeIfPopup: "ポップアップなら閉じる",
 		M_exitExpressMode: "これに注目して抽出モードを終了",
 	},
@@ -2433,6 +2435,12 @@ EventHandler: {
 				return;
 			}
 		}
+		else if (e.target.className == "id")
+		{
+			e.preventDefault();
+			var node = DOMUtil.getDecendantNode(e.target, "ARTICLE");
+			if (e.detail < 0) $M(node).focusPrevId() ; else $M(node).focusNextId();
+		}
 		var t = DOMUtil.getDecendantNodeByData(e.target, "gearEnchanted", "y");
 		if (t)
 		{
@@ -4080,6 +4088,41 @@ ResManipulator.prototype = {
 				node.dataset.focus = "on";
 				setTimeout(function focus_timeout(){ node.dataset.focus = ""; }, 1000)
 			}
+		}
+	},
+	focusNextId: function ResManipulator_focusNextId()
+	{
+		if (!this.node) return;
+		var aids = Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid);
+		if (!aids) return;
+		var found = false;
+		for(var i=0; i<aids.length; i++)
+		{
+			if (!found)
+			{
+				if (aids[i] == this.no) found = true;
+			}
+			else
+			{
+				$M(aids[i]).focus();
+				return;
+			}
+		}
+	},
+	focusPrevId: function ResManipulator_focusPrevId()
+	{
+		if (!this.node) return;
+		var aids = Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid);
+		if (!aids) return;
+		var no = 0;
+		for(var i=0; i<aids.length; i++)
+		{
+			if (aids[i] == this.no)
+			{
+				if (no) $M(no).focus();
+				return;
+			}
+			no = aids[i];
 		}
 	},
 	closeIfPopup: function ResManipulator_closeIfPopup()
