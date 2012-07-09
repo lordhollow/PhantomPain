@@ -236,7 +236,7 @@ function PP3ResetPreference()
 Function.prototype.bind = function prototype_bind()
 {
 	var __method = this, args = $A(arguments), object = args.shift();
-	return function()
+	return function _bind()
 	{
 		return __method.apply(object, args.concat($A(arguments)));
 	}
@@ -330,7 +330,7 @@ function EVAL(str, def)
 var Skin = PP3 = {
 skinName: "PhantomPain3",
 skinVer: "ver. \"closed alpha\"",
-init: function()
+init: function PP3_init()
 {
 	var dt1 = new Date();
 
@@ -373,7 +373,7 @@ Configulator: {
 			//テンプレートエンジン発動！
 			//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
 			//ここでしか変更されない値はどうでもいいけど。
-			html = html.replace(/@<([^@]+?)>@/g, function(all,$1){ return eval($1);});
+			html = html.replace(/@<([^@]+?)>@/g, function Configulator_templateEngine(all,$1){ return eval($1);});
 			cont.innerHTML = html;
 			this.editor = cont.firstChild;
 			cont.removeChild(this.editor);
@@ -401,11 +401,11 @@ CommonPref: {
 	_identifier: new String("UNKNOWN"),
 	_storage: localStorage,
 
-	getThreadObjectKey: function(objName)
+	getThreadObjectKey: function CommonPref_getThreadObjectKey(objName)
 	{
 		return "bbs2chSkin.common." + objName + "." + this._identifier;
 	},
-	getGlobalObjectKey: function(objName)
+	getGlobalObjectKey: function CommonPref_getGlobalObjectKey(objName)
 	{
 		return "bbs2chSkin.common." + objName;
 	},
@@ -668,7 +668,7 @@ Thread: {
 		prepareIds: function Message_prepareIds(ids)
 		{	//idsをできるだけ少ない回数でロードするようにする。
 			//本当はちょっとぐらいの間隙なら分けずにロードしたほうが早い場面もあるんだろうけど？
-			ids = ids.sort(function(a,b){return a-b;});
+			ids = ids.sort(function prepareIds_sort(a,b){return a-b;});
 			var from = 0;
 			var b = true;
 			for(var i=0; i<ids.length; i++)
@@ -902,7 +902,7 @@ Thread: {
 			var oldmsg = msg;
 			var hasImage = false;
 			var hasLink  = false;
-			msg = msg.replace(this._extendPtn, function(all, dblDigit, dblFirstDigit, trPre, trDigit, anchorPre, href, anchorStr, exclude)
+			msg = msg.replace(this._extendPtn, function extendAnchor__replacement(all, dblDigit, dblFirstDigit, trPre, trDigit, anchorPre, href, anchorStr, exclude)
 			{
 				if (exclude) return all;
 				if (anchorStr)
@@ -1041,7 +1041,7 @@ Thread: {
 			saveDefine: function ReplaceStr_saveDefine()
 			{
 				var saveStr = "[";
-				var e = function (s)
+				var e = function ReplaceStr_saveDefine_replacement(s)
 				{
 					s = s.replace(/\\/g, "\\\\");
 					s = s.replace(/"/g, "\\\"");
@@ -1086,19 +1086,19 @@ Thread: {
 					c.convert(node);
 				}
 			},
-			createConverter: function Replace_str(c)
+			createConverter: function ReplaceStr_createConverter(c)
 			{
 				var ptn = this.pattern[c.mode] || this.pattern.ex;
 				var reg = ptn(c.ptn, this.escapeRegPtn);
 				var sel = this.selector[c.tgt] || this.selector.all;
 				var str = c.str;
-				return function(node)
+				return function ReplaceStr_createConverter_replacement(node)
 				{
 					var s = sel(node);
 					s.innerHTML = s.innerHTML.replace(reg, str);
 				};
 			},
-			escapeRegPtn: function(ptn)
+			escapeRegPtn: function ReplaceStr_escapteRegPtn(ptn)
 			{
 				return ptn.replace(/([\\\/\.\+\-\*\[\(\)\]\{\}\$\|])/g,"\\$1");
 			},
@@ -1328,7 +1328,7 @@ Thread: {
 		{
 			var This = this;
 			var ret = {url: null};
-			Skin.CommonPref.foreach("nextThread", function(key, dat)
+			Skin.CommonPref.foreach("nextThread", function searchPrevTheread_checker(key, dat)
 			{
 				var info = This.loadNextThreadInfo(dat);
 				if (info.id == Skin.Thread.threadId)
@@ -1336,7 +1336,7 @@ Thread: {
 					if (key.match(/(\d+)$/))
 					{
 						var num = RegExp.$1;
-						var url = Skin.Thread.Info.Url.replace(/\/(\d+)\/$/, function(a,$1){	return "/" + num + "/"; });
+						var url = Skin.Thread.Info.Url.replace(/\/(\d+)\/$/, function searchPrevThread_replacement(a,$1){	return "/" + num + "/"; });
 						ret = {url: url};
 					}
 				}
@@ -1594,7 +1594,7 @@ Finder: {
 			$("fformerr").innerHTML = "<br>" + e;
 			return;
 		}
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function Finder_markFound(node){
 			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
 		}, false);
 	},
@@ -1603,13 +1603,13 @@ Finder: {
 		var t = Skin.Thread.Message.Structure.getReplyIdsByNo(no);
 		t = t ? t.clone() : [];
 		t.push(no);
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function Finder_markReffer(node){
 			node.dataset.express = t.include(node.dataset.no) ? "y" : "n";
 		}, false);
 	},
 	expressTracked: function Finder_expressTracked()
 	{
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function Finder_markTracked(node){
 			node.dataset.express = Tracker.getMarkerClass(node) != "" ? "y" : "n";
 		},false);
 	},
@@ -1947,7 +1947,7 @@ Util: {
 			}
 			else if (ids)
 			{
-				ids = ($A(ids)).sort(function(a,b){return a-b;});
+				ids = ($A(ids)).sort(function _sort(a,b){return a-b;});
 				Skin.Thread.Message.prepare(ids);
 				var p = new ResPopup();
 				p.closeOnMouseLeave = closeOnMouseLeave;
@@ -2062,7 +2062,7 @@ Util: {
 		{
 			var element = e;
 			element.dataset.refreshState = "refresh";
-			setTimeout(function(){element.dataset.refreshState = "";}, 15);
+			setTimeout(function _notifyTimeout(){element.dataset.refreshState = "";}, 15);
 		},
 	},
 },
@@ -2246,7 +2246,7 @@ EventHandler: {
 		{	//レスの上にポイント → レスメニューを(時間差で)持ってくる
 			var tid = setTimeout(Skin.ResMenu.attach.bind(Skin.ResMenu, res), Preference.ResMenuAttachDelay);
 			res.addEventListener("mouseout",
-				function(){
+				function cancelHover(){
 					clearTimeout(tid);
 					res.removeEventListener("mouseout", arguments.callee, false);
 			}, false);
@@ -2318,7 +2318,7 @@ EventHandler: {
 			{
 				node.dataset.popupRefShowing = "y";
 				var pp = new ResPopup(null);
-				pp.onClose = function(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
+				pp.onClose = function Rmenu_onClose(){ node.dataset.popupRefShowing = ""; node.refPopup = null; }
 				pp.popup(Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no), "RMenu_Ref");
 				node.refPopup = pp;	//ややこしくなるからdomにobjを持たせたくないけどなぁ・・・
 			}
@@ -2502,12 +2502,12 @@ EventHandler: {
 	{
 		var q   = aEvent.sourceEvent.type;	//クエリ
 		var filter = [
-			function(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
-			function(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
-			function(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
-			function(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
+			function aboneHelper_Nm(node){return node.children[0].children[3].textContent.indexOf(q)>=0;},	//.nm
+			function aboneHelper_Ml(node){return node.children[0].children[5].textContent.indexOf(q)>=0;},	//.ml
+			function aboneHelper_Id(node){return node.dataset.aid.indexOf(q)>=0;},	//data-aid
+			function aboneHelper_Ct(node){return node.children[1].textContent.indexOf(q)>=0;},	//.ct
 		];
-		ThreadMessages.apply(function(node){
+		ThreadMessages.apply(function aboneHelper(node){
 			node.dataset.ng = "y";
 		}, filter[aEvent.detail], true);
 	},
@@ -2656,7 +2656,7 @@ loadManager.prototype = {
 		if(obj.callback)obj.callback(obj);
 		this.checkNext();
 	},
-	checkNext: function()
+	checkNext: function loadManager_checkNext()
 	{
 		if (this.queue.length)
 		{
@@ -2824,8 +2824,8 @@ ImageThumbnailOnClickOverlay.prototype.showOverlay = function ImageThumbnailOnCl
 	ov.className="overlay";
 	ov.innerHTML = '<div><img src="{0}" class="ovlImg" style="max-height:{1}px; max-width:{2}px;margin:{3}px"></div>'.format(this.src, window.innerHeight-4, window.innerWidth-2,2);
 	document.body.dataset.contentsOverlay = "y";
-	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = "";}, false);
-	ov.addEventListener("DOMMouseScroll", function(e){ e.preventDefault(); } , false);
+	ov.addEventListener("click", function ImageThumbnailOnClickOverlay_onClick(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = "";}, false);
+	ov.addEventListener("DOMMouseScroll", function ImageThumbnailOnClickOverlay_DOMMouseScroll(e){ e.preventDefault(); } , false);
 	document.body.appendChild(ov);
 }
 
@@ -2843,7 +2843,7 @@ ImageThumbnailOnClickOverlayFrame.prototype.showOverlay = function ImageThumbnai
 	ov.className="overlay";
 	ov.innerHTML = '<div><iframe src="{0}" style="height:{1}px"></div>'.format(this.rel, window.innerHeight-32);
 	document.body.dataset.contentsOverlay = "y";
-	ov.addEventListener("click", function(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = ""; }, false);
+	ov.addEventListener("click", function ImageThumbnailOnClickOverlayFrame_onClick(){ ov.parentNode.removeChild(ov); document.body.dataset.contentsOverlay = ""; }, false);
 	document.body.appendChild(ov);
 }
 
@@ -2927,7 +2927,7 @@ MarkerService.prototype = {
 	{
 		var mark = this.mark;
 		var T = this;
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function MarkerService_markInvoke(node){
 			node.dataset[mark] = T.getMarkerClass(node);
 		}, this.markAllNode);
 		if(this.marked) this.marked();	//マーク後処理
@@ -3050,7 +3050,7 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 		if (!this.pickups.include(no))
 		{
 			this.pickups.push(no);
-			this.pickups.sort(function(a,b){return a-b;});
+			this.pickups.sort(function _sort(a,b){return a-b;});
 			return true;
 		}
 		return false;
@@ -3059,7 +3059,7 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 	{
 		if (this.pickups.include(no))
 		{
-			this.pickups = this.pickups.filter(function(item, index, array){ return item != no });
+			this.pickups = this.pickups.filter(function Pickup_delFilter(item, index, array){ return item != no });
 			return true;
 		}
 		return false;
@@ -3224,7 +3224,7 @@ TrackerEntry.prototype = {
 	update: function TrackerEntry_update()
 	{	//既存データがマッチしていれば再帰的に追加していく
 		var tr = this;
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function TrackerEntry_traversal(node){
 			var m = tr.check(node.dataset.no);
 			if (m > 0)
 			{
@@ -3268,12 +3268,12 @@ TrackerEntry.prototype = {
 	{
 		var res = new Array();
 		var tr = this;
-		Skin.Thread.Message.foreach(function(node){
+		Skin.Thread.Message.foreach(function TrackerEntry_getNumber(node){
 			if (tr.check(node.dataset.no) > 0)
-		{
-				res.push(node.dataset.no);
-			}
-		}, false);
+			{
+					res.push(node.dataset.no);
+				}
+			}, false);
 		return res;
 	},
 
@@ -3292,7 +3292,7 @@ OutlinkPlugin.prototype = {
 		{
 			var tid = setTimeout(this._popup.bind(this, anchor), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
-				function(){
+				function outlink_popupCancel(){
 					clearTimeout(tid);
 					anchor.removeEventListener("mouseout", arguments.callee, false);
 				},false);
@@ -3313,7 +3313,7 @@ OutlinkPlugin.prototype = {
 				innerCont.appendChild(c);
 				p.container.dataset.popupCaption = anchor.href;
 				p.show(innerCont);
-				p.onClose = function(){ anchor.dataset.previewShowing = "n" };
+				p.onClose = function outlinkplugin_popup_onClose(){ anchor.dataset.previewShowing = "n" };
 			}
 		}
 	},
@@ -3575,7 +3575,7 @@ Popup.prototype = {
 	{
 		if (popup && (popup.parentPopup == this))
 		{
-			this.childPopups = this.childPopups.filter(function(x){ return x != popup; });
+			this.childPopups = this.childPopups.filter(function pupup_unregistor_checker(x){ return x != popup; });
 			popup.parentPopup = null;
 		}
 	},
@@ -3609,7 +3609,7 @@ ResPopup.prototype = new Popup();
 		{//.textContent
 			var tid = setTimeout(this.popup.bind(this, anchor), Preference.ResPopupDelay);
 			anchor.addEventListener("mouseout", 
-				function(){
+				function ResPopup_cancel(){
 					clearTimeout(tid);
 					anchor.removeEventListener("mouseout", arguments.callee, false);
 				},false);
@@ -3678,7 +3678,7 @@ GearPopup.prototype = new Popup();
 			enchantElement.dataset.gearEnchanted = "y";
 			enchantElement.enchantedGear = this;
 		}
-		this.onClose = function()
+		this.onClose = function GearPopup_onClose()
 		{
 			if (enchantElement)
 			{
@@ -3787,7 +3787,7 @@ ViewerEntry.prototype = {
 		if (!this.relations.include(no))
 		{
 			this.relations.push(no);
-			this.relations.sort(function(a,b){return a-b;});
+			this.relations.sort(function _sort(a,b){return a-b;});
 		}
 	},
 	getElement: function ViewerEntry_getElement()
@@ -3899,7 +3899,7 @@ ResManipulator.prototype = {
 	{
 		if (this.node)
 		{
-			var nodes = $A(this.node.childNodes).filter(function(x){ return x.tagName == "ARTICLE"; });
+			var nodes = $A(this.node.childNodes).filter(function closeRefTree_findChild(x){ return x.tagName == "ARTICLE"; });
 			for(var i=0,j=nodes.length; i<j; i++)
 			{
 				this.node.removeChild(nodes[i]);
@@ -4008,7 +4008,7 @@ ResManipulator.prototype = {
 				window.scrollTo(0, DOMUtil.getElementPagePos(node).pageY - (window.innerHeight * 0.3));
 				//目立たせる
 				node.dataset.focus = "on";
-				setTimeout(function(){ node.dataset.focus = ""; }, 1000)
+				setTimeout(function focus_timeout(){ node.dataset.focus = ""; }, 1000)
 			}
 		}
 	},
