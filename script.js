@@ -94,9 +94,11 @@ var Macro = {
 	           "Check", "AutoCheck", "ExpressPickup", "BoardPane",
 	           "FocusEnd", "FocusTop", "FocusBookmark", "FocusNew", "ResetBookmark",
 	           "M_resTo","M_toggleRefferPopup","M_toggleIdPopup","M_expressReffer",
-	           "M_toggleRefTree","M_openRefTree","M_closeRefTree","M_toggleBookmark",
-	           "M_setBookmark","M_resetBookmark","M_togglePickup","M_setPickup",
-	           "M_resetPickup","M_toggleTracking","M_beginTracking","M_endTracking",
+	           "M_toggleRefTree","M_openRefTree","M_closeRefTree",
+	           "M_toggleBookmark","M_setBookmark","M_resetBookmark",
+	           "M_togglePickup","M_setPickup", "M_resetPickup",
+	           "M_toggleIgnore", "M_setIgnore", "M_resetIgnore",
+	           "M_toggleTracking","M_beginTracking","M_endTracking",
 	           "M_previewLinks","M_focus","M_closeIfPopup", "M_exitExpressMode",
 	],
 	exprain: {
@@ -131,6 +133,9 @@ var Macro = {
 		M_togglePickup: "ピックアップ",
 		M_setPickup: "ピックアップ設定",
 		M_resetPickup: "ピックアップ解除",
+		M_toggleIgnore: "無視(個別あぼーん)",
+		M_setIgnore: "無視(個別あぼーん)設定",
+		M_resetIgnore: "無視(個別あぼーん)解除",
 		M_toggleTracking: "トラッキング",
 		M_beginTracking: "トラッキング開始",
 		M_endTracking: "トラッキング解除",
@@ -3105,7 +3110,7 @@ var Ignore = new MarkerService(false, "ig", "ignored", true);
 	}
 	Ignore._del = function Ignore_del(no)
 	{
-		if (this.ignoress.include(no))
+		if (this.ignores.include(no))
 		{
 			this.ignores = this.ignores.filter(function Ignore_delFilter(item, index, array){ return item != no });
 			return true;
@@ -3993,6 +3998,28 @@ ResManipulator.prototype = {
 	resetPickup: function ResManipulator_resetPickup()
 	{
 		if (this.no) Pickup.del(this.no);
+	},
+	toggleIgnore: function ResManipulator_toggleIgnore()
+	{
+		if (this.no)
+		{
+			if (Ignore.ignores.include(this.no))
+			{
+				Ignore.del(this.no);
+			}
+			else
+			{
+				Ignore.add(this.no);
+			}
+		}
+	},
+	setIgnore: function ResManipulator_setIgnore()
+	{
+		if (this.no) Ignore.add(this.no);
+	},
+	resetIgnore: function ResManipulator_resetIgnore()
+	{
+		if (this.no) Ignore.del(this.no);
 	},
 	toggleTracking: function ResManipulator_toggleTracking()
 	{

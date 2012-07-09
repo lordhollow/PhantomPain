@@ -211,18 +211,32 @@ span.space
 		content: "";
 	}
 	article[data-ng="y"],
-	article[data-ng="y"] a
+	article[data-ng="y"] a,
+	article[data-ignored="y"],
+	article[data-ignored="y"] a
 	{
 		color: #CCC !important;
 	}
-	article[data-ng="y"] .id
+	article[data-ng="y"] .id,
+	article[data-ignored="y"] .id
 	{
 		background-color: transparent !important;
 		color: #CCC !important;
 	}
-	article[data-ng="y"] .ct
+	article[data-ng="y"] .ct,
+	article[data-ignored="y"] .ct
 	{
-		font-size: 75%;
+		display: none;
+	}
+	article[data-ng="y"]:after
+	{
+		margin: 6px 1em;
+		content: "あぼーん";
+	}
+	article[data-ignored="y"]:after
+	{
+		margin: 6px 1em;
+		content: "あぼーん(スキン設定)";
 	}
 	article[data-backward="y"]
 	{
@@ -259,7 +273,8 @@ h2
 	{
 		border-color: #F99;
 	}
-	article[data-ng="y"] > h2
+	article[data-ng="y"] > h2,
+	article[data-ignored="y"] > h2
 	{
 		border-color: #CCC;
 	}
