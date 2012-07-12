@@ -333,18 +333,22 @@ function getJsonStr(obj)
 	else if (t == "array")
 	{
 		ret = "[";
+		var c = "";
 		for (var i=0; i< obj.length; i++)
 		{
-			ret += getJsonStr(obj[i]) + ",";
+			ret += c + getJsonStr(obj[i]);
+			c = ", ";
 		}
 		ret += "]";
 	}
 	else if (t == "object")
 	{
 		ret = "{";
+		var c = "";
 		for(var key in obj)
 		{
-			ret += '"' + key + '":' + getJsonStr(obj[key]) + ","
+			ret += c + '"' + key + '":' + getJsonStr(obj[key]);
+			c = ", ";
 		}
 		ret += "}";
 	}
