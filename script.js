@@ -288,16 +288,6 @@ var $=function prototype_getElementById(id){return document.getElementById(id);}
 
 String.format = function String_format(p_txt)
 {
-/*
-	if ( arguments.length <= 1 ) {
-		return p_txt;
-	}
-	for( var v_idx = 1, v_num = arguments.length; v_idx < v_num; v_idx++ )
-	{
-		p_txt = p_txt.replace(new RegExp("\\{" + (v_idx - 1) + "\\}", "gi"), arguments[v_idx]);
-	}
-	return p_txt;
-*/
 	if ( arguments.length <= 1 ) return p_txt;
 	var A=arguments;
 	return p_txt.replace(/{(\d+)}/g, function StringFormat_Replacement(all,$1) {return A[parseInt($1)+1];});
@@ -358,7 +348,7 @@ function getJsonStr(obj)
 		}
 		ret += "}";
 	}
-	return ret;
+	return ret;	//Œ³‚É–ß‚·‚Æ‚«‚Í var obj = EVAL("("+ret+")", null);
 }
 
 function escapeStrToJson(str)
