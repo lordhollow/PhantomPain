@@ -717,13 +717,14 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		margin: auto;
 		background-color: transparent;
 	}
-	#viewerHomeCtrl>button[name="play"] { background-image: url("viewerPlay-g.png"); }
-	#viewerHomeCtrl>button[name="play"]:hover { background-image: url("viewerPlay.png"); }
-	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerPlay-g.png"); }
 
-	#viewerHomeCtrl>button[name="auto"] { background-image: url("viewerAutoPlay-g.png"); margin-left: 8px; }
-	#viewerHomeCtrl>button[name="auto"]:hover { background-image: url("viewerAutoPlay.png"); }
-	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: url("viewerAutoPlay-g.png"); }
+	#viewerHomeCtrl>button[name="play"] { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 96, 48, 48); }
+	#viewerHomeCtrl>button[name="play"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 48, 48, 0); }
+	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 96, 48, 48); }
+
+	#viewerHomeCtrl>button[name="auto"] { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 192, 48, 144); margin-left: 8px; }
+	#viewerHomeCtrl>button[name="auto"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 144, 48, 96);; }
+	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 192, 48, 144); }
 
 /* ナビゲーション */
 #navigation
@@ -765,6 +766,10 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 {
 	padding-top: 4px;
 }
+	#prefpagelist
+	{
+		margin-bottom: 4px;
+	}
 	#prefpagelist > input[type="submit"]
 	{
 		border: none;
@@ -772,6 +777,19 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		width: 32px;
 		height: 32px;
 	}
+	#prefpagelist > input[type="submit"]:before
+	{
+		content: "Ｘ";
+	}
+	#prefpagelist > input[name="functions"] { background-image: -moz-image-rect(url(buttons_pref.png), 0, 32, 32, 0); }
+	#prefpagelist > input[name="images"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 64, 32, 32);}
+	#prefpagelist > input[name="popups"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 96, 32, 64);}
+	#prefpagelist > input[name="loading"]   { background-image: -moz-image-rect(url(buttons_pref.png), 0, 128, 32, 96);}
+	#prefpagelist > input[name="analyze"]   { background-image: -moz-image-rect(url(buttons_pref.png), 0, 160, 32, 128);}
+	#prefpagelist > input[name="thread"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 192, 32, 160);}
+
+
+
 
 /* 通知領域 */
 #noticeContainer

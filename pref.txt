@@ -1,11 +1,11 @@
 <div id="configulator">
-	<form id="prefpagelist" onsubmit="Skin.Configulator.page(event);return false;">
+	<form id="prefpagelist" onsubmit="return Skin.Configulator.page(event);">
 	<input type="submit" value="" name="functions" title="機能">
 	<input type="submit" value="" name="images" title="画像">
 	<input type="submit" value="" name="popups" title="ポップアップ">
 	<input type="submit" value="" name="loading" title="読み込み">
 	<input type="submit" value="" name="analyze" title="解析">
-	<input type="submit" value="" name="misc" title="その他">
+	<input type="submit" value="" name="thread" title="スレッド">
 	</form>
 	<div id="prefpages">
 		<form name="funcPref" class="prefpage" data-key="functions">
@@ -13,6 +13,10 @@
 		TemplateLength	@<Preference.TemplateLength>@	テンプレポップアップで表示するレスの数<br>
 		ResMenuAttachDelay	@<Preference.ResMenuAttachDelay>@	レスメニューがアタッチされるまでのディレイ(ms)<br>
 		AutoOpenBoardPane	@<Preference.AutoOpenBoardPane>@	板一覧ペインの自動展開<br>
+		ChapterWidth	@<Preference.ChapterWidth>@	Naviのチャプター幅<br>
+		ExtendAnchor	@<Preference.ExtendAnchor>@	アンカー拡張<br>
+		URLShortenLength	@<Preference.URLShortenLength>@	URL表示を短くする長さ<br>
+		UseReplaceStrTxt	@<Preference.UseReplaceStrTxt>@	ReplaceStr.txtを使用する？<br>
 		NoticeLength	@<Preference.NoticeLength>@	表示するお知らせの数<br>
 		OnResDblClick0	@<Preference.OnResDblClick[0]>@	<br>
 		OnResDblClick1	@<Preference.OnResDblClick[1]>@	S<br>
@@ -60,17 +64,13 @@
 
 		<form name="analyzePref" class="prefpage" data-key="analyze">
 		<h3>解析</h3>
-		ChapterWidth	@<Preference.ChapterWidth>@	Naviのチャプター幅<br>
 		EnableNextThreadSearch	@<Preference.EnableNextThreadSearch>@	次スレ検索有効？<br>
 		NextThreadSearchBeginsAt	@<Preference.NextThreadSearchBeginsAt>@	次スレ検索開始レス番号<br>
 		ReplyCheckMaxWidth	@<Preference.ReplyCheckMaxWidth>@	これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)<br>
-		ExtendAnchor	@<Preference.ExtendAnchor>@	アンカー拡張<br>
-		URLShortenLength	@<Preference.URLShortenLength>@	URL表示を短くする長さ<br>
-		UseReplaceStrTxt	@<Preference.UseReplaceStrTxt>@	ReplaceStr.txtを使用する？<br>
 		</form>
 
-		<form name="miscPref" class="prefpage" data-key="misc">
-		<h3>その他</h3>
+		<form name="miscPref" class="prefpage" data-key="thread">
+		<h3>スレッド</h3>
 		この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
 		<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
 		</form>
