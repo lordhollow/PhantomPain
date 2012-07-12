@@ -90,17 +90,6 @@ var Content = {
 }
 
 var Macro = {
-	_entries: ["Write", "Template", "Viewer", "Config", "Finder", "Navigation", "Notice", "Preview", "Jump", 
-	           "Check", "AutoCheck", "ExpressPickup", "BoardPane",
-	           "FocusEnd", "FocusTop", "FocusBookmark", "FocusNew", "ResetBookmark",
-	           "M_resTo","M_toggleRefferPopup","M_toggleIdPopup","M_expressReffer",
-	           "M_toggleRefTree","M_openRefTree","M_closeRefTree",
-	           "M_toggleBookmark","M_setBookmark","M_resetBookmark",
-	           "M_togglePickup","M_setPickup", "M_resetPickup",
-	           "M_toggleIgnore", "M_setIgnore", "M_resetIgnore",
-	           "M_toggleTracking","M_beginTracking","M_endTracking",
-	           "M_previewLinks","M_focus","M_focusNextId", "M_focusPrevId", "M_closeIfPopup", "M_exitExpressMode",
-	],
 	exprain: {
 		Write: "書き込みダイアログ",
 		Template: "テンプレ表示",
