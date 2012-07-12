@@ -90,7 +90,7 @@ var Content = {
 }
 
 var Macro = {
-	exprain: {
+	explain: {
 		Write: "書き込みダイアログ",
 		Template: "テンプレ表示",
 		Viewer: "ビューアー表示",
