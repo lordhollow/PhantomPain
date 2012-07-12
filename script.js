@@ -309,6 +309,72 @@ String.prototype.format = function StringPrototype_format()
 	return String.format.apply(String, arguments);
 };
 
+function getType(o)
+{
+	if (o === null) return 'null';
+	if (typeof o == 'undefined') return 'undefined';
+	if (typeof o == 'boolean') return 'boolean';
+	if (typeof o == 'string') return 'string';
+	if (typeof o == 'number') return 'number';
+	if (o instanceof Array) return 'array';
+	if (o instanceof RegExp) return 'regexp';
+	if (o instanceof Date) return 'date';
+	if (typeof o == 'function') return 'function';
+	if (typeof o == 'object') return 'object'
+	return 'unknown';
+}
+
+function getJsonStr(obj)
+{
+	var ret = "";
+	var t = getType(obj);
+	if ((t == "null") || (t == "undefined"))
+	{
+		ret = t;
+	}
+	else if ((t == "boolean") || (t == "number"))
+	{
+		ret = obj + "";
+	}
+	else if (t == "string")
+	{
+		ret = '"' +  escapeStrToJson(obj) + '"';
+	}
+	else if (t == "array")
+	{
+		ret = "[";
+		for (var i=0; i< obj.length; i++)
+		{
+			ret += getJsonStr(obj[i]) + ",";
+		}
+		ret += "]";
+	}
+	else if (t == "object")
+	{
+		ret = "{";
+		for(var key in obj)
+		{
+			ret += '"' + key + '":' + getJsonStr(obj[key]) + ","
+		}
+		ret += "}";
+	}
+	return ret;
+}
+
+function escapeStrToJson(str)
+{
+	return str.replace(/(\r|\n|\t|\\|")/g, function(all, $1){
+		switch ($1)
+		{
+		case "\r": return "\\r";
+		case "\n": return "\\n";
+		case "\t": return "\\t";
+		case "\\": return "\\\\";
+		case '"':  return '\\"';
+		}
+	});
+}
+
 function EVAL(str, def)
 {	//—áŠO‚ª”­¶‚µ‚È‚¢eval
 	try
