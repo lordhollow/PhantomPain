@@ -320,7 +320,7 @@ function getJsonStr(obj)
 	var t = getType(obj);
 	if ((t == "null") || (t == "undefined"))
 	{
-		ret = t;
+		ret = "null";
 	}
 	else if ((t == "boolean") || (t == "number"))
 	{
