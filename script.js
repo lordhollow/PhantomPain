@@ -8,6 +8,7 @@ var _Preference =
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
 	PopupDestructChain: true,	//ポップアップを連鎖的に破壊するか？
+	FloatingPopupFixed: false,	//フロート状態のポップアップが画面に張り付くか？
 	MoreWidth: 100,				//moreで読み込む幅。0なら全部。
 	AutoReloadInterval: 300,	//オートロード間隔(秒)
 	AutoAutoReloadPtn: "",		//オートロードを自動開始するスレッドURLのパターン
@@ -3661,10 +3662,19 @@ Popup.prototype = {
 	{
 		if (!this.floating)
 		{
-			this.closeOnMouseLeave = false;
 			this.floatingRect = DOMUtil.getElementPagePos(this.container.firstChild);
-			this.floatingRect.pageX -= Preference.PopupLeft;
-			this.floatingRect.pageY -= 4;
+			if (Preference.FloatingPopupFixed)
+			{
+				this.floatingRect.pageX -= window.scrollX;
+				this.floatingRect.pageY -= window.scrollY;;
+				this.container.style.position = "fixed";
+			}
+			else
+			{
+				this.floatingRect.pageX -= Preference.PopupLeft;
+				this.floatingRect.pageY -= 4;
+			}
+			this.closeOnMouseLeave = false;
 			this.container.dataset.floatingPopup = "y";
 			this.container.style.left = this.floatingRect.pageX + "px";
 			this.container.style.top  = this.floatingRect.pageY + "px";

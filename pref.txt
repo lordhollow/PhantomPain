@@ -37,7 +37,7 @@
 		<h3>ポップアップ</h3>
 		ResPopupDelay	@<Preference.ResPopupDelay>@	ポップアップ表示ディレイ(ms)<br>
 		PopupLeft	@<Preference.PopupLeft>@	ポップアップコンテンツ左端～吹き出し右端までの最短距離<br>
-		PopupRightMargin	@<Preference.PopupRightMargin>@	ポップアップコンテンツ右端～画面端までの距離<br>
+		PopupRightMargin	@<Preference.PopupRightMargin>@	ポップアップコンテンツ右端～画面端までの距離<br>		FloatingPopupFixed	@<Preference.FloatingPopupFixed>@	フロート状態のポップアップが画面に張り付くか？<br>
 		PopupDestructChain	@<Preference.PopupDestructChain>@	ポップアップを連鎖的に破壊するか？<br>
 		ResPopupPageWidth	@<Preference.ResPopupPageWidth>@	レスポップアップをタブ化する幅<br>
 		ResPopupAlwaysShowTabs	@<Preference.ResPopupAlwaysShowTabs>@	レスポップアップを常時タブで表示<br>
