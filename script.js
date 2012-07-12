@@ -59,7 +59,8 @@ var Content = {
 		
 		messageLoaded: "{0} messages.",
 		messageNewResDetected: "({0} new messages.)",
-		messageResetPreference: "設定をクリアしました",
+		messageResetPreference: "設定を初期化しました",
+		messageSavePreference: "設定を保存しました",
 		messageInitialized: "{0} ms for initialize",
 		messageLoadError: "Load Error.",
 		messageCheckedWithoutNew: "{0} 新着なし",
@@ -85,7 +86,7 @@ var Content = {
 	},
 	get: function Content_get(id)
 	{
-		return this["_" + this.mode][id] || this["_jp"][id] || "";
+		return (this["_" + this.mode] || this["_jp"])[id] || "";
 	},
 }
 
@@ -226,7 +227,8 @@ const OUTLINK_ETC   = 4;	//その他
 
 function PP3ResetPreference()
 {	//ブックマークレットとして javascript:PP3ResetPreference(); を登録しておくと、リセットすることができます。
-	console.log($C("messageResetPreference"));
+	Notice.add($C("messageResetPreference"));
+	Skin.Configulator.resetPreference();
 }
 
 Function.prototype.bind = function prototype_bind()
@@ -390,7 +392,6 @@ init: function PP3_init()
 {
 	var dt1 = new Date();
 
-	//loadPref
 	if (Preference.AutoOpenBoardPane) this.BoardPane.toggle();
 	this.BoardList.init();
 	this.Thread.init();
@@ -415,6 +416,34 @@ init: function PP3_init()
 	if (Preference.AutoAutoReloadPtn && (Skin.Thread.Info.Url.match(Preference.AutoAutoReloadPtn))) this.Services.AutoUpdate.begin();
 },
 Configulator: {
+	_key: "PhantomPain3.Preferences",
+	load: function Configulator_load()
+	{
+		var t = localStorage.getItem(this._key);
+		var pref = EVAL("(" + t + ")", {}) || {};
+		var p = clone(_Preference);	//オリジナルをクローン
+		p.OnResDblClick = _Preference.OnResDblClick.clone();	//配列はディープコピー
+		for (var key in _Preference)
+		{
+			if (getType(_Preference[key]) == getType(pref[key]))
+			{
+				p[key] = pref[key];
+			}
+		}
+		return p;
+	},
+	save: function Configulator_save()
+	{
+		var p = getJsonStr(Preference);
+		localStorage.setItem(this._key, p);
+		Notice.add($C("messageSavePreference"));
+	},
+	resetPreference: function Configulator_resetPreference()
+	{
+		Preference = clone(_Preference);
+		Preference.OnResDblClick = _Preference.OnResDblClick.clone();	//配列はディープコピー
+		this.save();
+	},
 	toggle: function Configulator_toggle(t)
 	{
 		if (!t) return;
@@ -4216,7 +4245,7 @@ ResManipulator.prototype = {
 };
 
 //ショートカット
-var Preference = Skin.Preference = clone(_Preference);
+var Preference = Skin.Preference = Skin.Configulator.load();
 var Notice = Skin.Notice;
 var PopupUtil = Skin.Util.Popup;
 var StringUtil = Skin.Util.String;
