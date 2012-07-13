@@ -3625,9 +3625,10 @@ Popup.prototype = {
 		if (this.onClose) this.onClose(this);
 		if (Preference.PopupDestructChain && this.childPopups)
 		{
-			for(var i=0, j=this.childPopups.length; i < j; i++)
+			var children = this.childPopups.clone();	//close‚©‚çunregistor‚³‚ê‚é‚Ì‚Å”z—ñ\¬‚ª•Ï‚í‚é‚½‚ß“€Œ‹
+			for(var i=0, j=children.length; i < j; i++)
 			{
-				this.childPopups[i].close();
+				children[i].close();
 			}
 		}
 		if (this.parentPopup) this.parentPopup.unregistorChild(this);
