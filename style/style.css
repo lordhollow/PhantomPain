@@ -777,16 +777,27 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		width: 32px;
 		height: 32px;
 	}
-	#prefpagelist > input[type="submit"]:before
-	{
-		content: "‚w";
-	}
-	#prefpagelist > input[name="functions"] { background-image: -moz-image-rect(url(buttons_pref.png), 0, 32, 32, 0); }
+	#prefpagelist > input[name="functions"] { background-image: -moz-image-rect(url(buttons_pref.png), 0, 32, 32, 0);}
 	#prefpagelist > input[name="images"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 64, 32, 32);}
 	#prefpagelist > input[name="popups"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 96, 32, 64);}
 	#prefpagelist > input[name="loading"]   { background-image: -moz-image-rect(url(buttons_pref.png), 0, 128, 32, 96);}
 	#prefpagelist > input[name="analyze"]   { background-image: -moz-image-rect(url(buttons_pref.png), 0, 160, 32, 128);}
 	#prefpagelist > input[name="thread"]    { background-image: -moz-image-rect(url(buttons_pref.png), 0, 192, 32, 160);}
+	.prefpage
+	{
+		padding-bottom: 4px;
+	}
+	.prefpage > fieldset
+	{
+		border-radius: 8px;
+		padding: 4px;
+	}
+	.prefpage > fieldset > legend
+	{
+		font-size: 75%;
+		font-weight: bold;
+		margin-left: 10em;
+	}
 
 
 

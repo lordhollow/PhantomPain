@@ -9,47 +9,63 @@
 	</form>
 	<div id="prefpages">
 		<form name="funcPref" class="prefpage" data-key="functions">
-		<h3>機能</h3>
-		TemplateLength	@<Preference.TemplateLength>@	テンプレポップアップで表示するレスの数<br>
-		ResMenuAttachDelay	@<Preference.ResMenuAttachDelay>@	レスメニューがアタッチされるまでのディレイ(ms)<br>
-		AutoOpenBoardPane	@<Preference.AutoOpenBoardPane>@	板一覧ペインの自動展開<br>
-		ChapterWidth	@<Preference.ChapterWidth>@	Naviのチャプター幅<br>
-		ExtendAnchor	@<Preference.ExtendAnchor>@	アンカー拡張<br>
-		URLShortenLength	@<Preference.URLShortenLength>@	URL表示を短くする長さ<br>
-		UseReplaceStrTxt	@<Preference.UseReplaceStrTxt>@	ReplaceStr.txtを使用する？<br>
-		NoticeLength	@<Preference.NoticeLength>@	表示するお知らせの数<br>
-		OnResDblClick0	@<Preference.OnResDblClick[0]>@	<br>
-		OnResDblClick1	@<Preference.OnResDblClick[1]>@	S<br>
-		OnResDblClick2	@<Preference.OnResDblClick[2]>@	C<br>
-		OnResDblClick3	@<Preference.OnResDblClick[3]>@	SC<br>
-		OnResDblClick4	@<Preference.OnResDblClick[4]>@	A<br>
-		OnResDblClick5	@<Preference.OnResDblClick[5]>@	SA<br>
-		OnResDblClick6	@<Preference.OnResDblClick[6]>@	CA<br>
-		OnResDblClick7	@<Preference.OnResDblClick[7]>@	SCA<br>
+		<fieldset><legend>レス拡張</legend>
+		<label><input type="checkbox" name="ExtendAnchor" @CHECKED<Preference.ExtendAnchor>@>全角文字とコンマ区切りのアンカーを使う</label><br>
+		<label><input type="checkbox" name="UseReplaceStrTxt" @CHECKED<Preference.UseReplaceStrTxt>@>ReplaceStr.txtを使用する</label><br>
+		<label><input type="text" name="URLShortenLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.URLShortenLength>@">文字以上のURLを短縮表記する</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		</fieldset>
+		<fieldset><legend>挙動</legend>
+		<label><input type="checkbox" name="AutoOpenBoardPane" @CHECKED<Preference.AutoOpenBoardPane>@>スレを開いたとき、自動的に上部スレ一覧を開く</label><br>
+		<label>テンプレートポップアップ：<input type="text" name="TemplateLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.TemplateLength>@">件(0でギアを表示)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>ナビゲーションチャプター幅：<input type="text" name="ChapterWidth" data-min="5" data-max="1000" data-keybind="num" value="@<Preference.ChapterWidth>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>レスをポイントしてから<input type="text" name="ResMenuAttachDelay" data-min="0" data-max="5000" data-keybind="num" value="@<Preference.ResMenuAttachDelay>@">ミリ秒後にレスメニューを表示</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>お知らせの表示件数：<input type="text" name="NoticeLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.NoticeLength>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		</fieldset>
+		<fieldset><legend>レス余白のダブルクリック処理</legend>
+		<table>
+		<tr><th>通常</th>          <td><select name="OnResDblClick[0]">@MACRO<Preference.OnResDblClick[0]>@</select></td></tr>
+		<tr><th>Shift</th>         <td><select name="OnResDblClick[1]">@MACRO<Preference.OnResDblClick[1]>@</select></td></tr>
+		<tr><th>Ctrl</th>          <td><select name="OnResDblClick[2]">@MACRO<Preference.OnResDblClick[2]>@</select></td></tr>
+		<tr><th>Shift+Ctrl</th>    <td><select name="OnResDblClick[3]">@MACRO<Preference.OnResDblClick[3]>@</select></td></tr>
+		<tr><th>Alt</th>           <td><select name="OnResDblClick[4]">@MACRO<Preference.OnResDblClick[4]>@</select></td></tr>
+		<tr><th>Alt+Shift</th>     <td><select name="OnResDblClick[5]">@MACRO<Preference.OnResDblClick[5]>@</select></td></tr>
+		<tr><th>Alt+Ctrl</th>      <td><select name="OnResDblClick[6]">@MACRO<Preference.OnResDblClick[6]>@</select></td></tr>
+		<tr><th>Alt+Shift+Ctrl</th><td><select name="OnResDblClick[7]">@MACRO<Preference.OnResDblClick[7]>@</select></td></tr>
+		</table>
+		</fieldset>
+		<input type="button" onclick="apply_functions_pref(event);" value="適用">
+		@COMMAND<
+		apply_functions_pref = function _apply_functions_pref(e)
+		{
+			var p=PopupUtil.getPopup(e.target);
+			if (p) p.close();
+		}>@
 		</form>
 
 		<form name="imgPref" class="prefpage" data-key="images">
-		<h3>画像</h3>
+		<fieldset><legend>画像</legend>
 		ImagePopupSize	@<Preference.ImagePopupSize>@	画像ポップアップのサイズ<br>
 		ViewerPreloadWidth	@<Preference.ViewerPreloadWidth>@	ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）<br>
 		ViewerCursorHideAt	@<Preference.ViewerCursorHideAt>@	メディアビューアでカーソルが消えるまでの時間（秒）<br>
 		SlideshowInterval	@<Preference.SlideshowInterval>@	スライドショーの間隔(秒)<br>
 		AutoPreviewOutlinks	@<Preference.AutoPreviewOutlinks>@	Outlinkを自動展開<br>
+		</fieldset>
 		</form>
 
 		<form name="popupPref" class="prefpage" data-key="popups">
-		<h3>ポップアップ</h3>
+		<fieldset><legend>ポップアップ</legend>
 		ResPopupDelay	@<Preference.ResPopupDelay>@	ポップアップ表示ディレイ(ms)<br>
 		PopupLeft	@<Preference.PopupLeft>@	ポップアップコンテンツ左端～吹き出し右端までの最短距離<br>
 		PopupRightMargin	@<Preference.PopupRightMargin>@	ポップアップコンテンツ右端～画面端までの距離<br>		FloatingPopupFixed	@<Preference.FloatingPopupFixed>@	フロート状態のポップアップが画面に張り付くか？<br>
 		PopupDestructChain	@<Preference.PopupDestructChain>@	ポップアップを連鎖的に破壊するか？<br>
 		ResPopupPageWidth	@<Preference.ResPopupPageWidth>@	レスポップアップをタブ化する幅<br>
 		ResPopupAlwaysShowTabs	@<Preference.ResPopupAlwaysShowTabs>@	レスポップアップを常時タブで表示<br>
+		</fieldset>
 		</form>
 
 
 		<form name="loadPref" class="prefpage" data-key="loading">
-		<h3>読み込み</h3>
+		<fieldset><legend>レス余白のダブルクリック処理</legend>
 		MoreWidth	@<Preference.MoreWidth>@	moreで読み込む幅。0なら全部。<br>
 		AutoReloadInterval	@<Preference.AutoReloadInterval>@	オートロード間隔(秒)<br>
 		AutoAutoReloadPtn	@<Preference.AutoAutoReloadPtn>@	オートロードを自動開始するスレッドURLのパターン<br>
@@ -60,19 +76,22 @@
 		LoadOnWheelCheckNew	@<Preference.LoadOnWheelCheckNew>@	LoadOnWheelで新着チェックするか？<br>
 		LoadOnWheelDelta	@<Preference.LoadOnWheelDelta>@	LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数<br>
 		ReplyCheckMaxWidth	@<Preference.ReplyCheckMaxWidth>@	これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)<br>
+		</fieldset>
 		</form>
 
 		<form name="analyzePref" class="prefpage" data-key="analyze">
-		<h3>解析</h3>
+		<fieldset><legend>構造解析設定</legend>
 		EnableNextThreadSearch	@<Preference.EnableNextThreadSearch>@	次スレ検索有効？<br>
 		NextThreadSearchBeginsAt	@<Preference.NextThreadSearchBeginsAt>@	次スレ検索開始レス番号<br>
 		ReplyCheckMaxWidth	@<Preference.ReplyCheckMaxWidth>@	これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)<br>
+		</fieldset>
 		</form>
 
 		<form name="miscPref" class="prefpage" data-key="thread">
-		<h3>スレッド</h3>
+		<fieldset><legend>スレッド</legend>
 		この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
 		<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
+		</fieldset>
 		</form>
 	</div>
 </div>

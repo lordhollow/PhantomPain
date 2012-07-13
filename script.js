@@ -115,19 +115,19 @@ var Macro = {
 		M_toggleRefferPopup: "逆参照ポップアップ",
 		M_toggleIdPopup: "IDポップアップ",
 		M_expressReffer: "逆参照抽出",
-		M_toggleRefTree: "逆参照ツリー",
+		M_toggleRefTree: "逆参照ツリー切替",
 		M_openRefTree: "逆参照ツリー構築",
 		M_closeRefTree: "逆参照ツリー解体",
-		M_toggleBookmark: "ブックマーク",
+		M_toggleBookmark: "ブックマーク切替",
 		M_setBookmark: "ブックマーク設定",
 		M_resetBookmark: "ブックマーク解除",
-		M_togglePickup: "ピックアップ",
+		M_togglePickup: "ピックアップ切替",
 		M_setPickup: "ピックアップ設定",
 		M_resetPickup: "ピックアップ解除",
-		M_toggleIgnore: "無視(個別あぼーん)",
-		M_setIgnore: "無視(個別あぼーん)設定",
-		M_resetIgnore: "無視(個別あぼーん)解除",
-		M_toggleTracking: "トラッキング",
+		M_toggleIgnore: "個別あぼーん切替",
+		M_setIgnore: "個別あぼーん設定",
+		M_resetIgnore: "個別あぼーん解除",
+		M_toggleTracking: "トラッキング切替",
 		M_beginTracking: "トラッキング開始",
 		M_endTracking: "トラッキング解除",
 		M_previewLinks: "プレビュー(単一)",
@@ -420,10 +420,15 @@ Configulator: {
 	_key: "PhantomPain3.Preferences",
 	load: function Configulator_load()
 	{
-		var t = localStorage.getItem(this._key);
-		var pref = EVAL("(" + t + ")", {}) || {};
 		var p = clone(_Preference);	//オリジナルをクローン
 		p.OnResDblClick = _Preference.OnResDblClick.clone();	//配列はディープコピー
+		var t = localStorage.getItem(this._key);
+		var pref = EVAL("(" + t + ")", {}) || {};
+		this.patch(p, pref);
+		return p;
+	},
+	patch: function Configulator_patch(p, pref)
+	{
 		for (var key in _Preference)
 		{
 			if (getType(_Preference[key]) == getType(pref[key]))
@@ -431,7 +436,6 @@ Configulator: {
 				p[key] = pref[key];
 			}
 		}
-		return p;
 	},
 	save: function Configulator_save()
 	{
@@ -459,7 +463,33 @@ Configulator: {
 			//テンプレートエンジン発動！
 			//この方法で初期値を埋めるなら、開きなおしたときの処理を考えないとダメかも。
 			//ここでしか変更されない値はどうでもいいけど。
-			html = html.replace(/@<([^@]+?)>@/g, function Configulator_templateEngine(all,$1){ return eval($1);});
+			html = html.replace(/@(CHECKED|MACRO|COMMAND)?<(([^@]|[\r\n])+?)>@/g, function Configulator_templateEngine(all,mode,script)
+			{
+				if (mode == "CHECKED")
+				{
+					return eval(script) ? "checked" : "";
+				}
+				else if (mode =="MACRO")
+				{
+					var current = eval(script);
+					var opt = "";
+					for(var key in Macro.explain)
+					{
+						if (key.substr(0, 2) == "M_")
+						{
+							var macro = key.substr(2);
+							opt += '<option value="{0}"{2}>{1}</option>'.format(macro, Macro.explain[key], (current == macro) ? ' selected="selected"' : "");
+						}
+					}
+					return opt;
+				}
+				else if (mode == "COMMAND")
+				{
+					eval(script);
+					return "";
+				}
+				return eval(script);
+			});
 			cont.innerHTML = html;
 			this.editor = cont.firstChild;
 			cont.removeChild(this.editor);
