@@ -34,8 +34,10 @@
 		</table>
 		</fieldset>
 		<input type="button" onclick="apply_functions_pref(event);" value="適用">
+		<input type="reset" value="変更前に戻す">
+		<input type="button" onclick="initialize_functions_pref();" value="初期値に戻す">
 		@COMMAND<
-		apply_functions_pref = function _apply_functions_pref(e)
+		apply_functions_pref = function(e)
 		{
 			//TODO::validate text (URLShortenLength, TemplateLength, ChapterWidth, ResMenuAttachDelay, NoticeLength)
 			var f = document.forms.funcPref;
@@ -57,9 +59,30 @@
 			};
 			Skin.Configulator.patch(Preference, pref);
 			Skin.Configulator.save();
-			var p=PopupUtil.getPopup(e.target);
+			var p = PopupUtil.getPopup(e.target);
 			if (p) p.close();
-		}>@
+		}
+		initialize_functions_pref = function()
+		{
+			var f = document.forms.funcPref;
+			f.ExtendAnchor.checked = _Preference.ExtendAnchor;
+			f.UseReplaceStrTxt.checked = _Preference.UseReplaceStrTxt;
+			f.URLShortenLength.value = _Preference.URLShortenLength;
+			f.AutoOpenBoardPane.checked = _Preference.AutoOpenBoardPane;
+			f.TemplateLength.value = _Preference.TemplateLength;
+			f.ChapterWidth.value = _Preference.ChapterWidth;
+			f.ResMenuAttachDelay.value = _Preference.ResMenuAttachDelay;
+			f.NoticeLength.value = _Preference.NoticeLength;
+			f["OnResDblClick[0]"].value = _Preference.OnResDblClick[0];
+			f["OnResDblClick[1]"].value = _Preference.OnResDblClick[1];
+			f["OnResDblClick[2]"].value = _Preference.OnResDblClick[2];
+			f["OnResDblClick[3]"].value = _Preference.OnResDblClick[3];
+			f["OnResDblClick[4]"].value = _Preference.OnResDblClick[4];
+			f["OnResDblClick[5]"].value = _Preference.OnResDblClick[5];
+			f["OnResDblClick[6]"].value = _Preference.OnResDblClick[6];
+			f["OnResDblClick[7]"].value = _Preference.OnResDblClick[7];
+		}
+		>@
 		</form>
 
 		<form name="imgPref" class="prefpage" data-key="images">
