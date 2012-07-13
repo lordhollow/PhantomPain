@@ -37,6 +37,26 @@
 		@COMMAND<
 		apply_functions_pref = function _apply_functions_pref(e)
 		{
+			//TODO::validate text (URLShortenLength, TemplateLength, ChapterWidth, ResMenuAttachDelay, NoticeLength)
+			var f = document.forms.funcPref;
+			var pref = {
+				ExtendAnchor:		f.ExtendAnchor.checked,
+				UseReplaceStrTxt:	f.UseReplaceStrTxt.checked,
+				URLShortenLength:	parseInt(f.URLShortenLength.value),
+				AutoOpenBoardPane:	f.AutoOpenBoardPane.checked,
+				TemplateLength:		parseInt(f.TemplateLength.value),
+				ChapterWidth:		parseInt(f.ChapterWidth.value),
+				ResMenuAttachDelay:	parseInt(f.ResMenuAttachDelay.value),
+				NoticeLength:		parseInt(f.NoticeLength.value),
+				OnResDblClick: [
+					f["OnResDblClick[0]"].value,	f["OnResDblClick[1]"].value,
+					f["OnResDblClick[2]"].value,	f["OnResDblClick[3]"].value,
+					f["OnResDblClick[4]"].value,	f["OnResDblClick[5]"].value,
+					f["OnResDblClick[6]"].value,	f["OnResDblClick[7]"].value,
+				],
+			};
+			Skin.Configulator.patch(Preference, pref);
+			Skin.Configulator.save();
 			var p=PopupUtil.getPopup(e.target);
 			if (p) p.close();
 		}>@
