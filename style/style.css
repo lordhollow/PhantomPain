@@ -798,9 +798,14 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		font-weight: bold;
 	}
 	input[data-validate-error="y"] { background-color: #FCC; }
-
-
-
+	input.strlen { width: 3em; }
+	input.resno  { width: 3em; }
+	input.msec   { width: 4em; }
+	input.notice { width: 3em; }
+	input.px     { width: 3em; }
+	input.sec    { width: 2em; }
+	input.regexp { width: 26em;}
+	input.scroll { width: 2em; }
 
 /* ’Ê’m—Ìˆæ */
 #noticeContainer
