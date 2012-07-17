@@ -797,6 +797,7 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		font-size: 75%;
 		font-weight: bold;
 	}
+	input[data-validate-error="y"] { background-color: #FCC; }
 
 
 

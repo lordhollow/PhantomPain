@@ -6,6 +6,39 @@
 	<input type="submit" value="" name="loading" title="読み込み">
 	<input type="submit" value="" name="analyze" title="解析">
 	<input type="submit" value="" name="thread" title="スレッド">
+	@COMMAND<
+	__validateTextElements = function(es)
+	{
+		var b = true;
+		for (var i=0; i<es.length; i++)
+		{
+			b &= __validateTextElement(es[i]);
+		}
+		if (!b) confirm("入力内容にエラーがあるため保存できません。");
+		return b;
+	}
+	__validateTextElement = function (e)
+	{
+		var ret = false;
+		var dt = e.dataset;
+		var v  = e.value;
+		if (dt.keybind == "num")
+		{	//数値
+			if (v.match(/^[\d]+$/)) 
+			{
+				var min = parseInt(dt.min);
+				var max = parseInt(dt.max);
+				var t = parseInt(v);
+				ret = (t >=min) && (t <= max);
+				console.log("{0} {1} {2}".format(min, t, max));
+			}
+		}
+		else ret = true;
+		e.dataset.validateError = ret ? "" : "y";
+		return ret;
+	}
+	>@
+
 	</form>
 	<div id="prefpages">
 		<form name="funcPref" class="prefpage" data-key="functions">
@@ -39,8 +72,8 @@
 		@COMMAND<
 		apply_functions_pref = function(e)
 		{
-			//TODO::validate text (URLShortenLength, TemplateLength, ChapterWidth, ResMenuAttachDelay, NoticeLength)
 			var f = document.forms.funcPref;
+			if (!__validateTextElements([f.URLShortenLength, f.TemplateLength, f.ChapterWidth, f.ResMenuAttachDelay, f.NoticeLength])) return;
 			var pref = {
 				ExtendAnchor:		f.ExtendAnchor.checked,
 				UseReplaceStrTxt:	f.UseReplaceStrTxt.checked,
