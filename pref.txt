@@ -24,16 +24,18 @@
 		var v  = e.value;
 		if (dt.keybind == "num")
 		{	//数値
-			if (v.match(/^[\d]+$/)) 
+			if (v.match(/^\-?[\d]+$/)) 
 			{
 				var min = parseInt(dt.min);
 				var max = parseInt(dt.max);
 				var t = parseInt(v);
 				ret = (t >=min) && (t <= max);
-				console.log("{0} {1} {2}".format(min, t, max));
 			}
 		}
-		else ret = true;
+		else
+		{
+			ret = true;
+		}
 		e.dataset.validateError = ret ? "" : "y";
 		return ret;
 	}
@@ -120,47 +122,185 @@
 
 		<form name="imgPref" class="prefpage" data-key="images">
 		<fieldset><legend>画像</legend>
-		ImagePopupSize	@<Preference.ImagePopupSize>@	画像ポップアップのサイズ<br>
-		ViewerPreloadWidth	@<Preference.ViewerPreloadWidth>@	ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）<br>
-		ViewerCursorHideAt	@<Preference.ViewerCursorHideAt>@	メディアビューアでカーソルが消えるまでの時間（秒）<br>
-		SlideshowInterval	@<Preference.SlideshowInterval>@	スライドショーの間隔(秒)<br>
-		AutoPreviewOutlinks	@<Preference.AutoPreviewOutlinks>@	Outlinkを自動展開<br>
+		<label><input type="checkbox" name="AutoPreviewOutlinks" @CHECKED<Preference.AutoPreviewOutlinks>@>Outlinkを自動展開</label><br>
+		<label>プレビューのサイズ：<input type="text" name="ImagePopupSize" data-min="16" data-max="10000" data-keybind="num" value="@<Preference.ImagePopupSize>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
 		</fieldset>
+		<fieldset><legend>メディアビュアー</legend>
+		<label>ビューアー先読み件数：<input type="text" name="ViewerPreloadWidth" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ViewerPreloadWidth>@">件(-1で全件)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>カーソルを消すまで：<input type="text" name="ViewerCursorHideAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.ViewerCursorHideAt>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>スライドショーの間隔：<input type="text" name="SlideshowInterval" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.SlideshowInterval>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		</fieldset>
+		<input type="button" onclick="apply_images_pref(event);" value="適用">
+		<input type="reset" value="変更前に戻す">
+		<input type="button" onclick="initialize_images_pref();" value="初期値に戻す">
+		@COMMAND<
+		apply_images_pref = function(e)
+		{
+			var f = document.forms.imgPref;
+			if (!__validateTextElements([f.ImagePopupSize, f.ViewerPreloadWidth, f.ViewerCursorHideAt, f.SlideshowInterval])) return;
+			var pref = {
+				ImagePopupSize:		parseInt(f.ImagePopupSize.value),
+				ViewerPreloadWidth:	parseInt(f.ViewerPreloadWidth.value),
+				ViewerCursorHideAt:	parseInt(f.ViewerCursorHideAt.value),
+				SlideshowInterval:	parseInt(f.SlideshowInterval.value),
+				AutoPreviewOutlinks:	f.AutoPreviewOutlinks.checked,
+			};
+			Skin.Configulator.patch(Preference, pref);
+			Skin.Configulator.save();
+			var p = PopupUtil.getPopup(e.target);
+			if (p) p.close();
+		}
+		initialize_images_pref = function()
+		{
+			var f = document.forms.imgPref;
+			f.ImagePopupSize.value = _Preference.ImagePopupSize;
+			f.ViewerPreloadWidth.value = _Preference.ViewerPreloadWidth;
+			f.ViewerCursorHideAt.value = _Preference.ViewerCursorHideAt;
+			f.SlideshowInterval.value = _Preference.SlideshowInterval;
+			f.AutoPreviewOutlinks.value = _Preference.AutoPreviewOutlinks;
+		}
+		>@
 		</form>
 
 		<form name="popupPref" class="prefpage" data-key="popups">
-		<fieldset><legend>ポップアップ</legend>
-		ResPopupDelay	@<Preference.ResPopupDelay>@	ポップアップ表示ディレイ(ms)<br>
-		PopupLeft	@<Preference.PopupLeft>@	ポップアップコンテンツ左端～吹き出し右端までの最短距離<br>
-		PopupRightMargin	@<Preference.PopupRightMargin>@	ポップアップコンテンツ右端～画面端までの距離<br>		FloatingPopupFixed	@<Preference.FloatingPopupFixed>@	フロート状態のポップアップが画面に張り付くか？<br>
-		PopupDestructChain	@<Preference.PopupDestructChain>@	ポップアップを連鎖的に破壊するか？<br>
-		ResPopupPageWidth	@<Preference.ResPopupPageWidth>@	レスポップアップをタブ化する幅<br>
-		ResPopupAlwaysShowTabs	@<Preference.ResPopupAlwaysShowTabs>@	レスポップアップを常時タブで表示<br>
+		<fieldset><legend>振る舞い</legend>
+		<label>ポップアップの表示遅延：<input type="text" name="ResPopupDelay" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ResPopupDelay>@">ms</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label><input type="checkbox" name="PopupDestructChain" @CHECKED<Preference.PopupDestructChain>@>ポップアップを連鎖的に破壊する</label><br>
+		<label><input type="checkbox" name="FloatingPopupFixed" @CHECKED<Preference.FloatingPopupFixed>@>フロート状態のポップアップのスクロール位置を固定</label><br>
 		</fieldset>
+		<fieldset><legend>タブ化</legend>
+		<label>複数レス表示時のタブ化幅：<input type="text" name="ResPopupPageWidth" data-min="1" data-max="1000" data-keybind="num" value="@<Preference.ResPopupPageWidth>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label><input type="checkbox" name="ResPopupAlwaysShowTabs" @CHECKED<Preference.ResPopupAlwaysShowTabs>@>レスポップアップを常時タブで表示</label><br>
+		</fieldset>
+		<fieldset><legend>スタイル</legend>
+		<label>吹き出しオフセット：<input type="text" name="PopupLeft" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupLeft>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>右マージン：<input type="text" name="PopupRightMargin" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupRightMargin>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		</fieldset>
+		<input type="button" onclick="apply_popups_pref(event);" value="適用">
+		<input type="reset" value="変更前に戻す">
+		<input type="button" onclick="initialize_popups_pref();" value="初期値に戻す">
+		@COMMAND<
+		apply_popups_pref = function(e)
+		{
+			var f = document.forms.popupPref;
+			if (!__validateTextElements([f.ResPopupDelay, f.PopupLeft, f.PopupRightMargin, f.ResPopupPageWidth])) return;
+			var pref = {
+				ResPopupDelay:		parseInt(f.ResPopupDelay.value),
+				PopupLeft:		parseInt(f.PopupLeft.value),
+				PopupRightMargin:	parseInt(f.PopupRightMargin.value),
+				ResPopupPageWidth:	parseInt(f.ResPopupPageWidth.value),
+				FloatingPopupFixed:	f.FloatingPopupFixed.checked,
+				PopupDestructChain:	f.PopupDestructChain.checked,
+				ResPopupAlwaysShowTabs:	f.ResPopupAlwaysShowTabs.checked,
+			};
+			Skin.Configulator.patch(Preference, pref);
+			Skin.Configulator.save();
+			var p = PopupUtil.getPopup(e.target);
+			if (p) p.close();
+		}
+		initialize_popups_pref = function()
+		{
+			var f = document.forms.popupPref;
+			f.ResPopupDelay.value = _Preference.ResPopupDelay;
+			f.PopupLeft.value = _Preference.PopupLeft;
+			f.PopupRightMargin.value = _Preference.PopupRightMargin;
+			f.ResPopupPageWidth.value = _Preference.ResPopupPageWidth;
+			f.FloatingPopupFixed.value = _Preference.FloatingPopupFixed;
+			f.PopupDestructChain.value = _Preference.PopupDestructChain;
+			f.ResPopupAlwaysShowTabs.value = _Preference.ResPopupAlwaysShowTabs;
+		}
+		>@
 		</form>
 
 
 		<form name="loadPref" class="prefpage" data-key="loading">
-		<fieldset><legend>レス余白のダブルクリック処理</legend>
-		MoreWidth	@<Preference.MoreWidth>@	moreで読み込む幅。0なら全部。<br>
-		AutoReloadInterval	@<Preference.AutoReloadInterval>@	オートロード間隔(秒)<br>
-		AutoAutoReloadPtn	@<Preference.AutoAutoReloadPtn>@	オートロードを自動開始するスレッドURLのパターン<br>
-		FocusNewResAfterLoad	@<Preference.FocusNewResAfterLoad>@	ロード時、新着レスにジャンプ<br>
-		LoadBackwardOnTopWheel	@<Preference.LoadBackwardOnTopWheel>@	一番上で上にスクロールしようとするとロードが掛かる<br>
-		LoadForwardOnBottomWheel	@<Preference.LoadForwardOnBottomWheel>@	一番下で下にスクロールしようとするとロードが掛かる<br>
-		LoadOnWheelWidth	@<Preference.LoadOnWheelWidth>@	LoadOnWheelで読み出すレスの数<br>
-		LoadOnWheelCheckNew	@<Preference.LoadOnWheelCheckNew>@	LoadOnWheelで新着チェックするか？<br>
-		LoadOnWheelDelta	@<Preference.LoadOnWheelDelta>@	LoadBackwardOnTopWheel,LoadForwardOnBottomWheelのかかる回転数<br>
-		ReplyCheckMaxWidth	@<Preference.ReplyCheckMaxWidth>@	これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)<br>
+		<fieldset><legend>挙動</legend>
+		<label><input type="checkbox" name="FocusNewResAfterLoad" @CHECKED<Preference.FocusNewResAfterLoad>@>ロード時、新着レスにジャンプ</label><br>
 		</fieldset>
+		<fieldset><legend>追加読み込み</legend>
+		<label>読み込み幅：<input type="text" name="MoreWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.MoreWidth>@">件(0ですべて)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>自動追加読み込み間隔：<input type="text" name="AutoReloadInterval" data-min="30" data-max="10000" data-keybind="num" value="@<Preference.AutoReloadInterval>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>自動追加読み込みを自動開始するURLのパターン：<input type="text" name="AutoAutoReloadPtn" data-keybind="regexp" value="@<Preference.AutoAutoReloadPtn>@"></label><br>
+		</fieldset>
+		<fieldset><legend>スクロール操作での追加読み込み</legend>
+		<label><input type="checkbox" name="LoadBackwardOnTopWheel" @CHECKED<Preference.LoadBackwardOnTopWheel>@>先頭でのホイール操作で前方に追加読み込み</label><br>
+		<label><input type="checkbox" name="LoadForwardOnBottomWheel" @CHECKED<Preference.LoadForwardOnBottomWheel>@>末尾でのホイール操作で後方に追加読み込み</label><br>
+		<label>スクロール操作量：<input type="text" name="LoadOnWheelDelta" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelDelta>@">行分で実行</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label>追加読み込み幅：<input type="text" name="LoadOnWheelWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelWidth>@">件(0ですべて)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label><input type="checkbox" name="LoadOnWheelCheckNew" @CHECKED<Preference.LoadOnWheelCheckNew>@>新着を確認する</label><br>
+		</fieldset>
+		<input type="button" onclick="apply_loading_pref(event);" value="適用">
+		<input type="reset" value="変更前に戻す">
+		<input type="button" onclick="initialize_loading_pref();" value="初期値に戻す">
+		@COMMAND<
+		apply_loading_pref = function(e)
+		{
+			var f = document.forms.loadPref;
+			if (!__validateTextElements([f.MoreWidth, f.AutoReloadInterval, f.LoadOnWheelWidth, f.LoadOnWheelDelta])) return;
+			var pref = {
+				MoreWidth:			parseInt(f.MoreWidth.value),
+				AutoReloadInterval:		parseInt(f.AutoReloadInterval.value),
+				AutoAutoReloadPtn: 		f.AutoAutoReloadPtn.value,
+				FocusNewResAfterLoad:		f.FocusNewResAfterLoad.checked,
+				LoadBackwardOnTopWheel:		f.LoadBackwardOnTopWheel.checked,
+				LoadForwardOnBottomWheel:	f.LoadForwardOnBottomWheel.checked,
+				LoadOnWheelWidth:		parseInt(f.LoadOnWheelWidth.value),
+				LoadOnWheelCheckNew:		f.LoadOnWheelCheckNew.checked,
+				LoadOnWheelDelta:		parseInt(f.LoadOnWheelDelta.value),
+			};
+			Skin.Configulator.patch(Preference, pref);
+			Skin.Configulator.save();
+			var p = PopupUtil.getPopup(e.target);
+			if (p) p.close();
+		}
+		initialize_loading_pref = function()
+		{
+			var f = document.forms.loadPref;
+			f.MoreWidth = _Preference.MoreWidth;
+			f.AutoReloadInterval = _Preference.AutoReloadInterval;
+			f.AutoAutoReloadPtn = _Preference.AutoAutoReloadPtn;
+			f.FocusNewResAfterLoad = _Preference.FocusNewResAfterLoad;
+			f.LoadBackwardOnTopWheel = _Preference.LoadBackwardOnTopWheel;
+			f.LoadForwardOnBottomWheel = _Preference.LoadForwardOnBottomWheel;
+			f.LoadOnWheelWidth = _Preference.LoadOnWheelWidth;
+			f.LoadOnWheelCheckNew = _Preference.LoadOnWheelCheckNew;
+			f.LoadOnWheelDelta = _Preference.LoadOnWheelDelta;
+		}
+		>@
 		</form>
 
 		<form name="analyzePref" class="prefpage" data-key="analyze">
-		<fieldset><legend>構造解析設定</legend>
-		EnableNextThreadSearch	@<Preference.EnableNextThreadSearch>@	次スレ検索有効？<br>
-		NextThreadSearchBeginsAt	@<Preference.NextThreadSearchBeginsAt>@	次スレ検索開始レス番号<br>
-		ReplyCheckMaxWidth	@<Preference.ReplyCheckMaxWidth>@	これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)<br>
+		<fieldset><legend>構造解析</legend>
+		<label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ探索</label><br>
+		<label>次スレ検索開始レス：&gt;&gt;<input type="text" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@"></label><br><!-- TODO:if gecko supports "number" type input, use it here -->
+		<label><input type="text" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
 		</fieldset>
+		<input type="button" onclick="apply_analyze_pref(event);" value="適用">
+		<input type="reset" value="変更前に戻す">
+		<input type="button" onclick="initialize_analyze_pref();" value="初期値に戻す">
+		@COMMAND<
+		apply_analyze_pref = function(e)
+		{
+			var f = document.forms.analyzePref;
+			if (!__validateTextElements([f.ReplyCheckMaxWidth])) return;
+			var pref = {
+				EnableNextThreadSearch:		f.EnableNextThreadSearch.checked,
+				NextThreadSearchBeginsAt:	parseInt(f.NextThreadSearchBeginsAt.value),
+				ReplyCheckMaxWidth:		parseInt(f.ReplyCheckMaxWidth.value),
+			};
+			Skin.Configulator.patch(Preference, pref);
+			Skin.Configulator.save();
+			var p = PopupUtil.getPopup(e.target);
+			if (p) p.close();
+		}
+		initialize_analyze_pref = function()
+		{
+			var f = document.forms.analyzePref;
+			f.EnableNextThreadSearch.value = _Preference.EnableNextThreadSearch;
+			f.NextThreadSearchBeginsAt.value = _Preference.NextThreadSearchBeginsAt;
+			f.ReplyCheckMaxWidth.value = _Preference.ReplyCheckMaxWidth;
+		}
+		>@
 		</form>
 
 		<form name="miscPref" class="prefpage" data-key="thread">
