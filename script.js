@@ -2150,13 +2150,7 @@ Diagnostics: {
 		var ret = "<table>";
 		for (var year = min; year <= max; year ++)
 		{
-			var r = this.getDiaryRangeY(year);
-			var str ="";
-			if (r.min)
-			{
-				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
-				str = str.format(r.min , r.max);
-			}
+			var str = this.DiaryRangeToHTML(this.getDiaryRangeY(year))
 			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td>{1}</td><td class="bar100"><div style="width:{3}px;">&nbsp;</div></td><td>{4}</td></tr>'.format(year, counts[year], total, (counts[year]/total)*100, str);
 		}
 		ret += "</table>";
@@ -2187,13 +2181,7 @@ Diagnostics: {
 		var ret = '<table><tr><th colspan="3" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
 		for(var m=1; m<=12; m++)
 		{
-			var r = this.getDiaryRangeM(y, m);
-			var str ="";
-			if (r.min)
-			{
-				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
-				str = str.format(r.min , r.max);
-			}
+			var str = this.DiaryRangeToHTML(this.getDiaryRangeM(y, m))
 			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}ŒŽ</th><td>{2}</td><td class="bar100"><div style="width:{4}px;">&nbsp;</div></td><td>{5}</td></tr>'.format(y, m, counts[m], total, (counts[m]/total)*100, str);
 		}
 		ret += "</table>";
@@ -2223,13 +2211,7 @@ Diagnostics: {
 		ret += '<tr><th colspan="3" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}ŒŽ</td></tr>'.format(y, m);
 		for(var day=1; day<=days; day++)
 		{
-			var r = this.getDiaryRangeD(y, m, day);
-			var str ="";
-			if (r.min)
-			{
-				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
-				str = str.format(r.min , r.max);
-			}
+			var str = this.DiaryRangeToHTML(this.getDiaryRangeD(y, m, day))
 			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}“ú</th><td>{3}</td><td class="bar100"><div style="width:{5}px;">&nbsp;</div></td><td>{6}</td></tr>'.format(y, m, day, counts[day], total, (counts[day]/total)*100, str);
 		}
 		ret += "</table>";
@@ -2299,6 +2281,17 @@ Diagnostics: {
 			}
 		}
 		return {min: min, max: max};
+	},
+	DiaryRangeToHTML: function Diagnostics_DiaryRangeToHTML(r)
+	{
+		var str ="";
+		if (r.min)
+		{
+			str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
+			str = str.format(r.min , r.max);
+			str = '<a onclick="$M({0}).focus();">{2}</a>'.format(r.min, r.max, str);
+		}
+		return str;
 	},
 	diaryNode: null,
 	nodesByDate: {},		//“ú•t•Ê
