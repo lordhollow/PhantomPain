@@ -1051,8 +1051,8 @@ Thread: {
 		},
 		_extendPtn: new RegExp(/(?:(?:„„|„|&gt;&gt;|&gt;)(([\d‚O-‚X]+)(?:[0\d‚O-‚X,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\d‚O-‚X]+))|(?:(<a\s[^<]*href="([^"]+)" class="outLink">)([^<]+)<\/a>)|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
 		Structure: {
-			nodesById: new Array(),		//‚¢‚í‚ä‚éID
-			nodesReplyFrom: new Array(),	//‚¢‚í‚ä‚é‹tŽQÆî•ñ
+			nodesById: {},		//‚¢‚í‚ä‚éID
+			nodesReplyFrom: {},	//‚¢‚í‚ä‚é‹tŽQÆî•ñ
 			analyze: function MessageStructure_analyze(nodes)
 			{
 				if (this._scriptedStyle == null)
@@ -1073,6 +1073,14 @@ Thread: {
 			getNodeIdsById: function MessageStructure_getNodeIdsById(id)
 			{	//ID‚ðŽw’è‚µ‚Ä‚»‚Ìl•¨‚ª”­Œ¾‚µ‚½ƒŒƒX”Ô†‚ÌƒŠƒXƒg‚ðŽæ“¾
 				return this.nodesById[id];
+			},
+			FocusFirstId: function(id)
+			{
+				var aids = $A(this.nodesById[id]).sort(function(a,b){return a-b;});
+				if (aids && aids.length >1)
+				{
+					$M(aids[0]).focus();
+				}
 			},
 			_analyze: function MessageStructure__analyze(node)
 			{
@@ -2029,6 +2037,35 @@ Notice: {
 		e.innerHTML = msg;
 		this.container.appendChild(e);
 		DOMUtil.notifyRefreshInternal(this.container);
+	},
+},
+Diagnostics: {
+	RefreshIdReport: function Diagnostics_RefreshIdReport(node)
+	{
+		var ids = Skin.Thread.Message.Structure.nodesById;
+		var d = [];
+		var total = 0;
+		for(var id in ids)
+		{
+			if (ids[id].length) d.push({id: id, count: ids[id].length});
+			total += ids[id].length;
+		}
+		d = d.sort(function(a,b){ return b.count - a.count; });
+		var ret = '<table class="diagnostics_id">';
+		var rank = 1;
+		var rankBase = d[0].count;
+		for(var i=0; i<d.length; i++)
+		{
+			if (d[i].count != rankBase)
+			{
+				rank = i + 1;
+				rankBase = d[i].count;
+			}
+			p = (d[i].count / total) * 100;
+			ret += '<tr><th>{2}</th><td class="diag_id" onclick="Skin.Thread.Message.Structure.FocusFirstId(\'{0}\')">{0}</td><td class="bar100"><div class="bar_rank{2}" style="width:{3}px;">&nbsp;</div></td><td>{1}/{4}</td></tr>\n'.format(d[i].id, d[i].count, rank, p, total);
+		}
+		ret += '</table>';
+		node.innerHTML = ret;
 	},
 },
 Util: {
@@ -4212,7 +4249,7 @@ ResManipulator.prototype = {
 	focusNextId: function ResManipulator_focusNextId()
 	{
 		if (!this.node) return;
-		var aids = Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid);
+		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(function(a,b){return a-b;});
 		if (!aids) return;
 		var found = false;
 		for(var i=0; i<aids.length; i++)
@@ -4231,7 +4268,7 @@ ResManipulator.prototype = {
 	focusPrevId: function ResManipulator_focusPrevId()
 	{
 		if (!this.node) return;
-		var aids = Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid);
+		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(function(a,b){return a-b;});
 		if (!aids) return;
 		var no = 0;
 		for(var i=0; i<aids.length; i++)

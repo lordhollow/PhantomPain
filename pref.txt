@@ -210,7 +210,6 @@
 		>@
 		</form>
 
-
 		<form name="loadPref" class="prefpage" data-key="loading">
 		<fieldset><legend>挙動</legend><ul>
 		<li><label><input type="checkbox" name="FocusNewResAfterLoad" @CHECKED<Preference.FocusNewResAfterLoad>@>ロード時、新着レスにジャンプ</label>
@@ -273,6 +272,12 @@
 		<li><label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ検索</label>（&gt;&gt;<input type="text" class="resno" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@">以降で探索）
 		<li><label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label>
 		</ul></fieldset>
+		<fieldset><legend>ID</legend>
+		<div>
+			<div id="pref_idreport"></div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.previousElementSibling);" value="IDレポートの更新">
+		</div>
+		</fieldset>
 		<input type="button" onclick="apply_analyze_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_analyze_pref();" value="初期値に戻す">
