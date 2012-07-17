@@ -44,20 +44,19 @@
 	</form>
 	<div id="prefpages">
 		<form name="funcPref" class="prefpage" data-key="functions">
-		<fieldset><legend>レス拡張</legend>
-		<label><input type="checkbox" name="ExtendAnchor" @CHECKED<Preference.ExtendAnchor>@>全角文字とコンマ区切りのアンカーを使う</label><br>
-		<label><input type="checkbox" name="UseReplaceStrTxt" @CHECKED<Preference.UseReplaceStrTxt>@>ReplaceStr.txtを使用する</label><br>
-		<label><input type="text" class="strlen" name="URLShortenLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.URLShortenLength>@">文字以上のURLを短縮表記する</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
-		<fieldset><legend>挙動</legend>
-		<label><input type="checkbox" name="AutoOpenBoardPane" @CHECKED<Preference.AutoOpenBoardPane>@>スレを開いたとき、自動的に上部スレ一覧を開く</label><br>
-		<label>テンプレートポップアップ：<input type="text" class="resno" name="TemplateLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.TemplateLength>@">件(0でギアを表示)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>ナビゲーションチャプター幅：<input type="text" class="resno" name="ChapterWidth" data-min="5" data-max="1000" data-keybind="num" value="@<Preference.ChapterWidth>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>レスをポイントしてから<input type="text" class="msec" name="ResMenuAttachDelay" data-min="0" data-max="5000" data-keybind="num" value="@<Preference.ResMenuAttachDelay>@">ミリ秒後にレスメニューを表示</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>お知らせの表示件数：<input type="text" class="notice" name="NoticeLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.NoticeLength>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
-		<fieldset><legend>レス余白のダブルクリック処理</legend>
-		<table>
+		<fieldset><legend>レス拡張</legend><ul>
+		<li><label><input type="checkbox" name="ExtendAnchor" @CHECKED<Preference.ExtendAnchor>@>全角文字とコンマ区切りのアンカーを使う</label>
+		<li><label><input type="checkbox" name="UseReplaceStrTxt" @CHECKED<Preference.UseReplaceStrTxt>@>ReplaceStr.txtを使用する</label>
+		<li><label><input type="text" class="strlen" name="URLShortenLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.URLShortenLength>@">文字以上のURLを短縮表記する</label>
+		</ul></fieldset>
+		<fieldset><legend>挙動</legend><ul>
+		<li><label><input type="checkbox" name="AutoOpenBoardPane" @CHECKED<Preference.AutoOpenBoardPane>@>スレを開いたとき、自動的に上部スレ一覧を開く</label>
+		<li><label>テンプレートポップアップ：<input type="text" class="resno" name="TemplateLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.TemplateLength>@">件(0でギアを表示)</label>
+		<li><label>ナビゲーションチャプター幅：<input type="text" class="resno" name="ChapterWidth" data-min="5" data-max="1000" data-keybind="num" value="@<Preference.ChapterWidth>@">件</label>
+		<li><label>レスをポイントしてから<input type="text" class="msec" name="ResMenuAttachDelay" data-min="0" data-max="5000" data-keybind="num" value="@<Preference.ResMenuAttachDelay>@">ミリ秒後にレスメニューを表示</label>
+		<li><label>お知らせの表示件数：<input type="text" class="notice" name="NoticeLength" data-min="0" data-max="99" data-keybind="num" value="@<Preference.NoticeLength>@">件</label>
+		</ul></fieldset>
+		<fieldset><legend>レス余白のダブルクリック処理</legend><table>
 		<tr><th>通常</th>          <td><select name="OnResDblClick[0]">@MACRO<Preference.OnResDblClick[0]>@</select></td></tr>
 		<tr><th>Shift</th>         <td><select name="OnResDblClick[1]">@MACRO<Preference.OnResDblClick[1]>@</select></td></tr>
 		<tr><th>Ctrl</th>          <td><select name="OnResDblClick[2]">@MACRO<Preference.OnResDblClick[2]>@</select></td></tr>
@@ -66,8 +65,7 @@
 		<tr><th>Alt+Shift</th>     <td><select name="OnResDblClick[5]">@MACRO<Preference.OnResDblClick[5]>@</select></td></tr>
 		<tr><th>Alt+Ctrl</th>      <td><select name="OnResDblClick[6]">@MACRO<Preference.OnResDblClick[6]>@</select></td></tr>
 		<tr><th>Alt+Shift+Ctrl</th><td><select name="OnResDblClick[7]">@MACRO<Preference.OnResDblClick[7]>@</select></td></tr>
-		</table>
-		</fieldset>
+		</table></fieldset>
 		<input type="button" onclick="apply_functions_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_functions_pref();" value="初期値に戻す">
@@ -121,15 +119,15 @@
 		</form>
 
 		<form name="imgPref" class="prefpage" data-key="images">
-		<fieldset><legend>画像</legend>
-		<label><input type="checkbox" name="AutoPreviewOutlinks" @CHECKED<Preference.AutoPreviewOutlinks>@>Outlinkを自動展開</label><br>
-		<label>プレビューのサイズ：<input type="text" class="px" name="ImagePopupSize" data-min="16" data-max="10000" data-keybind="num" value="@<Preference.ImagePopupSize>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
-		<fieldset><legend>メディアビュアー</legend>
-		<label>ビューアー先読み件数：<input type="text" class="resno" name="ViewerPreloadWidth" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ViewerPreloadWidth>@">件(-1で全件)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>カーソルを消すまで：<input type="text" class="sec" name="ViewerCursorHideAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.ViewerCursorHideAt>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>スライドショーの間隔：<input type="text" class="sec" name="SlideshowInterval" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.SlideshowInterval>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
+		<fieldset><legend>画像</legend><ul>
+		<li><label><input type="checkbox" name="AutoPreviewOutlinks" @CHECKED<Preference.AutoPreviewOutlinks>@>Outlinkを自動展開</label>
+		<li><label>プレビューのサイズ：<input type="text" class="px" name="ImagePopupSize" data-min="16" data-max="10000" data-keybind="num" value="@<Preference.ImagePopupSize>@">px</label>
+		</ul></fieldset>
+		<fieldset><legend>メディアビュアー</legend><ul>
+		<li><label>ビューアー先読み件数：<input type="text" class="resno" name="ViewerPreloadWidth" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ViewerPreloadWidth>@">件(-1で全件)</label>
+		<li><label>カーソルを消すまで：<input type="text" class="sec" name="ViewerCursorHideAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.ViewerCursorHideAt>@">秒</label>
+		<li><label>スライドショーの間隔：<input type="text" class="sec" name="SlideshowInterval" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.SlideshowInterval>@">秒</label>
+		</ul></fieldset>
 		<input type="button" onclick="apply_images_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_images_pref();" value="初期値に戻す">
@@ -163,19 +161,19 @@
 		</form>
 
 		<form name="popupPref" class="prefpage" data-key="popups">
-		<fieldset><legend>振る舞い</legend>
-		<label>ポップアップの表示遅延：<input type="text" class="msec" name="ResPopupDelay" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ResPopupDelay>@">ミリ秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label><input type="checkbox" name="PopupDestructChain" @CHECKED<Preference.PopupDestructChain>@>ポップアップを連鎖的に破壊する</label><br>
-		<label><input type="checkbox" name="FloatingPopupFixed" @CHECKED<Preference.FloatingPopupFixed>@>フロート状態のポップアップのスクロール位置を固定</label><br>
-		</fieldset>
-		<fieldset><legend>タブ化</legend>
-		<label>複数レス表示時のタブ化幅：<input type="text" class="resno" name="ResPopupPageWidth" data-min="1" data-max="1000" data-keybind="num" value="@<Preference.ResPopupPageWidth>@">件</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label><input type="checkbox" name="ResPopupAlwaysShowTabs" @CHECKED<Preference.ResPopupAlwaysShowTabs>@>レスポップアップを常時タブで表示</label><br>
-		</fieldset>
-		<fieldset><legend>スタイル</legend>
-		<label>吹き出しオフセット：<input type="text" class="px" name="PopupLeft" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupLeft>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>右マージン：<input type="text" class="px" name="PopupRightMargin" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupRightMargin>@">px</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
+		<fieldset><legend>振る舞い</legend><ul>
+		<li><label>ポップアップの表示遅延：<input type="text" class="msec" name="ResPopupDelay" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ResPopupDelay>@">ミリ秒</label>
+		<li><label><input type="checkbox" name="PopupDestructChain" @CHECKED<Preference.PopupDestructChain>@>ポップアップを連鎖的に破壊する</label>
+		<li><label><input type="checkbox" name="FloatingPopupFixed" @CHECKED<Preference.FloatingPopupFixed>@>フロート状態のポップアップのスクロール位置を固定</label>
+		</ul></fieldset>
+		<fieldset><legend>タブ化</legend><ul>
+		<li><label>複数レス表示時のタブ化幅：<input type="text" class="resno" name="ResPopupPageWidth" data-min="1" data-max="1000" data-keybind="num" value="@<Preference.ResPopupPageWidth>@">件</label>
+		<li><label><input type="checkbox" name="ResPopupAlwaysShowTabs" @CHECKED<Preference.ResPopupAlwaysShowTabs>@>レスポップアップを常時タブで表示</label>
+		</ul></fieldset>
+		<fieldset><legend>スタイル</legend><ul>
+		<li><label>吹き出しオフセット：<input type="text" class="px" name="PopupLeft" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupLeft>@">px</label>
+		<li><label>右マージン：<input type="text" class="px" name="PopupRightMargin" data-min="-10000" data-max="10000" data-keybind="num" value="@<Preference.PopupRightMargin>@">px</label>
+		</ul></fieldset>
 		<input type="button" onclick="apply_popups_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_popups_pref();" value="初期値に戻す">
@@ -214,22 +212,22 @@
 
 
 		<form name="loadPref" class="prefpage" data-key="loading">
-		<fieldset><legend>挙動</legend>
-		<label><input type="checkbox" name="FocusNewResAfterLoad" @CHECKED<Preference.FocusNewResAfterLoad>@>ロード時、新着レスにジャンプ</label><br>
-		</fieldset>
-		<fieldset><legend>追加読み込み</legend>
-		<label>読み込み幅：<input type="text" class="resno" name="MoreWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.MoreWidth>@">件(0ですべて)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>自動追加読み込み間隔：<input type="text" class="sec" name="AutoReloadInterval" data-min="30" data-max="10000" data-keybind="num" value="@<Preference.AutoReloadInterval>@">秒</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>自動追加読み込みを自動開始するURLのパターン：<br>
-		<input type="text" class="regexp" name="AutoAutoReloadPtn" data-keybind="regexp" value="@<Preference.AutoAutoReloadPtn>@"></label><br>
-		</fieldset>
-		<fieldset><legend>スクロール操作での追加読み込み</legend>
-		<label><input type="checkbox" name="LoadBackwardOnTopWheel" @CHECKED<Preference.LoadBackwardOnTopWheel>@>先頭でのホイール操作で前方に追加読み込み</label><br>
-		<label><input type="checkbox" name="LoadForwardOnBottomWheel" @CHECKED<Preference.LoadForwardOnBottomWheel>@>末尾でのホイール操作で後方に追加読み込み</label><br>
-		<label>スクロール操作量：<input type="text" class="scroll" name="LoadOnWheelDelta" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelDelta>@">行分で実行</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label>追加読み込み幅：<input type="text" class="resno" name="LoadOnWheelWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelWidth>@">件(0ですべて)</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label><input type="checkbox" name="LoadOnWheelCheckNew" @CHECKED<Preference.LoadOnWheelCheckNew>@>新着を確認する</label><br>
-		</fieldset>
+		<fieldset><legend>挙動</legend><ul>
+		<li><label><input type="checkbox" name="FocusNewResAfterLoad" @CHECKED<Preference.FocusNewResAfterLoad>@>ロード時、新着レスにジャンプ</label>
+		</ul></fieldset>
+		<fieldset><legend>追加読み込み</legend><ul>
+		<li><label>読み込み幅：<input type="text" class="resno" name="MoreWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.MoreWidth>@">件(0ですべて)</label>
+		<li><label>自動追加読み込み間隔：<input type="text" class="sec" name="AutoReloadInterval" data-min="30" data-max="10000" data-keybind="num" value="@<Preference.AutoReloadInterval>@">秒</label>
+		<li><label>自動追加読み込みを自動開始するURLのパターン：<br>
+		<input type="text" class="regexp" name="AutoAutoReloadPtn" data-keybind="regexp" value="@<Preference.AutoAutoReloadPtn>@"></label>
+		</ul></fieldset>
+		<fieldset><legend>スクロール操作での追加読み込み</legend><ul>
+		<li><label><input type="checkbox" name="LoadBackwardOnTopWheel" @CHECKED<Preference.LoadBackwardOnTopWheel>@>先頭でのホイール操作で前方に追加読み込み</label>
+		<li><label><input type="checkbox" name="LoadForwardOnBottomWheel" @CHECKED<Preference.LoadForwardOnBottomWheel>@>末尾でのホイール操作で後方に追加読み込み</label>
+		<li><label>スクロール操作量：<input type="text" class="scroll" name="LoadOnWheelDelta" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelDelta>@">行分で実行</label>
+		<li><label>追加読み込み幅：<input type="text" class="resno" name="LoadOnWheelWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.LoadOnWheelWidth>@">件(0ですべて)</label>
+		<li><label><input type="checkbox" name="LoadOnWheelCheckNew" @CHECKED<Preference.LoadOnWheelCheckNew>@>新着を確認する</label>
+		</ul></fieldset>
 		<input type="button" onclick="apply_loading_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_loading_pref();" value="初期値に戻す">
@@ -271,11 +269,10 @@
 		</form>
 
 		<form name="analyzePref" class="prefpage" data-key="analyze">
-		<fieldset><legend>構造解析</legend>
-		<label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ探索</label><br>
-		<label>次スレ検索開始レス：&gt;&gt;<input type="text" class="resno" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@"></label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		<label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label><br><!-- TODO:if gecko supports "number" type input, use it here -->
-		</fieldset>
+		<fieldset><legend>構造解析</legend><ul>
+		<li><label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ検索</label>（&gt;&gt;<input type="text" class="resno" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@">以降で探索）
+		<li><label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label>
+		</ul></fieldset>
 		<input type="button" onclick="apply_analyze_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_analyze_pref();" value="初期値に戻す">
@@ -305,10 +302,10 @@
 		</form>
 
 		<form name="miscPref" class="prefpage" data-key="thread">
-		<fieldset><legend>スレッド</legend>
-		この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
-		<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
-		</fieldset>
+		<fieldset><legend>スレッド</legend><ul>
+		<li>この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
+			<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
+		</ul></fieldset>
 		</form>
 	</div>
 </div>

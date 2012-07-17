@@ -806,6 +806,11 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	input.sec    { width: 2em; }
 	input.regexp { width: 26em;}
 	input.scroll { width: 2em; }
+	.prefpage > fieldset  li
+	{
+		list-style-type: square;
+		list-style-position: inside;
+	}
 
 /* ’Ê’m—Ìˆæ */
 #noticeContainer
