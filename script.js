@@ -1077,7 +1077,7 @@ Thread: {
 			FocusFirstId: function(id)
 			{
 				var aids = $A(this.nodesById[id]).sort(function(a,b){return a-b;});
-				if (aids && aids.length >1)
+				if (aids && aids.length >0)
 				{
 					$M(aids[0]).focus();
 				}
