@@ -2067,6 +2067,250 @@ Diagnostics: {
 		ret += '</table>';
 		node.innerHTML = ret;
 	},
+	RefreshDiary: function Diagnostics_RefresDiary(node)
+	{
+		var d = {};
+		var This = this;
+		Skin.Thread.Message.foreach(function(node){
+			var obj = node.dataset;
+			var date = This._normalizeDate(obj.date);
+			if (date)
+			{
+				if (!d[date.y]) d[date.y] = {};
+				if (!d[date.y][date.m]) d[date.y][date.m] = {};
+				if (!d[date.y][date.m][date.d]) d[date.y][date.m][date.d] = [];
+				d[date.y][date.m][date.d].push(parseInt(obj.no));
+			}
+		}, false);
+		this.nodesByDate = d;
+		var ys = 0;
+		var yyyy = "";
+		for(var y in d)
+		{
+			ys++;
+			yyyy = y;
+		}
+		if (ys==1) this.ChangeDiaryRange(node, yyyy, 0, 0); else this.ChangeDiaryRange(node, 0, 0, 0);
+	},
+	ChangeDiaryRange: function Diagnostics_ChangeDiaryRange(node, y, m, d)
+	{
+		if (!node)
+		{
+			node = this.diaryNode;
+		}
+		else
+		{
+			this.diaryNode = node;
+		}
+		var ret = "";
+		if(parseInt(y) == 0)
+		{
+			ret = this.getTotalDiaryHTML(node, y, m, d);
+		}
+		else if (parseInt(m) == 0)
+		{
+			ret = this.getYearDiaryHTML(node, y, m, d);
+		}
+		else if (parseInt(d) == 0)
+		{
+			ret = this.getMonthDiaryHTML(node, y, m, d);
+		}
+		else
+		{
+			ret = this.getDayDiaryHTML(node, y, m, d);
+		}
+		node.innerHTML = ret;
+	},
+	getTotalDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
+	{
+		var min = 10000;
+		var max = 0;
+		var d = this.nodesByDate;
+		for (var year in d)
+		{
+			var y = parseInt(year);
+			min = Math.min(min, y);
+			max = Math.max(max, y);
+		}
+		var total = 0;
+		var counts = {};
+		for (var year = min; year <= max; year ++)
+		{
+			var c = 0;
+			for(var month in d[year])
+			{
+				for(var day in d[year][month])
+				{
+					c += d[year][month][day].length;
+				}
+			}
+			counts[year] = c;
+			total += c;
+		}
+		var ret = "<table>";
+		for (var year = min; year <= max; year ++)
+		{
+			var r = this.getDiaryRangeY(year);
+			var str ="";
+			if (r.min)
+			{
+				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
+				str = str.format(r.min , r.max);
+			}
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td>{1}</td><td class="bar100"><div style="width:{3}px;">&nbsp;</div></td><td>{4}</td></tr>'.format(year, counts[year], total, (counts[year]/total)*100, str);
+		}
+		ret += "</table>";
+		return  ret;
+	},
+	getYearDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
+	{
+		var d = this.nodesByDate;
+		var counts = {};
+		var total = 0;
+		for(var m=1; m<=12; m++)
+		{
+			var c = 0;
+			if (!d[y] || !d[y][m])
+			{
+				c = 0;
+			}
+			else
+			{
+				for(var day in d[y][m])
+				{
+					c += d[y][m][day].length;
+				}
+			}
+			counts[m] = c;
+			total += c;
+		}
+		var ret = '<table><tr><th colspan="3" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
+		for(var m=1; m<=12; m++)
+		{
+			var r = this.getDiaryRangeM(y, m);
+			var str ="";
+			if (r.min)
+			{
+				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
+				str = str.format(r.min , r.max);
+			}
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}åé</th><td>{2}</td><td class="bar100"><div style="width:{4}px;">&nbsp;</div></td><td>{5}</td></tr>'.format(y, m, counts[m], total, (counts[m]/total)*100, str);
+		}
+		ret += "</table>";
+		return  ret;
+	},
+	getMonthDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
+	{
+		var d = this.nodesByDate;
+		var counts = {};
+		var total = 0;
+		var days = 31;	//TODO::àÍÉñåéÇÃí∑Ç≥Çâ¬ïœÇ…Ç∑ÇÈ
+		for(var day=1; day<=days; day++)
+		{
+			var c = 0;
+			if (!d[y] || !d[y][m] || !d[y][m][day])
+			{
+				c = 0;
+			}
+			else
+			{
+				c += d[y][m][day].length;
+			}
+			counts[day] = c;
+			total += c;
+		}
+		var ret = '<table><tr><th colspan="3" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
+		ret += '<tr><th colspan="3" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}åé</td></tr>'.format(y, m);
+		for(var day=1; day<=days; day++)
+		{
+			var r = this.getDiaryRangeD(y, m, day);
+			var str ="";
+			if (r.min)
+			{
+				str = (r.max != r.min) ?  "&gt;&gt;{0}-{1}" : "&gt;&gt;{0}";
+				str = str.format(r.min , r.max);
+			}
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}ì˙</th><td>{3}</td><td class="bar100"><div style="width:{5}px;">&nbsp;</div></td><td>{6}</td></tr>'.format(y, m, day, counts[day], total, (counts[day]/total)*100, str);
+		}
+		ret += "</table>";
+		return  ret;
+	},
+	getDayDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
+	{
+		return  this.getMonthDiaryHTML(node, y, m, d);	//ñ¢é¿ëïÅ`
+	},
+	getDiaryRangeY: function Diagnostics_getDiaryRangeY(y)
+	{
+		var min = 0;
+		var max = 0;
+		for(var m=1; m<=12; m++)
+		{
+			var r = this.getDiaryRangeM(y, m);
+			if ((min == 0) || ((r.min != 0) && (min > r.min)))
+			{
+				min = r.min;
+			}
+			if (max < r.max)
+			{
+				max = r.max;
+			}
+		}
+		return {min: min, max: max};
+	},
+	getDiaryRangeM: function Diagnostics_getDiaryRangeM(y, m)
+	{
+		var min = 0;
+		var max = 0;
+		for(var d=1; d<=31; d++)
+		{
+			var r = this.getDiaryRangeD(y, m, d);
+			if ((min == 0) || ((r.min != 0) && (min > r.min)))
+			{
+				min = r.min;
+			}
+			if (max < r.max)
+			{
+				max = r.max;
+			}
+		}
+		return {min: min, max: max};
+	},
+	getDiaryRangeD: function Diagnostics_getDiaryRangeD(y, m, d)
+	{
+		var dd = this.nodesByDate;
+		var min = 0;
+		var max = 0;
+		if (!dd[y] || !dd[y][m] || !dd[y][m][d])
+		{
+		}
+		else
+		{
+			var res = dd[y][m][d];
+			for(var i=0; i<res.length; i++)
+			{
+				if ((min==0) ||(min > res[i]))
+				{
+					min = res[i];
+				}
+				if (max < res[i])
+				{
+					max = res[i];
+				}
+			}
+		}
+		return {min: min, max: max};
+	},
+	diaryNode: null,
+	nodesByDate: {},		//ì˙ïtï 
+	_dateReg: new RegExp(/(\d{4})\/(\d{2})\/(\d{2})/),
+	_normalizeDate: function Diagnostics__normalizeDate(str)
+	{
+		if (this._dateReg.test(str))
+		{
+			return {y: parseInt(RegExp.$1,10), m:parseInt(RegExp.$2,10), d: parseInt(RegExp.$3,10)};
+		}
+		return null;;
+	},
 },
 Util: {
 	Popup: {

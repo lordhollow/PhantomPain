@@ -278,6 +278,14 @@
 			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.previousElementSibling);" value="IDレポートの更新">
 		</div>
 		</fieldset>
+
+		<fieldset><legend>日付別発言数</legend>
+		<div>
+			<div id="pref_diary"></div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.previousElementSibling);" value="更新">
+		</div>
+		</fieldset>
+
 		<input type="button" onclick="apply_analyze_pref(event);" value="適用">
 		<input type="reset" value="変更前に戻す">
 		<input type="button" onclick="initialize_analyze_pref();" value="初期値に戻す">
