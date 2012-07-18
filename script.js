@@ -2069,28 +2069,95 @@ Diagnostics: {
 	},
 	RefreshDiary: function Diagnostics_RefresDiary(node)
 	{
+		var a = this.analyzeDateTime();
+		this.nodesByDate = a.d;
+		this.nodesByHour = a.h;
+		
+		//初期表示ノードの選定
+		if (a.ys == 1)
+		{	//一年分しかない
+			if (a.ms == 1)
+			{
+				//一か月分しかない
+				if (a.ds == 1)
+				{	//一日分しかない→日間
+					this.ChangeDiaryRange(node, a.yyyy, a.mm, a.dd);
+				}
+				else
+				{	//何日分かある→月間
+					this.ChangeDiaryRange(node, a.yyyy, a.mm, 0);
+				}
+			}
+			else
+			{	//複数化月分ある→年間
+				this.ChangeDiaryRange(node, a.yyyy, 0, 0);
+			}
+		}
+		else
+		{	//複数年分ある→全部
+			this.ChangeDiaryRange(node, 0, 0, 0);
+		}
+	},
+	RefreshHours: function Diagnostics_RefreshHours(node)
+	{
+		var a = this.analyzeDateTime();
+		this.nodesByDate = a.d;
+		this.nodesByHour = a.h;
+		console.log(a.h);
+		var ret = '<table>';
+		for(var i=0; i<24; i++)
+		{
+			var c = a.h[i] ? a.h[i].length : 0;
+			var r = a.total ? (c/a.total) * 100 : 0;
+			ret += '<tr><th>{0}時台</th><td>{1}件</td><td class="bar100"><div style="width:{2}px;">&nbsp;</div></td>'.format(i, c, r);
+		}
+		ret += '</table>';
+		node.innerHTML = ret;
+	},
+	analyzeDateTime: function Diagnostics_analyzeDateTime()
+	{
 		var d = {};
+		var h = {};
+		var ys = 0, ms = 0, ds = 0, ts = 0;
+		var yyyy = 0, mm = 0, dd = 0;
 		var This = this;
+		
 		Skin.Thread.Message.foreach(function(node){
 			var obj = node.dataset;
 			var date = This._normalizeDate(obj.date);
 			if (date)
 			{
-				if (!d[date.y]) d[date.y] = {};
-				if (!d[date.y][date.m]) d[date.y][date.m] = {};
-				if (!d[date.y][date.m][date.d]) d[date.y][date.m][date.d] = [];
+				ts++;
+				if (!d[date.y])
+				{
+					d[date.y] = {};
+					ys++;
+					yyyy = date.y;
+				}
+				if (!d[date.y][date.m])
+				{
+					d[date.y][date.m] = {};
+					ms++;
+					mm = date.m;
+				}
+				if (!d[date.y][date.m][date.d])
+				{
+					d[date.y][date.m][date.d] = [];
+					ds++;
+					dd = date.d;
+				}
 				d[date.y][date.m][date.d].push(parseInt(obj.no));
+				if (date.h >= 0)
+				{
+					if (!h[date.h])
+					{
+						h[date.h] = [];
+					}
+					h[date.h].push(parseInt(obj.no));
+				}
 			}
 		}, false);
-		this.nodesByDate = d;
-		var ys = 0;
-		var yyyy = "";
-		for(var y in d)
-		{
-			ys++;
-			yyyy = y;
-		}
-		if (ys==1) this.ChangeDiaryRange(node, yyyy, 0, 0); else this.ChangeDiaryRange(node, 0, 0, 0);
+		return {d: d, h:h, ys: ys, ms: ms, ds: ds, yyyy: yyyy, mm: mm, dd: dd, total: ts };
 	},
 	ChangeDiaryRange: function Diagnostics_ChangeDiaryRange(node, y, m, d)
 	{
@@ -2296,13 +2363,16 @@ Diagnostics: {
 	diaryNode: null,
 	nodesByDate: {},		//日付別
 	_dateReg: new RegExp(/(\d{4})\/(\d{2})\/(\d{2})/),
+	_timeReg: new RegExp(/(\d{2}):\d{2}/),
 	_normalizeDate: function Diagnostics__normalizeDate(str)
 	{
 		if (this._dateReg.test(str))
-		{
-			return {y: parseInt(RegExp.$1,10), m:parseInt(RegExp.$2,10), d: parseInt(RegExp.$3,10)};
+		{	//TODO::AM/PM考慮必要あり？
+			var d = {y: parseInt(RegExp.$1,10), m:parseInt(RegExp.$2,10), d: parseInt(RegExp.$3,10)};
+			d.h = (this._timeReg.test(str)) ? parseInt(RegExp.$1, 10) : -1;
+			return d;
 		}
-		return null;;
+		return null;
 	},
 },
 Util: {

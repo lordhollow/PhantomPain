@@ -275,14 +275,21 @@
 		<fieldset><legend>ID</legend>
 		<div>
 			<div id="pref_idreport"></div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.previousElementSibling);" value="IDレポートの更新">
+			<div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="IDレポートの更新">
+			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
+			</div>
 		</div>
 		</fieldset>
 
 		<fieldset><legend>日付別発言数</legend>
 		<div>
 			<div id="pref_diary"></div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.previousElementSibling);" value="更新">
+			<div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.previousElementSibling);" value="日付別">
+			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.previousElementSibling);" value="時間帯別">
+			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
+			</div>
 		</div>
 		</fieldset>
 
