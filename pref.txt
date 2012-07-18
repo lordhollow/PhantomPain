@@ -272,20 +272,11 @@
 		<li><label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ検索</label>（&gt;&gt;<input type="text" class="resno" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@">以降で探索）
 		<li><label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label>
 		</ul></fieldset>
-		<fieldset><legend>ID</legend>
+		<fieldset><legend>レポート</legend>
 		<div>
 			<div id="pref_idreport"></div>
 			<div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="IDレポートの更新">
-			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
-			</div>
-		</div>
-		</fieldset>
-
-		<fieldset><legend>日付別発言数</legend>
-		<div>
-			<div id="pref_diary"></div>
-			<div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="ID別">
 			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.previousElementSibling);" value="日付別">
 			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.previousElementSibling);" value="時間帯別">
 			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
