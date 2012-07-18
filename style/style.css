@@ -813,15 +813,22 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	}
 
 /* Diagnostics */
-.bar100
+.bar
 {
 	box-sizing: content-box;
 	border: solid 1px #000;
-	width: 100px;
-	padding: 0px;
-	margin: 0px;
 }
-	.bar100 > div { background-color: #0F0; }
+	.sz50 { width: 50px; }
+	.sz00 { width: 100px; }
+	.sz200 { width: 200px; }
+	.sz250 { width: 250px; }
+	.sz500 { width: 500px; }
+	.sz640 { width: 640px; }
+
+	.bar > div
+	{
+		background-color: #0F0;
+	}
 	/*
 		.bar_rank1 { background-color: red !important; }
 	*/

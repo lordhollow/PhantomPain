@@ -2108,11 +2108,17 @@ Diagnostics: {
 		for(var i=0; i<24; i++)
 		{
 			var c = a.h[i] ? a.h[i].length : 0;
-			var r = a.total ? (c/a.total) * 100 : 0;
-			ret += '<tr><th>{0}‘ä</th><td>{1}Œ</td><td class="bar100"><div style="width:{2}px;">&nbsp;</div></td>'.format(i, c, r);
+			var g = this._getBarGraph(c, a.total);
+			ret += '<tr><th>{0}‘ä</th><td>{1}Œ</td>{2}</td>'.format(i, c, g);
 		}
 		ret += '</table>';
 		node.innerHTML = ret;
+	},
+	_getBarGraph: function Diagnostics__getBarGraph(c, t, barSize)
+	{
+		if (!barSize) barSize = 200;
+		var r = t == 0 ? 0 : c / t;
+		return '<td class="bar sz{1}"><div style="width:{0}px;">&nbsp;</div></td>'.format(r*barSize, barSize);
 	},
 	analyzeDateTime: function Diagnostics_analyzeDateTime()
 	{
@@ -2218,7 +2224,8 @@ Diagnostics: {
 		for (var year = min; year <= max; year ++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeY(year))
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td>{1}</td><td class="bar100"><div style="width:{3}px;">&nbsp;</div></td><td>{4}</td></tr>'.format(year, counts[year], total, (counts[year]/total)*100, str);
+			var g = this._getBarGraph(counts[year], total);
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td>{1}</td>{3}</td><td>{4}</td></tr>'.format(year, counts[year], total, g, str);
 		}
 		ret += "</table>";
 		return  ret;
@@ -2249,7 +2256,8 @@ Diagnostics: {
 		for(var m=1; m<=12; m++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeM(y, m))
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}Œ</th><td>{2}</td><td class="bar100"><div style="width:{4}px;">&nbsp;</div></td><td>{5}</td></tr>'.format(y, m, counts[m], total, (counts[m]/total)*100, str);
+			var g = this._getBarGraph(counts[m], total);
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}Œ</th><td>{2}</td>{4}<td>{5}</td></tr>'.format(y, m, counts[m], total, g, str);
 		}
 		ret += "</table>";
 		return  ret;
@@ -2279,7 +2287,8 @@ Diagnostics: {
 		for(var day=1; day<=days; day++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeD(y, m, day))
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}“ú</th><td>{3}</td><td class="bar100"><div style="width:{5}px;">&nbsp;</div></td><td>{6}</td></tr>'.format(y, m, day, counts[day], total, (counts[day]/total)*100, str);
+			var g = this._getBarGraph(counts[day], total);
+			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}“ú</th><td>{3}</td>{5}<td>{6}</td></tr>'.format(y, m, day, counts[day], total, g, str);
 		}
 		ret += "</table>";
 		return  ret;
