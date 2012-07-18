@@ -2176,15 +2176,15 @@ Diagnostics: {
 			this.diaryNode = node;
 		}
 		var ret = "";
-		if(parseInt(y) == 0)
+		if(y == 0)
 		{
 			ret = this.getTotalDiaryHTML(node, y, m, d);
 		}
-		else if (parseInt(m) == 0)
+		else if (m == 0)
 		{
 			ret = this.getYearDiaryHTML(node, y, m, d);
 		}
-		else if (parseInt(d) == 0)
+		else if (d == 0)
 		{
 			ret = this.getMonthDiaryHTML(node, y, m, d);
 		}
