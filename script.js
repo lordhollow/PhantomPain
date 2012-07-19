@@ -2103,7 +2103,6 @@ Diagnostics: {
 		var a = this.analyzeDateTime();
 		this.nodesByDate = a.d;
 		this.nodesByHour = a.h;
-		console.log(a.h);
 		var ret = '<table>';
 		for(var i=0; i<24; i++)
 		{
@@ -2282,8 +2281,8 @@ Diagnostics: {
 			counts[day] = c;
 			total += c;
 		}
-		var ret = '<table><tr><th colspan="3" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
-		ret += '<tr><th colspan="3" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}Œ</td></tr>'.format(y, m);
+		var ret = '<table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
+		ret += '<th colspan="2" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}Œ</td></tr>'.format(y, m);
 		for(var day=1; day<=days; day++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeD(y, m, day))
@@ -2295,7 +2294,40 @@ Diagnostics: {
 	},
 	getDayDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
 	{
-		return  this.getMonthDiaryHTML(node, y, m, d);	//–¢À‘•`
+		var dd = this.nodesByDate;
+		if (dd[y] && dd[y][m] && dd[y][m][d])
+		{
+			var days = dd[y][m][d];
+			var h = {};
+			var t = 0;
+			for(var i=0; i<days.length; i++)
+			{
+				var obj = Skin.Thread.Message.domobj[days[i]].dataset;
+				var date = this._normalizeDate(obj.date);
+				if (date.h >= 0)
+				{
+					if (!h[date.h])
+					{
+						h[date.h] = [];
+					}
+					h[date.h].push(parseInt(obj.no));
+					t++;
+				}
+			}
+			var ret = '<table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
+			ret += '<th class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}Œ</td>'.format(y, m);
+			ret += '<th class="diary_day" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},{1},0);">{2}“ú</td></tr>'.format(y, m, d);
+			for(var i=0; i<24; i++)
+			{
+				var c = h[i] ? h[i].length : 0;
+				var s = this.DiaryRangeToHTML(this.getRange(h[i]));
+				var g = this._getBarGraph(c, t);
+				ret += '<tr><th>{0}‘ä</th><td>{1}Œ</td>{2}</td><td>{3}</td></tr>'.format(i, c, g, s);
+			}
+			ret += '</table>';
+			return ret;
+		}
+		return  this.getMonthDiaryHTML(node, y, m, d);	//‚»‚Ì“ú‚Í‚È‚¢‚æ
 	},
 	getDiaryRangeY: function Diagnostics_getDiaryRangeY(y)
 	{
@@ -2343,7 +2375,16 @@ Diagnostics: {
 		}
 		else
 		{
-			var res = dd[y][m][d];
+			return this.getRange(dd[y][m][d]);
+		}
+		return {min: min, max: max};
+	},
+	getRange: function Diagnostics_getDiaryRange(res)
+	{
+		var min = 0;
+		var max = 0;
+		if (res)
+		{
 			for(var i=0; i<res.length; i++)
 			{
 				if ((min==0) ||(min > res[i]))
