@@ -2051,7 +2051,7 @@ Diagnostics: {
 			total += ids[id].length;
 		}
 		d = d.sort(function(a,b){ return b.count - a.count; });
-		var ret = '<table class="diagnostics_id">';
+		var ret = '<div><table class="diagnostics_id">';
 		var rank = 1;
 		var rankBase = d[0].count;
 		for(var i=0; i<d.length; i++)
@@ -2064,7 +2064,7 @@ Diagnostics: {
 			p = (d[i].count / total) * 100;
 			ret += '<tr><th>{2}</th><td class="diag_id" onclick="Skin.Thread.Message.Structure.FocusFirstId(\'{0}\')">{0}</td><td class="bar100"><div class="bar_rank{2}" style="width:{3}px;">&nbsp;</div></td><td>{1}/{4}</td></tr>\n'.format(d[i].id, d[i].count, rank, p, total);
 		}
-		ret += '</table>';
+		ret += '</table></div>';
 		node.innerHTML = ret;
 	},
 	RefreshDiary: function Diagnostics_RefresDiary(node)
@@ -2103,14 +2103,14 @@ Diagnostics: {
 		var a = this.analyzeDateTime();
 		this.nodesByDate = a.d;
 		this.nodesByHour = a.h;
-		var ret = '<table>';
+		var ret = '<div><table>';
 		for(var i=0; i<24; i++)
 		{
 			var c = a.h[i] ? a.h[i].length : 0;
 			var g = this._getBarGraph(c, a.total);
-			ret += '<tr><th>{0}éûë‰</th><td>{1}åè</td>{2}</td>'.format(i, c, g);
+			ret += '<tr><th class="diary_hour">{0}</th><td class="diary_amount">{1}</td>{2}</td>'.format(i, c, g);
 		}
-		ret += '</table>';
+		ret += '</table></div>';
 		node.innerHTML = ret;
 	},
 	_getBarGraph: function Diagnostics__getBarGraph(c, t, barSize)
@@ -2219,14 +2219,14 @@ Diagnostics: {
 			counts[year] = c;
 			total += c;
 		}
-		var ret = "<table>";
+		var ret = "<div><table>";
 		for (var year = min; year <= max; year ++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeY(year))
 			var g = this._getBarGraph(counts[year], total);
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td>{1}</td>{3}</td><td>{4}</td></tr>'.format(year, counts[year], total, g, str);
+			ret += '<tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, 0, 0);">{0}</th><td class="diary_amount">{1}</td>{3}</td><td>{4}</td></tr>'.format(year, counts[year], total, g, str);
 		}
-		ret += "</table>";
+		ret += "</table></div>";
 		return  ret;
 	},
 	getYearDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
@@ -2251,14 +2251,14 @@ Diagnostics: {
 			counts[m] = c;
 			total += c;
 		}
-		var ret = '<table><tr><th colspan="3" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
+		var ret = '<div><table><tr><th colspan="4" class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td></tr>'.format(y);
 		for(var m=1; m<=12; m++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeM(y, m))
 			var g = this._getBarGraph(counts[m], total);
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}åé</th><td>{2}</td>{4}<td>{5}</td></tr>'.format(y, m, counts[m], total, g, str);
+			ret += '<tr><th class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, 0);">{1}</th><td class="diary_amount">{2}</td>{4}<td>{5}</td></tr>'.format(y, m, counts[m], total, g, str);
 		}
-		ret += "</table>";
+		ret += "</table></div>";
 		return  ret;
 	},
 	getMonthDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
@@ -2281,15 +2281,15 @@ Diagnostics: {
 			counts[day] = c;
 			total += c;
 		}
-		var ret = '<table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
-		ret += '<th colspan="2" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}åé</td></tr>'.format(y, m);
+		var ret = '<div><table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
+		ret += '<th colspan="3" class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}</td></tr>'.format(y, m);
 		for(var day=1; day<=days; day++)
 		{
 			var str = this.DiaryRangeToHTML(this.getDiaryRangeD(y, m, day))
 			var g = this._getBarGraph(counts[day], total);
-			ret += '<tr><th onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}ì˙</th><td>{3}</td>{5}<td>{6}</td></tr>'.format(y, m, day, counts[day], total, g, str);
+			ret += '<tr><th class="diary_day" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0}, {1}, {2});">{2}</th><td class="diary_amount">{3}</td>{5}<td>{6}</td></tr>'.format(y, m, day, counts[day], total, g, str);
 		}
-		ret += "</table>";
+		ret += "</table></div>";
 		return  ret;
 	},
 	getDayDiaryHTML: function Diagnostics_getTotalDiaryHTML(node, y, m, d)
@@ -2314,17 +2314,17 @@ Diagnostics: {
 					t++;
 				}
 			}
-			var ret = '<table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
-			ret += '<th class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}åé</td>'.format(y, m);
-			ret += '<th class="diary_day" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},{1},0);">{2}ì˙</td></tr>'.format(y, m, d);
+			var ret = '<div><table><tr><th class="diary_year" onclick="Skin.Diagnostics.ChangeDiaryRange(null,0,0,0);">{0}</td>'.format(y);
+			ret += '<th class="diary_month" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},0,0);">{1}</td>'.format(y, m);
+			ret += '<th colspan="2" class="diary_day" onclick="Skin.Diagnostics.ChangeDiaryRange(null,{0},{1},0);">{2}</td></tr>'.format(y, m, d);
 			for(var i=0; i<24; i++)
 			{
 				var c = h[i] ? h[i].length : 0;
 				var s = this.DiaryRangeToHTML(this.getRange(h[i]));
 				var g = this._getBarGraph(c, t);
-				ret += '<tr><th>{0}éûë‰</th><td>{1}åè</td>{2}</td><td>{3}</td></tr>'.format(i, c, g, s);
+				ret += '<tr><th class="diary_hour">{0}</th><td class="diary_amount">{1}</td>{2}</td><td>{3}</td></tr>'.format(i, c, g, s);
 			}
-			ret += '</table>';
+			ret += '</table></div>';
 			return ret;
 		}
 		return  this.getMonthDiaryHTML(node, y, m, d);	//ÇªÇÃì˙ÇÕÇ»Ç¢ÇÊ

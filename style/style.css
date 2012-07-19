@@ -832,15 +832,71 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	/*
 		.bar_rank1 { background-color: red !important; }
 	*/
-#pref_idreport
+#pref_report
 {
-	max-height: 10em;
-	overflow-y: auto;
 }
+#pref_report > div
+{
+	max-height: 25em;
+	font-size: 70%;
+	overflow-y: auto;
+	border: solid 1px #000;
+}
+
+	#pref_report table
+	{
+	}
+	#diary_hour th
+	{
+		white-space:nowrap;
+	}
+	.diag_id, .diary_year, .diary_month, .diary_day
+	{
+		cursor: pointer;
+	}
 	.diag_id
 	{
 		font-family: monospace;
 	}
+	.diary_year
+	{
+		background-color: #CFC;
+	}
+		.diary_year:after
+		{
+			content: "”N";
+		}
+	.diary_month
+	{
+		background-color: #9F9;
+	}
+		.diary_month:after
+		{
+			content: "Œ";
+		}
+	.diary_day
+	{
+		background-color: #6F6;
+	}
+		.diary_day:after
+		{
+			content: "“ú";
+		}
+	.diary_hour
+	{
+		background-color: #3F3;
+	}
+		.diary_hour:after
+		{
+			content: "‘ä";
+		}
+	.diary_amount
+	{
+	}
+		.diary_amount:after
+		{
+			content: "Œ";
+		}
 
 /* ’Ê’m—Ìˆæ */
 #noticeContainer

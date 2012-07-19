@@ -274,11 +274,11 @@
 		</ul></fieldset>
 		<fieldset><legend>レポート</legend>
 		<div>
-			<div id="pref_idreport"></div>
+			<div id="pref_report"></div>
 			<div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="ID別">
-			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.previousElementSibling);" value="日付別">
-			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.previousElementSibling);" value="時間帯別">
+			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="ID">
+			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.previousElementSibling);" value="日付">
+			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.previousElementSibling);" value="時間帯">
 			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
 			</div>
 		</div>
