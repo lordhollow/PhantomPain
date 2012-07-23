@@ -3516,11 +3516,15 @@ var HasReplyMark = new MarkerService(false, null, "hasReply", true);
 	HasReplyMark.init = function HasReplyMark_init()
 	{
 		this.setMark();
-		this.marked();
 	}
-	HasReplyMark.getMarkerClass = function HasReplyMarkk_getMarkerClass(node)
+	HasReplyMark.getMarkerClass = function HasReplyMark_getMarkerClass(node)
 	{
 		return (Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no)) ? "y" : "";
+	}
+	HasReplyMark.nodeLoaded = function HasReplyMark_nodeLoaded(nodes)
+	{	//他のノードによって勝手にマークされるので。
+		//Trackerも似たようなものだが都度addされるので問題ない。
+		this.setMark();
 	}
 	HasReplyMark.getSaveStr = HasReplyMark._del = HasReplyMark._add = HasReplyMark.marked = function HasReplyMark_dmy(){}
 
