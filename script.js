@@ -4050,19 +4050,12 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 	}
 	OutlinkPluginForThread.initCache = function OutlinkPluginForThread_initCache()
 	{
+		//Skin.CommonPref.writeGlobalObject("ThreadTitleCache", undefined);
 		if (!this._titleBuffer)
 		{
 		
 			var obj = Skin.CommonPref.readGlobalObject("ThreadTitleCache");
-			if (obj)
-			{
-				obj = eval("({0})".format(obj));
-				this._titleBuffer = (!obj) ? {} : obj;
-			}
-			else
-			{
-				this._titleBuffer = {};
-			}
+			this._titleBuffer = EVAL("({0})".format(obj), {});
 		}
 	}
 	OutlinkPluginForThread.getPreview = function OutlinkPluginForThread_getPreview(href, onload, isPopup)
@@ -4076,7 +4069,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		{
 			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="' +$C("popupContentThreadSetNext")+ '">';
 		}
-		var t = (this._titleBuffer[href]) ? this._titleBuffer[href] : $C("popupContentThreadDefault");
+		var t = (this._titleBuffer[url.threadId]) ? this._titleBuffer[url.threadId] : $C("popupContentThreadDefault");
 		var b = Skin.BoardList.getBoardName(url.boardId);
 		html = html.format(href, t, b);
 		var preview = document.createElement("DIV");
@@ -4092,11 +4085,12 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		this.initCache();
 		var href = aEvent.target.dataset.ref;
 		var html = TextLoadManager.syncGet(Skin.Thread.Info.Server + href + "1");
+		var url= new URL(href);
 		if (html && (html.match(/<a id="threadName">(.+?)<\/a>/)))
 		{
-			this._titleBuffer[href]  = RegExp.$1;
+			this._titleBuffer[url.threadId]  = RegExp.$1;
 		}
-		var t = this._titleBuffer[href] || $C("popupContentThreadError");
+		var t = this._titleBuffer[url.threadId] || $C("popupContentThreadError");
 		var preview = aEvent.target.parentNode;
 		preview.dataset.thread = t;
 		preview.dataset.titleState = (this._titleBuffer[href]) ? "y" : "e";
