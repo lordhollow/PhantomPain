@@ -4048,9 +4048,27 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		//本来、URL.maybeThreadを確認すればよいが、無駄なアクションも多いので処理だけ抽出
 		return  href.match(/\/read.cgi\//) ? 1 : 0;
 	}
+	OutlinkPluginForThread.initCache = function OutlinkPluginForThread_initCache()
+	{
+		if (!this._titleBuffer)
+		{
+		
+			var obj = Skin.CommonPref.readGlobalObject("ThreadTitleCache");
+			if (obj)
+			{
+				obj = eval("({0})".format(obj));
+				this._titleBuffer = (!obj) ? {} : obj;
+			}
+			else
+			{
+				this._titleBuffer = {};
+			}
+		}
+	}
 	OutlinkPluginForThread.getPreview = function OutlinkPluginForThread_getPreview(href, onload, isPopup)
 	{
 		if (!isPopup) return null;	//ポップアップにしか表示しない
+		this.initCache();
 		var url = new URL(href);
 		href = url.threadUrl;
 		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onclick="OutlinkPluginForThread.getThreadTitle(event)" title="' +$C("popupContentThreadTitle")+ '">';
@@ -4071,6 +4089,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 	}
 	OutlinkPluginForThread.getThreadTitle =  function OutlinkPluginForThread_getThreadTitle(aEvent)
 	{
+		this.initCache();
 		var href = aEvent.target.dataset.ref;
 		var html = TextLoadManager.syncGet(Skin.Thread.Info.Server + href + "1");
 		if (html && (html.match(/<a id="threadName">(.+?)<\/a>/)))
@@ -4081,13 +4100,13 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		var preview = aEvent.target.parentNode;
 		preview.dataset.thread = t;
 		preview.dataset.titleState = (this._titleBuffer[href]) ? "y" : "e";
+		Skin.CommonPref.writeGlobalObject("ThreadTitleCache", getJsonStr(this._titleBuffer));
 	}
 	OutlinkPluginForThread.setToNextThread =  function OutlinkPluginForThread_setToNextThread(aEvent)
 	{
 		Skin.Thread.Navigator.setNextThread(aEvent.target.dataset.ref, true, 0);
 		Notice.add($C("messageNextThreadSet").format(aEvent.target.dataset.ref));
 	}
-	OutlinkPluginForThread._titleBuffer = {};
 
 var OutlinkPluginForDefault = new OutlinkPlugin(OUTLINK_ETC);
 	OutlinkPluginForDefault.posivility = function OutlinkPluginForDefault_posivility(href)
