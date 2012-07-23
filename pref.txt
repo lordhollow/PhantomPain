@@ -317,6 +317,18 @@
 		<li>この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
 			<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
 		</ul></fieldset>
+
+		<fieldset><legend>トラッキング情報</legend>
+		<div>
+			<div id="pref_tracker"></div>
+			<div>
+			<input type="button" onclick="Tracker.report(event.target.parentNode.previousElementSibling);" value="表示">
+			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
+			<div>
+		</div>
+		</fieldset>
+
+
 		</form>
 	</div>
 </div>

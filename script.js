@@ -2525,6 +2525,31 @@ Util: {
 			}
 			return r;
 		},
+		joinResNumbers: function StringUtil_joinResNumbers(ids)
+		{	//splitResNumbers‚Ì‹t
+			var str = "";
+			var state = 0;
+			var bid = 0;
+			if (ids)
+			{
+				ids = $A(ids).sort(function(a,b){return a-b;});
+				if (ids.length <= 1) return ids[0]+"";
+				bid = parseInt(ids[0]);
+				for (var i=1, j=ids.length; i<j; i++)
+				{
+					if (parseInt(ids[i-1])+1 != parseInt(ids[i]))
+					{
+						if (str != "") str += ","
+						str += (bid == ids[i-1]) ? bid : bid + "-" + ids[i-1];
+						bid = parseInt(ids[i]);
+					}
+				}
+				if (str != "") str += ","
+				str += (bid == ids[ids.length-1]) ? bid : bid + "-" + ids[ids.length-1];
+				return str;
+			}
+			return "";
+		},
 	},
 	Dom: {
 		isDecendantOf: function DOMUtil_isDecendantOf(e, id)
@@ -3649,6 +3674,7 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 	}
 	Tracker.getSaveStr = function Tracker_getSaveStr()
 	{
+		this.report(this.reportShownTo);	//‚Ç‚±‚©—Ç‚¢êŠ‚Í‚È‚¢‚©EEE
 		var tss = [];
 		for(var i=0,j=this._trackers.length; i<j; i++)
 		{
@@ -3762,6 +3788,18 @@ var Tracker =  new MarkerService(true, "tracker", "track", true);
 		}
 		return 0;
 	}
+	Tracker.report = function Tracker_report(e)
+	{
+		if (!e) return;
+		this.reportShownTo = e;
+		var html = '<table id="trackerInfo">';
+		for(var i=0, j=this._trackers.length; i<j; i++)
+		{
+			html += this._trackers[i].getReportHTML();
+		}
+		html += "</table>";
+		e.innerHTML = html;
+	}
 
 function TrackerEntry(index, trip, aid){ this.init(index, trip, aid); };
 TrackerEntry.prototype = {
@@ -3835,7 +3873,42 @@ TrackerEntry.prototype = {
 			}, false);
 		return res;
 	},
-
+	getReportHTML: function TrackerEntry_getReportHTML()
+	{
+		var html = "";
+		html += '<tr><th class="trrep_trhead" colspan="2">{1}</th></tr>'.format(this.index, this.index+1);
+		html += '<tr><td class="trrep_blank"></td><th class="trrep_idhead"></th></tr>';
+		if (this.aid.length)
+		{
+			for(var i=0,j=this.aid.length; i<j;i++)
+			{
+				html += '<tr><td class="trrep_blank"></td><td class="trrep_id">{0}</td></tr>'.format(this.aid[i]);
+			}
+		}
+		else
+		{
+			html += '<tr><td class="trrep_blank"></td><td class="trrep_no"></td></tr>';
+		}
+		html += '<tr><td class="trrep_blank"></td><th class="trrep_triphead"></th></tr>';
+		if (this.trip.length)
+		{
+			for(var i=0,j=this.trip.length; i<j;i++)
+			{
+				html += '<tr><td class="trrep_blank"></td><td class="trrep_trip">{0}</td></tr>'.format(this.trip[i]);
+			}
+		}
+		else
+		{
+			html += '<tr><td class="trrep_blank"></td><td class="trrep_no"></td></tr>';
+		}
+		var trackingNumbers = this.getTrackingNumbers();
+		if (trackingNumbers.length)
+		{
+			html += '<tr><td class="trrep_blank"></td><th class="trrep_idshead"></th></tr>';
+			html += '<tr><td class="trrep_blank"></td><td class="trrep_ids"><span onclick="$M({1}).focus();">&gt;&gt;{0}</span></td></tr>'.format(StringUtil.joinResNumbers(trackingNumbers), trackingNumbers[0]);
+		}
+		return html;
+	},
 };
 
 

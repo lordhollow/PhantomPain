@@ -898,6 +898,36 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 			content: "件";
 		}
 
+/* トラッキング情報 */
+#pref_tracker
+{
+	font-size: 70%;
+}
+	#trackerInfo
+	{
+		font-size: 70%;
+		width: 100%;
+		border-collapse: collapse;
+	}
+	#trackerInfo th, #trackerInfo td
+	{
+		border: solid 1px #000;
+	}
+	.trrep_trhead{ background-color: #CCF; text-align: left; }
+	.trrep_trhead:before { content: "TrackerID "; }
+	.trrep_blank { width: 16px; border: none !important;}
+	.trrep_idhead{ background-color: #CFC; }
+	.trrep_idhead:before { content: "適合ID"; }
+	.trrep_id { font-family: monospace; text-align: center; background-color: #EFEFEF; }
+	.trrep_triphead{ background-color: #CFC; }
+	.trrep_triphead:before { content: "適合トリップ"; }
+	.trrep_trip { font-family: monospace; text-align: center; background-color: #EFEFEF; }
+	.trrep_idshead{ background-color: #CFC; }
+	.trrep_idshead:before { content: "適合レス番号(表示範囲内)"; }
+	.trrep_ids { font-family: monospace; text-align: center; background-color: #EFEFEF; }
+	.trrep_no { color: #666; text-align: center;  background-color: #EFEFEF; }
+	.trrep_no:before { content: "なし"; }
+
 /* 通知領域 */
 #noticeContainer
 {
