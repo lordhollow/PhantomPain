@@ -411,6 +411,7 @@ h2
 
 		/* 逆参照がないとき、表示しない(あるときはスクリプトから制御) */
 		.menu .resto { display: none; }
+		article[data-has-reply="y"] .menu .resto { display: inline; }
 
 		/* 新着インジケータ */
 		.nron { display: none; }
@@ -430,6 +431,7 @@ h2
 article article
 {
 	margin-left: 2em;
+	border-left: solid 2px #888;
 }
 /* レス本体 */
 .ct

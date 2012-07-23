@@ -1106,10 +1106,8 @@ Thread: {
 					if(!this.nodesReplyFrom[t])
 					{
 						this.nodesReplyFrom[t] = new Array();
-						//逆参照ありの強調表示
-						//これMarkerでも良い気がしてきた。
-						node.dataset.hasReply = "y";
 					}
+					//強調はマーカーサービス(HasReplyMark)でやります
 					this.nodesReplyFrom[t].push(obj.no);
 				}
 				return html;
@@ -1481,11 +1479,13 @@ Services: {
 			Pickup.init();
 			Ignore.init();
 			Tracker.init();
+			HasReplyMark.init();
 			this.push(NewMark);
 			this.push(Bookmark);
 			this.push(Pickup);
 			this.push(Ignore);
 			this.push(Tracker);
+			this.push(HasReplyMark);
 		},
 		
 		push: function MarkerServices_push(service)
@@ -3510,6 +3510,19 @@ var NewMark = new MarkerService(false, null, "new", true);
 		document.body.dataset.hasNew = (this.fetched == Skin.Thread.Info.Total) ? "" : "y";
 	}
 	NewMark.getSaveStr = NewMark._del = function NewMark_dmy(){}
+
+/* ■応答ありマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var HasReplyMark = new MarkerService(false, null, "hasReply", true);
+	HasReplyMark.init = function HasReplyMark_init()
+	{
+		this.setMark();
+		this.marked();
+	}
+	HasReplyMark.getMarkerClass = function HasReplyMarkk_getMarkerClass(node)
+	{
+		return (Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no)) ? "y" : "";
+	}
+	HasReplyMark.getSaveStr = HasReplyMark._del = HasReplyMark._add = HasReplyMark.marked = function HasReplyMark_dmy(){}
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = new MarkerService(false, "bm", "bm", true);
