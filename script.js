@@ -302,6 +302,9 @@ String.prototype.format = function StringPrototype_format()
 	return String.format.apply(String, arguments);
 };
 
+function AscNum(a, b){return a-b;}
+function DescNum(a, b){return b-a;}
+
 function getType(o)
 {
 	if (o === null) return 'null';
@@ -784,7 +787,7 @@ Thread: {
 		prepareIds: function Message_prepareIds(ids)
 		{	//idsをできるだけ少ない回数でロードするようにする。
 			//本当はちょっとぐらいの間隙なら分けずにロードしたほうが早い場面もあるんだろうけど？
-			ids = ids.sort(function prepareIds_sort(a,b){return a-b;});
+			ids = ids.sort(AscNum);
 			var from = 0;
 			var b = true;
 			for(var i=0; i<ids.length; i++)
@@ -1076,7 +1079,7 @@ Thread: {
 			},
 			FocusFirstId: function(id)
 			{
-				var aids = $A(this.nodesById[id]).sort(function(a,b){return a-b;});
+				var aids = $A(this.nodesById[id]).sort(AscNum);
 				if (aids && aids.length >0)
 				{
 					$M(aids[0]).focus();
@@ -2488,7 +2491,7 @@ Util: {
 			}
 			else if (ids)
 			{
-				ids = ($A(ids)).sort(function _sort(a,b){return a-b;});
+				ids = ($A(ids)).sort(AscNum);
 				Skin.Thread.Message.prepare(ids);
 				var p = new ResPopup();
 				p.closeOnMouseLeave = closeOnMouseLeave;
@@ -2561,7 +2564,7 @@ Util: {
 			var bid = 0;
 			if (ids)
 			{
-				ids = $A(ids).sort(function(a,b){return a-b;});
+				ids = $A(ids).sort(AscNum);
 				if (ids.length <= 1) return ids[0]+"";
 				bid = parseInt(ids[0]);
 				for (var i=1, j=ids.length; i<j; i++)
@@ -3643,7 +3646,7 @@ var Pickup = new MarkerService(false, "pk", "pickuped", true);
 		if (!this.pickups.include(no))
 		{
 			this.pickups.push(no);
-			this.pickups.sort(function _sort(a,b){return a-b;});
+			this.pickups.sort(AscNum);
 			return true;
 		}
 		return false;
@@ -3689,7 +3692,7 @@ var Ignore = new MarkerService(false, "ig", "ignored", true);
 		if (!this.ignores.include(no))
 		{
 			this.ignores.push(no);
-			this.ignores.sort(function _sort(a,b){return a-b;});
+			this.ignores.sort(AscNum);
 			return true;
 		}
 		return false;
@@ -4479,7 +4482,7 @@ ViewerEntry.prototype = {
 		if (!this.relations.include(no))
 		{
 			this.relations.push(no);
-			this.relations.sort(function _sort(a,b){return a-b;});
+			this.relations.sort(AscNum);
 		}
 	},
 	getElement: function ViewerEntry_getElement()
@@ -4729,7 +4732,7 @@ ResManipulator.prototype = {
 	focusNextId: function ResManipulator_focusNextId()
 	{
 		if (!this.node) return;
-		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(function(a,b){return a-b;});
+		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(AscNum);
 		if (!aids) return;
 		var found = false;
 		for(var i=0; i<aids.length; i++)
@@ -4748,7 +4751,7 @@ ResManipulator.prototype = {
 	focusPrevId: function ResManipulator_focusPrevId()
 	{
 		if (!this.node) return;
-		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(function(a,b){return a-b;});
+		var aids = $A(Skin.Thread.Message.Structure.getNodeIdsById(this.node.dataset.aid)).sort(AscNum);
 		if (!aids) return;
 		var no = 0;
 		for(var i=0; i<aids.length; i++)
