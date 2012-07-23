@@ -2424,6 +2424,35 @@ Diagnostics: {
 		}
 		return null;
 	},
+	RefreshStoryHeads: function Diagnostics_RefreshStoryHeads(node)
+	{
+		var ids = this.getStoryHeads();
+		var html= "";
+		for (var i=0, j =ids.length; i<j; i++)
+		{
+			html += '<a class="resPointer" href="#{0}">&gt;&gt;{0}</a> '.format(ids[i]);
+		}
+		node.innerHTML = html;
+	},
+	getStoryHeads: function Diagnostics_getStoryHeads(min, max)
+	{	//表示範囲内で、以下の条件を満たすレスを検索
+		//1. 参照されている
+		//2. 参照していない
+		if (!min) min = Skin.Thread.Message.deployedMin;
+		if (!max) max = Skin.Thread.Message.deployedMax;
+		var Structure = Skin.Thread.Message.Structure;
+		var ret = [];
+		for (var i=min ;i <=max; i++)
+		{
+			if (Structure.nodesReplyFrom[i])	//被参照
+			{
+				var node = Skin.Thread.Message.domobj[i];
+				var resto = Structure._getReplyTo(node);
+				if (resto.length == 0) ret.push(i);
+			}
+		}
+		return ret;
+	},	
 },
 Util: {
 	Popup: {

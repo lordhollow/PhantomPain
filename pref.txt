@@ -318,6 +318,16 @@
 			<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
 		</ul></fieldset>
 
+		<fieldset><legend>起点情報</legend>
+		<div>
+			<div id="pref_heads"></div>
+			<div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshStoryHeads(event.target.parentNode.previousElementSibling);" value="表示">
+			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
+			<div>
+		</div>
+		</fieldset>
+
 		<fieldset><legend>トラッキング情報</legend>
 		<div>
 			<div id="pref_tracker"></div>
