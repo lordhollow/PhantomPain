@@ -185,7 +185,7 @@ var Macro = {
 		}
 	},
 	Viewer: function(){ Skin.Viewer.show(); },
-	ViewerExit: function(){ Skin.Viewer.leaveViewerMode(); console.log("hoge"); },
+	ViewerExit: function(){ Skin.Viewer.leaveViewerMode(); },
 	ViewerFirst: function(){ Skin.Viewer.first(); },
 	ViewerLast: function(){ Skin.Viewer.last(); },
 	ViewerPrev: function(){ Skin.Viewer.prev(); },
