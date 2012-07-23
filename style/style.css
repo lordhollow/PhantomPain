@@ -813,6 +813,28 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 		list-style-type: square;
 		list-style-position: inside;
 	}
+	.nextThreadCandidates > li
+	{
+		white-space:nowrap;
+		list-style-position: outside;
+		list-style-type: none;
+	}
+	.nextThreadCandidates input
+	{
+		width: 16px;
+		height: 16px;
+		border: none;
+		margin-left: 4px;
+	}
+	.selectedCandidates
+	{
+		color: red;
+		list-style-type: square !important;
+	}
+	.prefpage ul ul
+	{
+		margin-left: 2em;
+	}
 
 /* Diagnostics */
 .bar

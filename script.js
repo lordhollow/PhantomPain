@@ -80,6 +80,10 @@ var Content = {
 		navigatorMiscNext: "次スレ",
 		navigatorMiscPrev: "前スレ",
 		
+		configulatorPrevThread: "前スレ(自動判定)",
+		configulatorNextThread: "次スレ候補",
+		configulatorNextPrevThreadNotFound: "なし",
+		
 		finderSubmit: "抽出",
 		finderRegExp: "正規表現",
 		finderCheckCase: "大小区別",
@@ -514,6 +518,54 @@ Configulator: {
 		if (!page) return false;
 		PopupUtil.toggle(aEvent.explicitOriginalTarget, page, false, true, "prefpage");
 		return false;
+	},
+	getThreadSelectorHTML: function Configulator_getThreadSelectorHTML()
+	{
+		var html ="";
+		html += '<li>' + $C('configulatorPrevThread') +'<ul>';
+		var prev = Skin.Thread.Navigator.prevThread;
+		if (prev.url)
+		{
+			html += '<li><a href="{1}" class="outLink">{0}</a>'.format(OutlinkPluginForThread.getCachedTitle(prev.url), prev.url);
+		}
+		else
+		{
+			html += '<li>' + $C('configulatorNextPrevThreadNotFound');
+		}
+		html += '</ul>';
+		html += '<li>' + $C('configulatorNextThread') +'<ul class="nextThreadCandidates">';
+		nexts = [];
+		var links = Skin.Thread.Message.outLinks;
+		for (var i=0, j=links.length; i<j; i++)
+		{
+			if (links[i])
+			for (var ii=0, jj=links[i].length; ii<jj; ii++)
+			{
+				var href = links[i][ii].href;
+				var url = new URL(href);
+				if (url.maybeThread && (url.boardId == Skin.Thread.boardId))
+				{
+					nexts.push(href);
+				}
+			}
+		}
+		if (nexts.length)
+		{
+			var n = Skin.Thread.Navigator.nextThread;
+			for(var i=0,j=nexts.length; i<j; i++)
+			{
+				html += '<li{2}><a href="{1}" class="outLink">{0}</a>'.format(OutlinkPluginForThread.getCachedTitle(nexts[i]), nexts[i], (n.url == nexts[i]) ? ' class="selectedCandidates"' : '');
+				//TODO::このボタンを押して次スレを変更したことをここに反映
+				html += ('<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="' +$C("popupContentThreadSetNext")+ '">').format(nexts[i]);
+				html += '</li>\n';
+			}
+		}
+		else
+		{
+			html += '<li>' + $C('configulatorNextPrevThreadNotFound');
+		}
+		html += '</ul>';
+		return html;
 	},
 },
 CommonPref: {
@@ -4056,12 +4108,22 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		
 			var obj = Skin.CommonPref.readGlobalObject("ThreadTitleCache");
 			this._titleBuffer = EVAL("({0})".format(obj), {});
+			if (!this._titleBuffer[Skin.Thread.threadId])
+			{	//自己登録
+				this._titleBuffer[Skin.Thread.threadId] = Skin.Thread.Info.Title;
+				Skin.CommonPref.writeGlobalObject("ThreadTitleCache", getJsonStr(this._titleBuffer));
+			}
 		}
+	}
+	OutlinkPluginForThread.getCachedTitle = function OutlinkPluginForThread_getCachedTitle(href)
+	{
+		this.initCache();
+		var url = new URL(href);
+		return (this._titleBuffer[url.threadId]) ? this._titleBuffer[url.threadId] : $C("popupContentThreadDefault");
 	}
 	OutlinkPluginForThread.getPreview = function OutlinkPluginForThread_getPreview(href, onload, isPopup)
 	{
 		if (!isPopup) return null;	//ポップアップにしか表示しない
-		this.initCache();
 		var url = new URL(href);
 		href = url.threadUrl;
 		var html = '<input type="button" data-ref="{0}" class="icon_getthreadtitle" onclick="OutlinkPluginForThread.getThreadTitle(event)" title="' +$C("popupContentThreadTitle")+ '">';
@@ -4069,7 +4131,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		{
 			html += '<input type="button" data-ref="{0}" class="icon_settonextthread" onclick="OutlinkPluginForThread.setToNextThread(event)" title="' +$C("popupContentThreadSetNext")+ '">';
 		}
-		var t = (this._titleBuffer[url.threadId]) ? this._titleBuffer[url.threadId] : $C("popupContentThreadDefault");
+		var t = this.getCachedTitle(href);
 		var b = Skin.BoardList.getBoardName(url.boardId);
 		html = html.format(href, t, b);
 		var preview = document.createElement("DIV");

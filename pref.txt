@@ -316,6 +316,7 @@
 		<fieldset><legend>スレッド</legend><ul>
 		<li>この板の名前: <input type="text" value="@<Skin.Thread.boardName>@" name="boardName">
 			<input type="button" onclick="Skin.BoardList.setBoardName(null, document.forms.miscPref.boardName.value);" value="変更">
+		@<Skin.Configulator.getThreadSelectorHTML()>@
 		</ul></fieldset>
 
 		<fieldset><legend>起点情報</legend>
