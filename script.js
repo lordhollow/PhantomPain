@@ -2817,7 +2817,11 @@ EventHandler: {
 					res.removeEventListener("mouseout", arguments.callee, false);
 			}, false);
 		}
-		if (t.className=="resPointer")
+		if (aEvent.shiftKey)
+		{
+			//shiftKey押下中はポップアップさせない
+		}
+		else if (t.className=="resPointer")
 		{	//レスアンカーにポイント → レスポップアップ
 			new ResPopup(t);
 		}
