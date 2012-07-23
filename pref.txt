@@ -120,7 +120,7 @@
 
 		<form name="imgPref" class="prefpage" data-key="images">
 		<fieldset><legend>画像</legend><ul>
-		<li><label><input type="checkbox" name="AutoPreviewOutlinks" @CHECKED<Preference.AutoPreviewOutlinks>@>Outlinkを自動展開</label>
+		<li><label><input type="checkbox" name="AutoPreviewOutlinks" @CHECKED<Preference.AutoPreviewOutlinks>@>プレビュー自動展開</label>
 		<li><label>プレビューのサイズ：<input type="text" class="px" name="ImagePopupSize" data-min="16" data-max="10000" data-keybind="num" value="@<Preference.ImagePopupSize>@">px</label>
 		</ul></fieldset>
 		<fieldset><legend>メディアビュアー</legend><ul>
@@ -274,13 +274,13 @@
 		</ul></fieldset>
 		<fieldset><legend>レポート</legend>
 		<div>
-			<div id="pref_report"></div>
 			<div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.previousElementSibling);" value="ID">
-			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.previousElementSibling);" value="日付">
-			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.previousElementSibling);" value="時間帯">
-			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
+			<input type="button" onclick="Skin.Diagnostics.RefreshIdReport(event.target.parentNode.nextElementSibling);" value="ID">
+			<input type="button" onclick="Skin.Diagnostics.RefreshDiary(event.target.parentNode.nextElementSibling);" value="日付">
+			<input type="button" onclick="Skin.Diagnostics.RefreshHours(event.target.parentNode.nextElementSibling);" value="時間帯">
+			<input type="button" onclick="event.target.parentNode.nextElementSibling.innerHTML='';" value="閉じる">
 			</div>
+			<div id="pref_report"></div>
 		</div>
 		</fieldset>
 
@@ -302,7 +302,7 @@
 			var p = PopupUtil.getPopup(e.target);
 			if (p) p.close();
 		}
-		initialize_analyze_pref = function()
+		initialize_anFalyze_pref = function()
 		{
 			var f = document.forms.analyzePref;
 			f.EnableNextThreadSearch.value = _Preference.EnableNextThreadSearch;
@@ -321,21 +321,21 @@
 
 		<fieldset><legend>起点情報</legend>
 		<div>
+			<div>
+			<input type="button" onclick="Skin.Diagnostics.RefreshStoryHeads(event.target.parentNode.nextElementSibling);" value="表示">
+			<input type="button" onclick="event.target.parentNode.nextElementSibling.innerHTML='';" value="閉じる">
+			</div>
 			<div id="pref_heads"></div>
-			<div>
-			<input type="button" onclick="Skin.Diagnostics.RefreshStoryHeads(event.target.parentNode.previousElementSibling);" value="表示">
-			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
-			<div>
 		</div>
 		</fieldset>
 
 		<fieldset><legend>トラッキング情報</legend>
 		<div>
+			<div>
+			<input type="button" onclick="Tracker.report(event.target.parentNode.nextElementSibling);" value="表示">
+			<input type="button" onclick="event.target.parentNode.nextElementSibling.innerHTML='';" value="閉じる">
+			</div>
 			<div id="pref_tracker"></div>
-			<div>
-			<input type="button" onclick="Tracker.report(event.target.parentNode.previousElementSibling);" value="表示">
-			<input type="button" onclick="event.target.parentNode.previousElementSibling.innerHTML='';" value="閉じる">
-			<div>
 		</div>
 		</fieldset>
 
