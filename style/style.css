@@ -689,20 +689,28 @@ article article
 	}
 	#viewerState{}
 	#viewerCtrls{}
-	#viewerCtrls > button
+	#viewerCtrls > button,#viewerCtrlsRT > button
 	{
 		border-width: 2px;
 		width: 20px;
 		height: 20px;
 	}
-	#viewerCtrls > button[name="home"]{  background-image: -moz-image-rect(url(buttons.png), 64, 64, 80, 48); margin-right: 20px;}
-	#viewerCtrls > button[name="first"]{ background-image: -moz-image-rect(url(buttons.png), 64, 48, 80, 32); }
-	#viewerCtrls > button[name="prev"]{  background-image: -moz-image-rect(url(buttons.png), 64,112, 80, 96); }
-	#viewerCtrls > button[name="next"]{  background-image: -moz-image-rect(url(buttons.png), 64, 96, 80, 80); }
-	#viewerCtrls > button[name="last"]{  background-image: -moz-image-rect(url(buttons.png), 64, 80, 80, 64); }
-	#viewerCtrls > button[name="auto"]{  background-image: -moz-image-rect(url(buttons.png), 64, 16, 80,  0); margin-left: 20px; }
-	#viewerCtrls[data-auto="y"] > button[name="auto"]{background-image: -moz-image-rect(url(buttons.png), 64, 32, 80, 16);  }
-	#viewerCtrls > button[name="close"]{ background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); margin-left: 20px;}
+	#viewerCtrlsRT
+	{
+		position: fixed;
+		top: 0px;
+		right: 0px;
+		opacity: 0;
+	}
+	#viewerCtrlsRT:hover{ opacity: 1; }
+	#viewerCtrls > button[name="home"], #viewerCtrlsRT > button[name="home"]{  background-image: -moz-image-rect(url(buttons.png), 64, 64, 80, 48); margin-right: 20px;}
+	#viewerCtrls > button[name="first"],#viewerCtrlsRT > button[name="first"]{ background-image: -moz-image-rect(url(buttons.png), 64, 48, 80, 32); }
+	#viewerCtrls > button[name="prev"], #viewerCtrlsRT > button[name="prev"]{  background-image: -moz-image-rect(url(buttons.png), 64,112, 80, 96); }
+	#viewerCtrls > button[name="next"], #viewerCtrlsRT > button[name="next"]{  background-image: -moz-image-rect(url(buttons.png), 64, 96, 80, 80); }
+	#viewerCtrls > button[name="last"], #viewerCtrlsRT > button[name="last"]{  background-image: -moz-image-rect(url(buttons.png), 64, 80, 80, 64); }
+	#viewerCtrls > button[name="auto"], #viewerCtrlsRT > button[name="auto"]{  background-image: -moz-image-rect(url(buttons.png), 64, 16, 80,  0); margin-left: 20px; }
+	#viewerCtrls[data-auto="y"] > button[name="auto"],#viewerCtrlsRT[data-auto="y"] > button[name="auto"]{background-image: -moz-image-rect(url(buttons.png), 64, 32, 80, 16);  }
+	#viewerCtrls > button[name="close"],#viewerCtrlsRT > button[name="close"]{ background-image: -moz-image-rect(url(buttons.png), 16, 80, 32, 64); margin-left: 20px;}
 
 #viewerHomeCtrl
 {
@@ -813,9 +821,9 @@ article article
 	}
 	.viewerPoorThumbnail
 	{
-		box-sizing: content-box;
-		width: 16px;
-		height: 16px;
+		border-width: 2px;
+		width: 20px;
+		height: 20px;
 		background: buttonface -moz-image-rect(url(buttons.png), 32,112, 48, 96) center center no-repeat;
 	}
 	.spacer

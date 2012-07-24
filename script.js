@@ -1890,7 +1890,7 @@ Viewer: {
 			{
 				bhtml += '<button name="{0}" onclick="{1} return false;">'.format(buttons[i].name, buttons[i].onclick);
 			}
-			c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">' + bhtml + '</div></form>';
+			c.innerHTML = '<form id="ViewerCtrl"><span id="viewerState"></span><div id="viewerCtrls">{0}</div></form><div id="viewerCtrlsRT"">{0}</div>'.format(bhtml);
 			var cc = document.createElement("DIV");
 			this.container = cc;
 			c.appendChild(cc);
