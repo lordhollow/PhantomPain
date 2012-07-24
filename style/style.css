@@ -756,10 +756,14 @@ article article
 	
 	z-index: 1001;
 }
-#viewerCatalogue:hover
-{
-	opacity: 1;
-}
+	#viewerCatalogue:hover
+	{
+		opacity: 1;
+	}
+	#viewerCatalogue.poor
+	{
+		height: 36px;
+	}
 	.viewerThumbContainer
 	{
 		position: relative;
@@ -806,6 +810,17 @@ article article
 		width: 16px;
 		height: 16px;
 		background: url("error.png") center center no-repeat;
+	}
+	.viewerPoorThumbnail
+	{
+		box-sizing: content-box;
+		width: 16px;
+		height: 16px;
+		background: buttonface -moz-image-rect(url(buttons.png), 32,112, 48, 96) center center no-repeat;
+	}
+	.spacer
+	{
+		margin-left: 8px;
 	}
 
 /* ナビゲーション */

@@ -124,6 +124,7 @@
 		<li><label>プレビューのサイズ：<input type="text" class="px" name="ImagePopupSize" data-min="16" data-max="10000" data-keybind="num" value="@<Preference.ImagePopupSize>@">px</label>
 		</ul></fieldset>
 		<fieldset><legend>メディアビュアー</legend><ul>
+		<li><label><input type="checkbox" name="ViewerPoorCatalogue" @CHECKED<Preference.ViewerPoorCatalogue>@>省パワーカタログを使う</label>
 		<li><label>ビューアー先読み件数：<input type="text" class="resno" name="ViewerPreloadWidth" data-min="-1" data-max="10000" data-keybind="num" value="@<Preference.ViewerPreloadWidth>@">件(-1で全件)</label>
 		<li><label>カーソルを消すまで：<input type="text" class="sec" name="ViewerCursorHideAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.ViewerCursorHideAt>@">秒</label>
 		<li><label>スライドショーの間隔：<input type="text" class="sec" name="SlideshowInterval" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.SlideshowInterval>@">秒</label>
@@ -142,6 +143,7 @@
 				ViewerCursorHideAt:	parseInt(f.ViewerCursorHideAt.value),
 				SlideshowInterval:	parseInt(f.SlideshowInterval.value),
 				AutoPreviewOutlinks:	f.AutoPreviewOutlinks.checked,
+				ViewerPoorCatalogue:	f.ViewerPoorCatalogue.checked,
 			};
 			Skin.Configulator.patch(Preference, pref);
 			Skin.Configulator.save();
@@ -156,6 +158,7 @@
 			f.ViewerCursorHideAt.value = _Preference.ViewerCursorHideAt;
 			f.SlideshowInterval.value = _Preference.SlideshowInterval;
 			f.AutoPreviewOutlinks.value = _Preference.AutoPreviewOutlinks;
+			f.ViewerPoorCatalogue.value = _Preference.ViewerPoorCatalogue;
 		}
 		>@
 		</form>

@@ -15,6 +15,7 @@ var _Preference =
 	ResPopupPageWidth: 5,		//レスポップアップをタブ化する幅
 	ResPopupAlwaysShowTabs: false,	//レスポップアップを常時タブで表示
 	ImagePopupSize: 200,		//画像ポップアップのサイズ
+	ViewerPoorCatalogue: false,	//ビューアーのカタログをプアーなものにする
 	FocusNewResAfterLoad: true,	//ロード時、新着レスにジャンプ
 	ViewerPreloadWidth: -1,		//ビューアーの先読み幅。-1はロード時に全て。0は先読みなし。1～は件数（ただし未実装）
 	ViewerCursorHideAt: 5,		//メディアビューアでカーソルが消えるまでの時間（秒）
@@ -1922,29 +1923,44 @@ Viewer: {
 	{
 		var cont = DOMUtil.createDIV("viewerCatalogue");
 		var style = "";
-		for (var i=0, j=this._orderd.length; i<j; i++)
+		if (Preference.ViewerPoorCatalogue)
 		{
-			var entry = this._orderd[i];
-			var cid = this.getCatalogueId(entry.href);
-			var tcont = DOMUtil.createDIV(null, "viewerThumbContainer");
-			var thumb = DOMUtil.createDIV(cid, "viewerThumb");
-			var img = document.createElement("IMG");
-			img.dataset.state="preload";
-			thumb.insertBefore(img, thumb.childNodes[0]);
-			tcont.appendChild(thumb);
-			cont.appendChild(tcont);
-			entry.thumbnail = img;
-			style += '#{0}:after{background-image: -moz-linear-gradient(black 25%,rgba(0,0,0,0.1)),-moz-element(#{0});}\n'.format(cid);
-			tcont.addEventListener("click", Skin.Viewer.showImage.bind(Skin.Viewer, i),false);
-			entry.onLoad = function(e){ e.thumbnail.src = e.href; e.thumbnail.dataset.state = e.state+""; };
-			entry.onRelease = function(e){ e.thumbnail.src =""; e.thumbnail.dataset.state = "preload"; };
+			cont.className="poor";
+			for (var i=0, j=this._orderd.length; i<j; i++)
+			{
+				var btn = document.createElement("button");
+				btn.className = "viewerPoorThumbnail";
+				btn.addEventListener("click", Skin.Viewer.showImage.bind(Skin.Viewer, i),false);
+				if (i%10==0) btn.className+= " spacer";
+				cont.appendChild(btn);
+			}
+		}
+		else
+		{
+			for (var i=0, j=this._orderd.length; i<j; i++)
+			{
+				var entry = this._orderd[i];
+				var cid = this.getCatalogueId(entry.href);
+				var tcont = DOMUtil.createDIV(null, "viewerThumbContainer");
+				var thumb = DOMUtil.createDIV(cid, "viewerThumb");
+				var img = document.createElement("IMG");
+				img.dataset.state="preload";
+				thumb.insertBefore(img, thumb.childNodes[0]);
+				tcont.appendChild(thumb);
+				cont.appendChild(tcont);
+				entry.thumbnail = img;
+				style += '#{0}:after{background-image: -moz-linear-gradient(black 25%,rgba(0,0,0,0.1)),-moz-element(#{0});}\n'.format(cid);
+				tcont.addEventListener("click", Skin.Viewer.showImage.bind(Skin.Viewer, i),false);
+				entry.onLoad = function(e){ e.thumbnail.src = e.href; e.thumbnail.dataset.state = e.state+""; };
+				entry.onRelease = function(e){ e.thumbnail.src =""; e.thumbnail.dataset.state = "preload"; };
+			}
 		}
 		Skin.ScriptedStyle.set("viewerCatalogue", style);
 		document.body.appendChild(cont);
 	},
 	removeCatalogue: function Viewer_removeCatalogue()
 	{
-		document.body.removeChild($("viewerCatalogue"));
+		if ($("viewerCatalogue")) document.body.removeChild($("viewerCatalogue"));
 		Skin.ScriptedStyle.clear("viewerCatalogue");
 	},
 	getCatalogueId: function Viewer_getCatalogueId(href)
