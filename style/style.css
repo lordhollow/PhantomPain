@@ -800,6 +800,13 @@ article article
 		border: solid 2px #FFF;
 		border-radius: 8px;
 	}
+	.viewerThumb>img[data-state="-1"]
+	{
+		display: block;
+		width: 16px;
+		height: 16px;
+		background: url("error.png") center center no-repeat;
+	}
 
 /* ナビゲーション */
 #navigation
