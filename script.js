@@ -3378,12 +3378,15 @@ TabElement.prototype = {
 		container.appendChild(tabButtonContainer);
 		container.appendChild(tabPageContainer);
 		this.container = container;
+		this.click(0);
 	},
 	click: function TabElement_click(activeNo)
 	{
+		var buttons=this.container.children[0].children;
 		var nodes = this.container.children[1].children;
 		for(var i=0,j=nodes.length; i<j; i++)
 		{
+			buttons[i].dataset.selected = i == activeNo ? "y" : "";
 			nodes[i].style.display = i == activeNo ? "" : "none";
 		}
 	},

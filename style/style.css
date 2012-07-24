@@ -192,7 +192,7 @@ span.space
 		overflow:auto;
 		background-color: #CFF;
 	}
-
+/* レスのコンテナ */
 #resContainer
 {
 	padding-top: 24px; /* 最低でも#thtitleのheight以上ないと絶対に見切れる */
@@ -205,7 +205,7 @@ span.space
 	clear: both;
 }
 	.res:after
-	{
+	{	/* .ctのfloat:left を解除する */
 		display: block;
 		clear: both;
 		content: "";
@@ -427,18 +427,20 @@ h2
 			-moz-animation: turnImage 1s linear infinite;
 		}
 
-
+/* 入れ子になったレス */
 article article
 {
 	margin-left: 2em;
 	border-left: solid 2px #888;
 }
+
 /* レス本体 */
 .ct
 {
 	margin: 6px 1em;
 	float: left;
 }
+	/* トラッキングマーク */
 	article[data-track^="m"] > .ct
 	{
 		border-radius: 6px;
@@ -451,29 +453,40 @@ article article
 	article[data-track="m2"] > .ct { background-color: #FDD; } 
 
 /* タブ */
-.tabContainer
+.tabContainer {}
+.tabButtons 
 {
+	margin-left: 3px;
 }
-.tabButtons
-{
-}
-.tabButtons > button
-{
-	border: solid 1px #000;
-	border-bottom: none;
-	border-top-left-radius: 4px;
-	border-top-right-radius: 4px;
-	border-top: solid 4px #99F;
-	background-color: #FFF;
-	margin-left: 2px;
-	font-size: 70%;
-}
-.tabPages
-{
-	padding-top: 6px;		/* この6pxはレスのh2のマージン相殺分*/
-	background-color: #FFF;
-}
-
+	.tabButtons > button
+	{
+		border: solid 1px #000;
+		border-bottom: none;
+		border-top-left-radius: 4px;
+		border-top-right-radius: 4px;
+		border-top: solid 4px #99F;
+		background-color: #F8F8F8;
+		margin-left: 2px;
+		font-size: 70%;
+		z-index:0;
+		position: relative;
+		top: 0px;
+	}
+	.tabButtons > button[data-selected="y"]
+	{
+		border-top-color: #F99;
+		padding-bottom: 3px;
+		z-index:2;
+	}
+	.tabPages
+	{
+		z-index: 1;
+		padding: 0px 4px 0px 4px;
+		margin-top: -3px;
+		margin-bottom: 4px;
+		background-color: #F8F8F8;
+		border: ridge 3px #888;
+	}
 
 
 /* ポップアップ */
@@ -486,23 +499,23 @@ article article
 	left: -10000px;
 	top:  -10000px;
 }
-.popup[data-fixed-popup="y"]
-{
-	position: fixed;
-}
-.popup > *
-{
-	float: left;
-	background: rgba(255,255,192,0.95);
-	padding: 0 12px 0px 12px;
-	border-radius: 8px;
-	box-shadow: 3px 5px 5px 0px #000;
-	overflow: auto;
-}
-.popup > nav
-{
-	padding: 6px 2px;
-}
+	.popup[data-fixed-popup="y"]
+	{
+		position: fixed;
+	}
+	.popup > *
+	{
+		float: left;
+		background: rgba(255,255,192,0.95);
+		padding: 0 12px 0px 12px;
+		border-radius: 8px;
+		box-shadow: 3px 5px 5px 0px #000;
+		overflow: auto;
+	}
+	.popup > nav
+	{
+		padding: 6px 2px;
+	}
 /* スレタイのポップアップ */
 .threadtitlePopup
 {
@@ -521,7 +534,7 @@ article article
 		border: none;
 		margin-left: 4px;
 	}
-	
+/* サムネイルコンテナ */
 .ithumbcontainer
 {
 }
@@ -544,24 +557,25 @@ article article
 		display: block;
 	}
 
-
+/* レスポップアップ */
 .popup > div > article
 {
 	font-size: 80%;
 }
+
 /* ギアモーポップアップ */
 .popup[data-gear-enchanted="y"]
 {
 	border-left-color: #CFF;
 }
-.popup[data-gear-enchanted="y"] > div
-{
-	background-color: #CFF;
-}
-.popup[data-gear-enchanted="y"]  #RMenu_Gear
-{
-	display: none;
-}
+	.popup[data-gear-enchanted="y"] > div
+	{
+		background-color: #CFF;
+	}
+	.popup[data-gear-enchanted="y"]  #RMenu_Gear
+	{
+		display: none;
+	}
 
 /* フローティングポップアップ */
 .popup[data-floating-popup="y"]
@@ -571,26 +585,26 @@ article article
 	border-top: solid 12px #CCF;
 	box-shadow: 8px 8px 4px 0px #000;
 }
-.popup[data-floating-popup="y"]:after
-{
-	content: attr(data-popup-caption);
-	position:absolute;
-	left: 4px;
-	top: -11px;
-	font-size: 10px;
-	white-space:nowrap;
-	overflow: hidden;
-}
+	.popup[data-floating-popup="y"]:after
+	{
+		content: attr(data-popup-caption);
+		position:absolute;
+		left: 4px;
+		top: -11px;
+		font-size: 10px;
+		white-space:nowrap;
+		overflow: hidden;
+	}
+	.popup[data-floating-popup="y"]:hover
+	{
+		opacity: 1;
+	}
+	.popup[data-floating-popup="y"] > div
+	{
+		border-top-left-radius: 0px;
+		border-top-right-radius: 0px;
+	}
 
-.popup[data-floating-popup="y"]:hover
-{
-	opacity: 1;
-}
-.popup[data-floating-popup="y"] > div
-{
-	border-top-left-radius: 0px;
-	border-top-right-radius: 0px;
-}
 /* Outlink展開 */
 .outLinkPreview
 {
@@ -602,30 +616,28 @@ article article
 	margin-left: auto;
 	float: rigth;
 }
-.outLinkPreview > div
-{
-	display: inline;
-	padding: 2px;
-}
+	.outLinkPreview > div
+	{
+		display: inline;
+		padding: 2px;
+	}
 
 /* 検索 */
 .popup[data-finder="y"] { opacity: 0.5; }
 .popup[data-finder="y"]:hover { opacity: 1;}
 
-#finder
-{
-}
+#finder {}
 #fform
 {
 	margin-top: 0.5em;
 }
-#fform > regend { font-size: 75%; }
-body[data-express-mode="y"] { background-color: #FEE; } 
-body[data-express-mode="y"] > #resContainer > article { display: none; }
-body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display: block !important; }
-#fformerr { font-size: 70%; color: red }
-.only_expressMode { display: none; }
-body[data-express-mode="y"] .only_expressMode { display: inherit; }
+	#fform > regend { font-size: 75%; }
+	body[data-express-mode="y"] { background-color: #FEE; } 
+	body[data-express-mode="y"] > #resContainer > article { display: none; }
+	body[data-express-mode="y"] > #resContainer > article[data-express="y"]{ display: block !important; }
+	#fformerr { font-size: 70%; color: red }
+	.only_expressMode { display: none; }
+	body[data-express-mode="y"] .only_expressMode { display: inherit; }
 
 /* Viewer */
 #ViewerContainer
@@ -639,16 +651,16 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	background-color: rgba(0, 0, 0, .8);
 	z-index: 1000;
 }
-#ViewerContainer > div
-{
-	display: table-cell;
-	text-align:center;
-	vertical-align:middle;
-}
-#ViewerContainer > div[data-cursor="hide"]
-{
-	cursor: url("transparent.png"), default;
-}
+	#ViewerContainer > div
+	{
+		display: table-cell;
+		text-align:center;
+		vertical-align:middle;
+	}
+	#ViewerContainer > div[data-cursor="hide"]
+	{
+		cursor: url("transparent.png"), default;
+	}
 #ViewerCtrl
 {
 	position: absolute;
@@ -856,16 +868,14 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	/*
 		.bar_rank1 { background-color: red !important; }
 	*/
-#pref_report
-{
-}
-#pref_report > div
-{
-	max-height: 25em;
-	font-size: 70%;
-	overflow-y: auto;
-	border: solid 1px #000;
-}
+#pref_report {}
+	#pref_report > div
+	{
+		max-height: 25em;
+		font-size: 70%;
+		overflow-y: auto;
+		border: solid 1px #000;
+	}
 
 	#pref_report table
 	{
@@ -1053,7 +1063,7 @@ body[data-express-mode="y"] .only_expressMode { display: inherit; }
 	100% { background-color: rgba(255,192,192,0.0); box-shadow: 0px 12px 16px 8px rgba(255,192,192,0.0);}
 }
 
-/* */
+/* アイコン画像 */
 
 .icon_template      { background-image: -moz-image-rect(url(buttons.png),  0, 16, 16,  0); }
 .icon_more          { background-image: -moz-image-rect(url(buttons.png),  0, 32, 16, 16); }
