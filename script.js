@@ -625,6 +625,30 @@ CommonPref: {
 	},
 },
 
+ScriptedStyle: {
+	add: function ScriptedStyle_add(ep, styleF){ this.set(ep, this.get(ep) + styleF);},
+	clear: function ScriptedStyle_clear(ep){ this.set(ep, ""); },
+	get: function ScriptedStyle_get(ep) { return this.ss[ep] || ""; },
+	set: function ScriptedStyle_set(ep, style)
+	{
+		if ((!this.ss[ep]) && (!this.ssk.include(ep))) this.ssk.push(ep);
+		this.ss[ep] = style;
+		if (!this.se)
+		{
+			this.se = $("scriptedStyle");
+			this.origin = this.se.innerHTML + "\n";
+		}
+		var style = this.origin;
+		for(var i=0, j=this.ssk.length; i<j; i++)
+		{
+			style += "/* {0} */\n{1}\n".format(this.ssk[i], this.ss[this.ssk[i]]);
+		}
+		this.se.innerHTML = style;
+		//console.log(this.se.innerHTML);
+	},
+	ss: {}, ssk: [],
+},
+
 BoardList: {
 	init: function BoardList_init()
 	{
@@ -1120,16 +1144,12 @@ Thread: {
 			nodesReplyFrom: {},	//いわゆる逆参照情報
 			analyze: function MessageStructure_analyze(nodes)
 			{
-				if (this._scriptedStyle == null)
-				{
-					this._scriptedStyle = $("scriptedStyle");
-				}
 				var html = "";
 				for(var i=0; i<nodes.length; i++)
 				{
 					html += this._analyze(nodes[i]);
 				}
-				this._scriptedStyle.innerHTML += html;
+				Skin.ScriptedStyle.set("idcolor", html);
 			},
 			getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(no)
 			{	//指定したレス番号にレスしているレスのレス番号のリストを取得
@@ -1158,7 +1178,7 @@ Thread: {
 					this.nodesById[obj.aid].push(obj.no);
 					if (this.nodesById[obj.aid].length == 2)
 					{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
-						html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }"
+						html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }\n"
 						       .format(obj.aid, obj.idcolor, obj.idbackcolor);
 					}
 				}
@@ -1914,23 +1934,18 @@ Viewer: {
 			tcont.appendChild(thumb);
 			cont.appendChild(tcont);
 			entry.thumbnail = img;
-			style += '#{0}:after{background-image: -moz-linear-gradient(black 25%,rgba(0,0,0,0.1)),-moz-element(#{0});}'.format(cid);
+			style += '#{0}:after{background-image: -moz-linear-gradient(black 25%,rgba(0,0,0,0.1)),-moz-element(#{0});}\n'.format(cid);
 			tcont.addEventListener("click", Skin.Viewer.showImage.bind(Skin.Viewer, i),false);
 			entry.onLoad = function(e){ e.thumbnail.src = e.href; e.thumbnail.dataset.state = e.state+""; };
 			entry.onRelease = function(e){ e.thumbnail.src =""; e.thumbnail.dataset.state = "preload"; };
 		}
-		style = "/* CATALOGUE_MIRROR BEGIN */" + style + "/* CATALOGUE_MIRROR END */"
-		$("scriptedStyle").innerHTML += style;
+		Skin.ScriptedStyle.set("viewerCatalogue", style);
 		document.body.appendChild(cont);
 	},
 	removeCatalogue: function Viewer_removeCatalogue()
 	{
 		document.body.removeChild($("viewerCatalogue"));
-		var ss = $("scriptedStyle");
-		if (ss)
-		{	//TODO::この機能の関数化
-			ss.innerHTML = ss.innerHTML.replace(/\/\* CATALOGUE_MIRROR BEGIN \*\/.+?\/\* CATALOGUE_MIRROR END \*\//, "");
-		}
+		Skin.ScriptedStyle.clear("viewerCatalogue");
 	},
 	getCatalogueId: function Viewer_getCatalogueId(href)
 	{
