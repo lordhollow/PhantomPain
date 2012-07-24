@@ -740,6 +740,67 @@ article article
 	#viewerHomeCtrl>button[name="auto"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 144, 48, 96);; }
 	#viewerHomeCtrl[data-images="0"]>button[name="play"]:hover { background-image: -moz-image-rect(url(buttons_viewer.png), 0, 192, 48, 144); }
 
+#viewerCatalogue
+{
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	width: 100%;
+	height: 160px;
+	background-color: #000;
+	overflow-x: scroll;
+	overflow-y: hidden;
+	white-space: nowrap;
+	opacity: 0;
+	padding: 8px 8px 8px 8px;
+	
+	z-index: 1001;
+}
+#viewerCatalogue:hover
+{
+	opacity: 1;
+}
+	.viewerThumbContainer
+	{
+		position: relative;
+		background-color: #000;
+		width: 124px;
+		display: inline-block;
+	}
+	.viewerThumb
+	{
+		text-align: center;
+	}
+	.viewerThumb>img
+	{
+		max-height: 100px;
+		max-width: 100px;
+	}
+	.viewerThumb:after
+	{
+		opacity: 1;
+		content: "";
+		position: absolute;
+		left: 0px;
+		top:  0px;
+		width: 100%;
+		height:100%;
+		background-color: black;
+		background-repeat: no-repeat;
+		-moz-transform-origin:bottom center;
+		-moz-transform:rotateX(180deg);
+		filter: url(filter.svg#mirrorRef);
+	}
+	.viewerThumb>img[data-state="preload"]
+	{
+		display: block;
+		width: 100px;
+		height: 100px;
+		background: url("wait.png") center center no-repeat;
+		border: solid 2px #FFF;
+		border-radius: 8px;
+	}
+
 /* ナビゲーション */
 #navigation
 {

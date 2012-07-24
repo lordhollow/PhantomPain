@@ -1876,6 +1876,7 @@ Viewer: {
 			document.body.appendChild(c);
 			document.body.dataset.mediaview = "y";
 			document.body.dataset.contentsOverlay = "y";
+			this.appendCatalogue();
 			Skin.EventHandler.enter("viewer");
 			this.cursorHideCheckTimer = setInterval(this.cursorHideCheck.bind(this), 1000);
 			this.cursorShowHandler = this.cursorShow.bind(this);
@@ -1888,6 +1889,7 @@ Viewer: {
 		if (document.body.dataset.mediaview == "y")
 		{
 			document.body.removeChild($("ViewerContainer"));
+			this.removeCatalogue();
 			this.container = null;
 			Skin.EventHandler.leave("viewer");
 			document.body.dataset.mediaview = "";
@@ -1895,6 +1897,45 @@ Viewer: {
 			clearInterval(this.cursorHideCheckTimer);
 			document.removeEventListener("mousemove", this.cursorShowHandler, false);
 		}
+	},
+	appendCatalogue: function Viewer_createCatalogue()
+	{
+		var cont = DOMUtil.createDIV("viewerCatalogue");
+		var style = "";
+		for (var i=0, j=this._orderd.length; i<j; i++)
+		{
+			var entry = this._orderd[i];
+			var cid = this.getCatalogueId(entry.href);
+			var tcont = DOMUtil.createDIV(null, "viewerThumbContainer");
+			var thumb = DOMUtil.createDIV(cid, "viewerThumb");
+			var img = document.createElement("IMG");
+			img.dataset.state="preload";
+			thumb.insertBefore(img, thumb.childNodes[0]);
+			tcont.appendChild(thumb);
+			cont.appendChild(tcont);
+			entry.thumbnail = img;
+			style += '#{0}:after{background-image: -moz-linear-gradient(black 25%,rgba(0,0,0,0.1)),-moz-element(#{0});}'.format(cid);
+			tcont.addEventListener("click", Skin.Viewer.showImage.bind(Skin.Viewer, i),false);
+			entry.onLoad = function(e){ e.thumbnail.src = e.href; e.thumbnail.dataset.state = e.state+""; };
+			entry.onRelease = function(e){ e.thumbnail.src =""; e.thumbnail.dataset.state = "preload"; };
+		}
+		style = "/* CATALOGUE_MIRROR BEGIN */" + style + "/* CATALOGUE_MIRROR END */"
+		$("scriptedStyle").innerHTML += style;
+		document.body.appendChild(cont);
+	},
+	removeCatalogue: function Viewer_removeCatalogue()
+	{
+		document.body.removeChild($("viewerCatalogue"));
+		var ss = $("scriptedStyle");
+		if (ss)
+		{	//TODO::‚±‚Ì‹@”\‚ÌŠÖ”‰»
+			ss.innerHTML = ss.innerHTML.replace(/\/\* CATALOGUE_MIRROR BEGIN \*\/.+?\/\* CATALOGUE_MIRROR END \*\//, "");
+		}
+	},
+	getCatalogueId: function Viewer_getCatalogueId(href)
+	{
+		href = href.replace(/[.:\/]/g, "_");
+		return href;
 	},
 	cursorHideCheck: function Viewer_cursorHideCheck()
 	{
@@ -2694,6 +2735,14 @@ Util: {
 			var element = e;
 			element.dataset.refreshState = "refresh";
 			setTimeout(function _notifyTimeout(){element.dataset.refreshState = "";}, 15);
+		},
+		createDIV: function DOMUtil_createDIV(id, className, innerHTML)
+		{
+			var e = document.createElement("DIV");
+			if (id) e.id = id;
+			if (className) e.className = className;
+			if (innerHTML) e.innerHTML = innerHTML;
+			return e;
 		},
 	},
 },
@@ -4590,6 +4639,7 @@ ViewerEntry.prototype = {
 			this.state = ViewerEntryState.Error;
 			this.element.src = Skin.Thread.Info.Skin + "style/error.png";
 		}
+		if (this.onLoad) this.onLoad(this);
 	},
 	prepare: function ViewerEntry_prepare()
 	{
@@ -4607,6 +4657,7 @@ ViewerEntry.prototype = {
 		//console.log("release " + this.href);
 		this.element = null;
 		this.state = ViewerEntryState.PreLoad;
+		if (this.onRelease) this.onRelease(this);
 	},
 	typename: "ViewerEntry",
 };
