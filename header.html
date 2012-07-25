@@ -5,7 +5,7 @@
 <title><THREADNAME/> - PhantomPain3</title>
 <script src="<SKINPATH/>script.js"></script>
 <link rel="stylesheet" href="<SKINPATH/>style/style.css">
-<link rel="shortcut icon" href="<SKINPATH/>type-2ch.gif" /> 
+<link id="favicon" rel="shortcut icon" href="<SKINPATH/>type-2ch.gif" /> 
 <script>
 Skin.Thread.Info = {
 	Title:  "<THREADNAME/>",
@@ -39,12 +39,11 @@ Skin.Thread.Info = {
 </h1>
 <div id="ctrlbox" class="menu">
 	<ul>
-	<li class="tweet">
 <script>
 (function(){
 var __encripted = escape("<THREADNAME/>");
-var __src='<iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=<THREADURL/>&amp;text="+__encripted+"&amp;lang=en&amp;count=horizontal" style="width:130px; height:20px;"></iframe>';
-document.write(__src);
+var __src='<li class="tweet"><iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=<THREADURL/>&amp;text="+__encripted+"&amp;lang=en&amp;count=horizontal" style="width:130px; height:20px;"></iframe>';
+//document.write(__src);
 })();
 </script>
 	<li><button class="icon_template" title="ƒeƒ“ƒvƒŒ" id="Menu_Template"></button></li>

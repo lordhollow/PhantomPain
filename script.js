@@ -36,6 +36,7 @@ var _Preference =
 	NoticeLength: 10,			//表示するお知らせの数
 	ExtraStyle: "",				//追加スタイル
 	ExtraStyleFile: "extra.css",		//追加スタイル定義ファイル(設定専用, 機能的には未使用)
+	IndicateHasNewStateToFavicon: true,	//新着ありをfaviconで表示するか？
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
 	OnResDblClick: ["togglePickup", "closeIfPopup", "toggleBookmark", "toggleTracking", "resTo", "previewLinks", "previewLinks", "toggleRefTree"],
@@ -437,7 +438,7 @@ init: function PP3_init()
 
 	var dt2 = new Date();
 	Notice.add($C("messageInitialized").format(dt2-dt1));
-
+	
 	if (Preference.AutoAutoReloadPtn && (Skin.Thread.Info.Url.match(Preference.AutoAutoReloadPtn))) this.Services.AutoUpdate.begin();
 },
 reloadExtraStyle: function PP3_reloadExtraStyle(file)
@@ -3713,7 +3714,16 @@ var NewMark = new MarkerService(false, null, "new", true);
 	}
 	NewMark.marked = function NewMark_marked()
 	{
-		document.body.dataset.hasNew = (this.fetched == Skin.Thread.Info.Total) ? "" : "y";
+		var hasNew = (this.fetched != Skin.Thread.Info.Total);
+		document.body.dataset.hasNew = hasNew ? "y" : "";
+		if (Preference.IndicateHasNewStateToFavicon)
+		{
+			var favicon = $("favicon");
+			favicon.href = hasNew ? "type-2ch-n.gif" : "type-2ch.gif";
+			fp = favicon.parentNode;
+			fp.removeChild(favicon);	//タブのマークに反映するには一度抜かねばならぬようです。
+			fp.appendChild(favicon);
+		}
 	}
 	NewMark.getSaveStr = NewMark._del = function NewMark_dmy(){}
 
