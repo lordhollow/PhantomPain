@@ -1134,6 +1134,13 @@ article article
 	padding-top: 15em;
 }
 
+/* svg Filter */
+.blurFilter
+{
+	filter: url(filter.svg#blur);
+}
+
+
 /* アニメーションキーフレーム */
 @-moz-keyframes fadeout
 {
