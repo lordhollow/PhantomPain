@@ -427,6 +427,12 @@ h2
 			-moz-animation: turnImage 1s linear infinite;
 		}
 
+		.tweet
+		{
+			margin: -1px;
+		}
+		.tweet:hover { background-color: transparent !important;}
+
 /* “ü‚êŽq‚É‚È‚Á‚½ƒŒƒX */
 article article
 {
