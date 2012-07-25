@@ -34,6 +34,8 @@ var _Preference =
 	UseReplaceStrTxt: false,		//ReplaceStr.txtを使用する？
 	NextThreadSearchBeginsAt: 900,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
+	ExtraStyle: "",				//追加スタイル
+	ExtraStyleFile: "extra.css",		//追加スタイル定義ファイル(設定専用, 機能的には未使用)
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
 	OnResDblClick: ["togglePickup", "closeIfPopup", "toggleBookmark", "toggleTracking", "resTo", "previewLinks", "previewLinks", "toggleRefTree"],
@@ -80,6 +82,10 @@ var Content = {
 		navigatorMiscList: "スレ一覧",
 		navigatorMiscNext: "次スレ",
 		navigatorMiscPrev: "前スレ",
+		
+		ReplaceStrReloaded: "ReplaceStr.txtを再読み込みしました。リロードしてください。",
+		ExtraStyleReloaded: "追加スタイル {0} を適用しました。",
+		ExtraStyleCleared: "追加スタイルを無効にしました。",
 		
 		configulatorPrevThread: "前スレ(自動判定)",
 		configulatorNextThread: "次スレ候補",
@@ -410,7 +416,7 @@ skinVer: "ver. \"closed alpha\"",
 init: function PP3_init()
 {
 	var dt1 = new Date();
-
+	Skin.ScriptedStyle.set("ExtraStyle", Preference.ExtraStyle);
 	if (Preference.AutoOpenBoardPane) this.BoardPane.toggle();
 	this.BoardList.init();
 	this.Thread.init();
@@ -433,6 +439,24 @@ init: function PP3_init()
 	Notice.add($C("messageInitialized").format(dt2-dt1));
 
 	if (Preference.AutoAutoReloadPtn && (Skin.Thread.Info.Url.match(Preference.AutoAutoReloadPtn))) this.Services.AutoUpdate.begin();
+},
+reloadExtraStyle: function PP3_reloadExtraStyle(file)
+{
+	var patch = {};
+	if (file)
+	{
+		patch.ExtraStyle = TextLoadManager.syncGet(Skin.Thread.Info.Skin + "style/" + file) || "";
+		patch.ExtraStyleFile = file;
+		Notice.add($C("ExtraStyleReloaded").format(file));
+	}
+	else
+	{
+		patch.ExtraStyle = "";
+		Notice.add($C("ExtraStyleCleared"));
+	}
+	Skin.Configulator.patch(Preference, patch);
+	Skin.Configulator.save();
+	Skin.ScriptedStyle.set("ExtraStyle", Preference.ExtraStyle);
 },
 Configulator: {
 	_key: "PhantomPain3.Preferences",
@@ -1244,6 +1268,7 @@ Thread: {
 						this.addPattern(d[i]);
 					}
 				}
+				Notice.add($C("ReplaceStrReloaded"));
 				this.saveDefine();
 			},
 			saveDefine: function ReplaceStr_saveDefine()

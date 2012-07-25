@@ -911,10 +911,12 @@ article article
 	input.sec    { width: 2em; }
 	input.regexp { width: 26em;}
 	input.scroll { width: 2em; }
+	input.filename{width: 9em; }
 	.prefpage > fieldset  li
 	{
 		list-style-type: square;
 		list-style-position: inside;
+		white-space: nowrap;
 	}
 	.nextThreadCandidates > li
 	{
