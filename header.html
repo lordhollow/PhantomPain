@@ -39,7 +39,14 @@ Skin.Thread.Info = {
 </h1>
 <div id="ctrlbox" class="menu">
 	<ul>
-	<li class="tweet"><iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=<THREADURL/>&amp;text=<THREADNAME/>&amp;lang=en&amp;count=horizontal" style="width:130px; height:20px;"></iframe>
+	<li class="tweet">
+<script>
+(function(){
+var __encripted = escape("<THREADNAME/>");
+var __src='<iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=<THREADURL/>&amp;text="+__encripted+"&amp;lang=en&amp;count=horizontal" style="width:130px; height:20px;"></iframe>';
+document.write(__src);
+})();
+</script>
 	<li><button class="icon_template" title="ƒeƒ“ƒvƒŒ" id="Menu_Template"></button></li>
 	<li><button class="icon_bookmark" title="‚µ‚¨‚è"   id="Menu_Bookmark"></button>
 		<ul>
