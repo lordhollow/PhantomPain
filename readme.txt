@@ -1,4 +1,4 @@
-Chaika—pSkin - PhantomPain3 ver. 1.00
+Chaika—pSkin - PhantomPain3 Beta1
 šfirefox13ˆÈ~„§
 
 ¡‘€ì•û–@

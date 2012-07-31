@@ -413,7 +413,7 @@ function EVAL(str, def)
 
 var Skin = PP3 = {
 skinName: "PhantomPain3",
-skinVer: "ver. \"closed alpha\"",
+skinVer: "ver. \"beta 1\"",
 init: function PP3_init()
 {
 	var dt1 = new Date();
@@ -2610,8 +2610,11 @@ Diagnostics: {
 			if (Structure.nodesReplyFrom[i])	//îÌéQè∆
 			{
 				var node = Skin.Thread.Message.domobj[i];
-				var resto = Structure._getReplyTo(node);
-				if (resto.length == 0) ret.push(i);
+				if (node)
+				{
+					var resto = Structure._getReplyTo(node);
+					if (resto.length == 0) ret.push(i);
+				}
 			}
 		}
 		return ret;
@@ -4235,7 +4238,7 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		{
 		
 			var obj = Skin.CommonPref.readGlobalObject("ThreadTitleCache");
-			this._titleBuffer = EVAL("({0})".format(obj), {});
+			this._titleBuffer = EVAL("({0})".format(obj), {}) || {};
 			if (!this._titleBuffer[Skin.Thread.threadId])
 			{	//é©å»ìoò^
 				this._titleBuffer[Skin.Thread.threadId] = Skin.Thread.Info.Title;
