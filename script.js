@@ -3319,7 +3319,8 @@ URL.prototype = {
 			if (this.maybeThread)
 			{
 				//板とスレッドと表示範囲の指定を取得
-				if (url.match(/^(.+\/read.cgi\/([^\/]+)\/([^\/]+))(\/(.+))?/))
+				if ((url.match(/^(.+jbbs\.livedoor\.jp\/.+\/read.cgi\/([^\/]+\/\d+)\/([^\/]+))(\/(.+))?/)) ||
+					(url.match(/^(.+\/read.cgi\/([^\/]+)\/([^\/]+))(\/(.+))?/)))
 				{
 					this.threadUrl = RegExp.$1 + "/";
 					this.boardName = RegExp.$2;
@@ -3356,7 +3357,7 @@ URL.prototype = {
 			console.log("INVALID URL\t:" + url);
 		}
 		
-		//console.log(this);
+		console.log(this);
 	},
 	startWith: function URL_startWith(x)
 	{
