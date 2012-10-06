@@ -413,7 +413,7 @@ function EVAL(str, def)
 
 var Skin = PP3 = {
 skinName: "PhantomPain3",
-skinVer: "ver. \"beta 1\"",
+skinVer: "ver. \"beta 2\"",
 init: function PP3_init()
 {
 	var dt1 = new Date();

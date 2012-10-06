@@ -1,4 +1,4 @@
-Chaika用Skin - PhantomPain3 Beta1
+Chaika用Skin - PhantomPain3 Beta2
 ★firefox13以降推奨
 
 ■操作方法
@@ -164,5 +164,12 @@ Chaika用Skin - PhantomPain3 Beta1
 	スレッド表示中に実施してください。設定を全て初期化します。
 	
 	javascript:PP3ResetPreference();
+
+
+
+
+◆更新履歴
+Beta1→Beta2
+	したらばの板IDが理解できないために板名を保存できない
 
 
