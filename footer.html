@@ -2,10 +2,28 @@
 </div>
 <div id="error"><STATUS/></div>
 <div id="footmenu" style="display: none; clear: both;">
+<!--
+<script>
+(function(){
+var __encripted = escape("<THREADNAME/>");
+var __src='<iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=<THREADURL/>&amp;text="+__encripted+"&amp;lang=en&amp;count=horizontal" style="width:130px; height:20px;"></iframe>';
+document.write(__src);
+})();
+</script>
+-->
 <a href="bbs2ch:post:<THREADURL/>" id="wa"><button class="icon_write" title="‘‚«ž‚Ý"></button></a>
 <button class="icon_more" title="More" onclick="Macro.Check();"></button>
+	<div id="footCtrl">
+	<button class="icon_more_l" title="More" onclick="Macro.Check();"></button>
+	</div>
 </div>
 <div id="footer">powerd by PhantomPain3</div>
+<div id="footer-license">
+Icons by
+	<a href="http://www.axialis.com">Axialis Team(<a href="http://www.axialis.com/free/icons">icon</a>)</a>
+	, <a href="http://p.yusukekamiyamane.com/">Fugue Icons</a>
+	, <a href="http://www.small-icons.com/stock-icons/16x16-free-application-icons.htm">Aha-Soft</a>
+</div>
 <!-- INFO{ Status: "<STATUS/>", total:<ALLRESCOUNT/>, new: <NEWRESCOUNT/> }-->
 <script>
 if (Skin)

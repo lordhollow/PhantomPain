@@ -218,12 +218,18 @@
 		<form name="loadPref" class="prefpage" data-key="loading">
 		<fieldset><legend>挙動</legend><ul>
 		<li><label><input type="checkbox" name="FocusNewResAfterLoad" @CHECKED<Preference.FocusNewResAfterLoad>@>ロード時、新着レスにジャンプ</label>
+		<li><label><input type="checkbox" name="UseStructureCache" @CHECKED<Preference.UseStructureCache>@>IDと参照をキャッシュする(範囲外のIDの数や参照の有無を表示可能になります)</label>
+		<li><label><input type="checkbox" name="disableReplyCache" @CHECKED<Skin.Thread.Message.Structure.disableReplyCache>@>このスレでは参照をキャッシュしない</label>
+		<li><label><input type="checkbox" name="disableIdCache" @CHECKED<Skin.Thread.Message.Structure.disableIdCache>@>このスレではIDをキャッシュしない</label>
+		<li><label><input type="checkbox" name="AutoStructure" @CHECKED<Preference.AutoStructure>@>スレを開いたとき、自動的に構造化する</label>
+		<li><label><input type="checkbox" name="FullStructured" @CHECKED<Preference.FullStructured>@>構造化するとき、一度開いたレスも開く</label>
+		<li><label><input type="checkbox" name="AutoDetectOutlinkClass" @CHECKED<Preference.AutoDetectOutlinkClass>@>リンク種別の自動判定</label>
 		</ul></fieldset>
 		<fieldset><legend>追加読み込み</legend><ul>
 		<li><label>読み込み幅：<input type="text" class="resno" name="MoreWidth" data-min="0" data-max="1000" data-keybind="num" value="@<Preference.MoreWidth>@">件(0ですべて)</label>
 		<li><label>自動追加読み込み間隔：<input type="text" class="sec" name="AutoReloadInterval" data-min="30" data-max="10000" data-keybind="num" value="@<Preference.AutoReloadInterval>@">秒</label>
 		<li><label>自動追加読み込みを自動開始するURLのパターン：<br>
-		<input type="text" class="regexp" name="AutoAutoReloadPtn" data-keybind="regexp" value="@<Preference.AutoAutoReloadPtn>@"></label>
+		　　<input type="text" class="regexp" name="AutoAutoReloadPtn" data-keybind="regexp" value="@<Preference.AutoAutoReloadPtn>@"></label>
 		</ul></fieldset>
 		<fieldset><legend>スクロール操作での追加読み込み</legend><ul>
 		<li><label><input type="checkbox" name="LoadBackwardOnTopWheel" @CHECKED<Preference.LoadBackwardOnTopWheel>@>先頭でのホイール操作で前方に追加読み込み</label>
@@ -241,16 +247,31 @@
 			var f = document.forms.loadPref;
 			if (!__validateTextElements([f.MoreWidth, f.AutoReloadInterval, f.LoadOnWheelWidth, f.LoadOnWheelDelta])) return;
 			var pref = {
+				FocusNewResAfterLoad:		f.FocusNewResAfterLoad.checked,
+				UseStructureCache:		f.UseStructureCache.checked,
+				AutoStructure:			f.AutoStructure.checked,
+				FullStructured:			f.FullStructured.checked,
+				AutoDetectOutlinkClass:		f.AutoDetectOutlinkClass.checked,
 				MoreWidth:			parseInt(f.MoreWidth.value),
 				AutoReloadInterval:		parseInt(f.AutoReloadInterval.value),
 				AutoAutoReloadPtn: 		f.AutoAutoReloadPtn.value,
-				FocusNewResAfterLoad:		f.FocusNewResAfterLoad.checked,
 				LoadBackwardOnTopWheel:		f.LoadBackwardOnTopWheel.checked,
 				LoadForwardOnBottomWheel:	f.LoadForwardOnBottomWheel.checked,
 				LoadOnWheelWidth:		parseInt(f.LoadOnWheelWidth.value),
 				LoadOnWheelCheckNew:		f.LoadOnWheelCheckNew.checked,
 				LoadOnWheelDelta:		parseInt(f.LoadOnWheelDelta.value),
 			};
+			if(Skin.Thread.Message.Structure.disableReplyCache != f.disableReplyCache.checked)
+			{
+				Skin.Thread.Message.Structure.replyCacheDirty   = true;
+				Skin.Thread.Message.Structure.disableReplyCache = f.disableReplyCache.checked;
+			}
+			if(Skin.Thread.Message.Structure.disableIdCache != f.disableIdCache.checked)
+			{
+				Skin.Thread.Message.Structure.idCacheDirty   = true;
+				Skin.Thread.Message.Structure.disableIdCache = f.disableIdCache.checked;
+			}
+			Skin.Thread.Message.Structure.saveStructureCache();
 			Skin.Configulator.patch(Preference, pref);
 			Skin.Configulator.save();
 			var p = PopupUtil.getPopup(e.target);
@@ -259,15 +280,21 @@
 		initialize_loading_pref = function()
 		{
 			var f = document.forms.loadPref;
+			f.FocusNewResAfterLoad.checked = _Preference.FocusNewResAfterLoad;
+			f.UseStructureCache.checked = _Preference.UseStructureCache;
+			f.AutoStructure.checked = _Preference.AutoStructure;
+			f.FullStructured.checked = _Preference.FullStructured;
+			f.AutoDetectOutlinkClass.checked = _Preference.AutoDetectOutlinkClass;
 			f.MoreWidth = _Preference.MoreWidth;
 			f.AutoReloadInterval = _Preference.AutoReloadInterval;
 			f.AutoAutoReloadPtn = _Preference.AutoAutoReloadPtn;
-			f.FocusNewResAfterLoad = _Preference.FocusNewResAfterLoad;
 			f.LoadBackwardOnTopWheel = _Preference.LoadBackwardOnTopWheel;
 			f.LoadForwardOnBottomWheel = _Preference.LoadForwardOnBottomWheel;
 			f.LoadOnWheelWidth = _Preference.LoadOnWheelWidth;
 			f.LoadOnWheelCheckNew = _Preference.LoadOnWheelCheckNew;
 			f.LoadOnWheelDelta = _Preference.LoadOnWheelDelta;
+			f.disableReplyCache.checked = false;
+			f.disableIdCache.checked = false;
 		}
 		>@
 		</form>
@@ -275,7 +302,9 @@
 		<form name="analyzePref" class="prefpage" data-key="analyze">
 		<fieldset><legend>構造解析</legend><ul>
 		<li><label><input type="checkbox" name="EnableNextThreadSearch" @CHECKED<Preference.EnableNextThreadSearch>@>次スレ検索</label>（&gt;&gt;<input type="text" class="resno" name="NextThreadSearchBeginsAt" data-min="1" data-max="10000" data-keybind="num" value="@<Preference.NextThreadSearchBeginsAt>@">以降で探索）
-		<li><label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、逆参照に数えない</label>
+		<li><label><input type="text" class="resno" name="ReplyCheckMaxWidth" data-min="2" data-max="10000" data-keybind="num" value="@<Preference.ReplyCheckMaxWidth>@">件以上のレスに言及する場合、参照として扱わない</label>
+		<li><label><input type="checkbox" name="ReplyCheckIgnoreTo1" @CHECKED<Preference.ReplyCheckIgnoreTo1>@> &gt;&gt;1を含むアンカーを参照として扱わない</label>
+		<li><label><input type="checkbox" name="ShowIdCountInfo" @CHECKED<Preference.ShowIdCountInfo>@> IDの数を数えて表示する</label>
 		</ul></fieldset>
 		<fieldset><legend>レポート</legend>
 		<div>
@@ -301,6 +330,8 @@
 				EnableNextThreadSearch:		f.EnableNextThreadSearch.checked,
 				NextThreadSearchBeginsAt:	parseInt(f.NextThreadSearchBeginsAt.value),
 				ReplyCheckMaxWidth:		parseInt(f.ReplyCheckMaxWidth.value),
+				ReplyCheckIgnoreTo1:		f.ReplyCheckIgnoreTo1.checked,
+				ShowIdCountInfo:		f.ShowIdCountInfo.checked,
 			};
 			Skin.Configulator.patch(Preference, pref);
 			Skin.Configulator.save();
@@ -313,6 +344,8 @@
 			f.EnableNextThreadSearch.value = _Preference.EnableNextThreadSearch;
 			f.NextThreadSearchBeginsAt.value = _Preference.NextThreadSearchBeginsAt;
 			f.ReplyCheckMaxWidth.value = _Preference.ReplyCheckMaxWidth;
+			f.ReplyCheckIgnoreTo1.value = _Preference.ReplyCheckIgnoreTo1;
+			f.ShowIdCountInfo.value = _Preference.ShowIdCountInfo;
 		}
 		>@
 		</form>

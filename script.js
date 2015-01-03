@@ -4,6 +4,7 @@ var _Preference =
 	ResPopupDelay: 250,			//ポップアップ表示ディレイ(ms)
 	PostScheme: "bbs2ch:post:",	//投稿リンクのスキーマ
 	ReplyCheckMaxWidth: 10,		//これ以上の数のレスに言及する場合は逆参照としない(>>1-1000とか)
+	ReplyCheckIgnoreTo1: true,	//1を含むレスアンカーは参照に含まない
 	TemplateLength: 0,			//テンプレポップアップで表示するレスの数
 	PopupLeft: 24,				//ポップアップコンテンツ左端～吹き出し右端までの最短距離
 	PopupRightMargin: 16,		//ポップアップコンテンツ右端～画面端までの距離
@@ -34,9 +35,14 @@ var _Preference =
 	UseReplaceStrTxt: false,		//ReplaceStr.txtを使用する？
 	NextThreadSearchBeginsAt: 900,	//次スレ検索開始レス番号
 	NoticeLength: 10,			//表示するお知らせの数
+	AutoStructure:	false,		//自動構造化
+	FullStructured: true,		//完全構造化(falseだと、構造化中にすでに構造化されているレスを展開しない。trueだとする)
 	ExtraStyle: "",				//追加スタイル
 	ExtraStyleFile: "extra.css",		//追加スタイル定義ファイル(設定専用, 機能的には未使用)
 	IndicateHasNewStateToFavicon: true,	//新着ありをfaviconで表示するか？
+	UseStructureCache: false,	//構造キャッシュ機能を使用するか？(範囲外レスからの参照を検知可能になる)
+	ShowIdCountInfo: false,		//IDごとの発言回数(n/m)を表示するか？
+	AutoDetectOutlinkClass: true,	//自動的に外部リンクのクラスを判定するか？(OFFでも画像展開や次スレ検索で勝手に判定される）
 	//レスをダブルクリックしたらどうなる？
 	//              0=素        1=shift,      2=ctr  3=shift+ctrl,4=alt ,5=shift+alt, 6=ctrl+alt,7=ctrl+alt+shift
 	OnResDblClick: ["togglePickup", "closeIfPopup", "toggleBookmark", "toggleTracking", "resTo", "previewLinks", "previewLinks", "toggleRefTree"],
@@ -297,6 +303,11 @@ Array.prototype.include = function prototype_include(val)
 	return false;
 }
 
+Array.prototype.pushDistinct = function prototype_distinct(val)
+{
+	if (!this.include(val)) this.push(val);
+}
+
 Array.prototype.clone = function prototype_clone()
 {
 	return Array.apply(null, this);
@@ -413,7 +424,7 @@ function EVAL(str, def)
 
 var Skin = PP3 = {
 skinName: "PhantomPain3",
-skinVer: "ver. \"beta 2\"",
+skinVer: "ver. \"beta 3\"",
 init: function PP3_init()
 {
 	var dt1 = new Date();
@@ -423,6 +434,7 @@ init: function PP3_init()
 	this.Thread.init();
 	this.Services.Marker.init();
 	this.ResMenu.init();
+	this.StructuredViewer.init();
 	
 	this.ownerApp = $("wa").href.substr(0,6) == "chaika" ? "chaika" : "bbs2chReader";				//アプリ判定
 	$("footer").innerHTML = "powerd by {0} with {1} {2}".format(this.ownerApp, this.skinName, this.skinVer);	//フッタ構築
@@ -572,6 +584,7 @@ Configulator: {
 		html += '<li>' + $C('configulatorNextThread') +'<ul class="nextThreadCandidates">';
 		nexts = [];
 		var links = Skin.Thread.Message.outLinks;
+		var distincts = [];
 		for (var i=0, j=links.length; i<j; i++)
 		{
 			if (links[i])
@@ -579,8 +592,9 @@ Configulator: {
 			{
 				var href = links[i][ii].href;
 				var url = new URL(href);
-				if (url.maybeThread && (url.boardId == Skin.Thread.boardId))
+				if (url.maybeThread && (url.boardId == Skin.Thread.boardId) && (!distincts.include(url.threadId)))
 				{
+					distincts.push(url.threadId);
 					nexts.push(href);
 				}
 			}
@@ -851,6 +865,7 @@ Thread: {
 		init: function Message_init()
 		{
 			this._replaceStr.init();
+			this.Structure.loadStructureCache();
 			var nodes = $A($("resContainer").children);
 			this.onLoad(nodes);
 			this.onDeploy(nodes);
@@ -1012,13 +1027,16 @@ Thread: {
 					obj = obj.cloneNode(true);
 					//objから、本来備わっていないもの(=レスメニューと展開済みツリー、展開済み画像）を削除する。
 					//article> { H , (div) , p , オマケたち } の順に並んでいるので、divとオマケを削除する。
-					if (obj.childNodes[1].tagName == "DIV")
+					obj.dataset.strfetched = "";
+					obj.dataset.treed = "";
+
+					if (obj.children[1].tagName == "DIV")
 					{
-						obj.removeChild(obj.childNodes[1]);
+						obj.removeChild(obj.children[1]);
 					}
-					while(obj.childNodes.length > 2)
+					while(obj.children.length > 2)
 					{
-						obj.removeChild(obj.childNodes[2]);
+						obj.removeChild(obj.children[2]);
 					}
 					//outlinkのpreviewShowingをすべてnにする
 					var outlinks = obj.getElementsByClassName("outLink");
@@ -1084,14 +1102,21 @@ Thread: {
 				if ((node.tagName == "ARTICLE") && (!this.isReady(node.dataset.no)))
 				{	//処理前のレスである場合…（本当は他スレじゃないか確認が要るのかも？）
 					var no = parseInt(node.dataset.no);
-					var msgNode = node.childNodes[1];
+					var msgNode = node.children[1];
 					this._extendAnchor(msgNode);
 					this._replaceStr.replace(node);
 					this.domobj[no] = node;
-					this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
+					var ols = this.outLinks[no] = $A( node.getElementsByClassName("outLink"));
+					if (Preference.AutoDetectOutlinkClass)
+					{	//暗黙的外部リンククラス判定
+						for (var i=0,j=ols.length; i<j; i++)
+						{
+							var p = Skin.Services.OutLink.getOutlinkPlugin(ols[i]);
+						}
+					}
 					
 					//名前とトリップの抽出
-					var name = node.childNodes[0].childNodes[3].textContent;
+					var name = node.children[0].children[3].textContent;
 					node.dataset.author = name;
 					if (name.match(/◆([^\s]+)/))
 					{
@@ -1126,6 +1151,7 @@ Thread: {
 					$M(node).previewLinks();
 				}
 			}
+			Skin.StructuredViewer.init();
 		},
 		_extendAnchor: function Message__extendAnchor(node)
 		{	//<a href="#res1" class="resPointer">&gt;&gt;1</a>,3,5,7 
@@ -1164,18 +1190,73 @@ Thread: {
 			if(hasLink)  node.parentNode.dataset.hasLink  = "y";
 			if((Preference.ExtendAnchor) && (oldmsg != msg)) node.innerHTML = msg;
 		},
-		_extendPtn: new RegExp(/(?:(?:＞＞|＞|&gt;&gt;|&gt;)(([\d０-９]+)(?:[0\d０-９,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\d０-９]+))|(?:(<a\s[^<]*href="([^"]+)" class="outLink">)([^<]+)<\/a>)|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
+		_extendPtn: new RegExp(/(?:(?:＞＞|＞|&gt;&gt;|&gt;)(([\d０-９]+)(?:[\d０-９,\-]+)?))|(?:(class="resPointer">&gt;&gt;[^<]+?)<\/a>([,\-\d０-９]+))|(?:(<a\s[^<]*href="([^"]+)" class="outLink">)([^<]+)<\/a>)|(class="resPointer">&gt;&gt;[\d\-]+<\/a>)/g),
 		Structure: {
 			nodesById: {},		//いわゆるID
 			nodesReplyFrom: {},	//いわゆる逆参照情報
+			nodesReplyTo: {},	//参照情報
+			nodesSuggests: {},	//さじぇっちょん
+			disableReplyCache: false,
+			disableIdCache: false,
+			replyCacheDirty: false,	//参照キャッシュのダーティーフラグ。disableReplyCacheを替えるときもtrueになる点に注意
+			idCacheDirty: false,	//同ＩＤキャッシュのダーティーフラグ。
+			idStyled: {},		//IDにスタイルったーか？
+
+			loadStructureCache: function MessageStructure_loadStructureCache()
+			{
+				if (Preference.UseStructureCache == false) return;			//使用しない設定の時はロードしない
+				if (Skin.Thread.Info.Total == Skin.Thread.Info.New)	return;	//新着または削除後に来たものはロードしない
+				this._loadReplyCache();
+				this._loadIdCache();
+			},
+			saveStructureCache: function MessageStructure_saveStructureCache()
+			{
+				if (Preference.UseStructureCache == false) return;			//使用しない設定の時はセーブしない
+				this._saveReplyCache();
+				this._saveIdCache();
+			},
 			analyze: function MessageStructure_analyze(nodes)
 			{
 				var html = "";
-				for(var i=0; i<nodes.length; i++)
+				for(var i=0, j = nodes.length; i<j; i++)
 				{
 					html += this._analyze(nodes[i]);
 				}
-				Skin.ScriptedStyle.set("idcolor", html);
+				Skin.ScriptedStyle.add("idcolor", html);
+				
+				var thisTimeIds = new Array();
+				if (Preference.ShowIdCountInfo)
+				{	//pushDistinctが早いとは思えないので・・・
+					for(var i=0, j = nodes.length; i<j; i++)
+					{
+						if (nodes[i].dataset.aid.length > 5)
+						{
+							thisTimeIds.pushDistinct(nodes[i].dataset.aid);
+						}
+					}
+				}
+				this.updateIdCountInfo(thisTimeIds);
+			},
+			updateIdCountInfo: function MessageStructure_updateIdCountInfo(aids)
+			{
+				document.body.dataset.showIdCountInfo = Preference.ShowIdCountInfo ? "y" : "n";	//情報が更新されなくなったときに古い情報が消えるように。
+				if (Preference.ShowIdCountInfo == false) return;	 //なんもしまへん
+				var m = Skin.Thread.Message;
+				for(var i=0, j=aids.length; i<j ; i++)
+				{
+					var aid = aids[i];
+					var a = this.nodesById[aid] = this.nodesById[aid].sort(AscNum);
+					var tc = a.length;
+					for(var ii=0; ii < tc; ii++)
+					{
+						if (m.isReady(a[ii]))
+						{
+							var n = m.getNode(a[ii], false).children[0].children[2];
+							n.dataset.idTotal = tc;
+							n.dataset.idSeq   = ii+1;
+						}
+					}
+				}
 			},
 			getReplyIdsByNo: function MessageStructure_getReplyIdsByNo(no)
 			{	//指定したレス番号にレスしているレスのレス番号のリストを取得
@@ -1193,6 +1274,120 @@ Thread: {
 					$M(aids[0]).focus();
 				}
 			},
+			_loadReplyCache: function MessageStructure__loadReplyCache()
+			{
+				var refcache = Skin.CommonPref.readThreadObject("RefCache");
+				//var refcache = '{6: "20,25-30", 18: "17", 22: "95,106,109", 30: "2,29", 34: "30", 36: "35", 43: "42", 44: "43", 46: "45", }';
+				if (!refcache)
+				{
+					this.disableReplyCache = false;
+					return;
+				}
+				if (refcache == "DISABLED")
+				{
+					this.disableReplyCache = true;
+					return;		//このスレでは無効設定
+				}
+				this.disableReplyCache = false;
+				var refobj   = EVAL("(" + refcache + ")", {});
+				var replyFrom= {};
+				var suggest  = {};
+				for(var no in refobj)
+				{
+					var o = refobj[no] = StringUtil.splitResNumbers(refobj[no]);
+					for(var i = 0, j = o.length; i < j; i++)
+					{
+						this._addEntry(replyFrom, o[i], parseInt(no));
+						this._addEntry(suggest, o[i], "ref");
+					}
+				}
+				this.nodesReplyTo   = refobj;
+				this.nodesReplyFrom = replyFrom;
+				this.nodesSuggests  = suggest;
+			},
+			_loadIdCache: function MessageStructure__loadIdCache()
+			{
+				var idcache  = Skin.CommonPref.readThreadObject("IdCache");
+				//var idcache  = '{"tDMUeJ6o": "5", "eWL/w6Cw": "6-12", "TpKOrKVg": "13-15", "z3sfcCM2": "16-17", "wyplad5E": "18", "a/GPkts+": "19-20", "p5oaXyEo": "21", "zhb2Cwtw": "22", "vs/1O32A": "23-24", "S9zcrRG2": "25", "gu7tls0k": "26", "OHcgPyCU": "27", "7iNgPzuk": "28", "bPIegJn+": "29", "48vIHYGQ": "30-31", "eOoWrHIE": "32-33", "20FmFDEM": "34", "VpR2FhSI": "35", "epbpCnsI": "36", "XqRVW2mM": "37-38", "IumsISa+": "39-41", "jbS5tJ1k": "42,44,46", "SDFMoums": "43,45", "mSlanJ42": "47-50", }';
+				if (!idcache)
+				{
+					this.disableIdCache = false;
+					return;
+				}
+				if (idcache == "DISABLED")
+				{
+					this.disableIdCache = true;
+					return;		//このスレでは無効設定
+				}
+				this.disableIdCache = false;
+				var idobj    = EVAL("(" + idcache  + ")", {});
+				for(var id in idobj)
+				{
+					idobj[id] = StringUtil.splitResNumbers(idobj[id]);
+				}
+				this.nodesById = idobj;
+			},
+			_saveReplyCache: function MessageStructure__saveReplyCache()
+			{
+				if (!this.replyCacheDirty) return;
+				this.replyCacheDirty = false;
+				//参照の保存
+				var refcache = "";
+				if (this.disableReplyCache)
+				{
+					refcache = "DISABLED";
+				}
+				else
+				{
+					for (var i=1; i<= Skin.Thread.Info.Total; i++)
+					{
+						if (this.nodesReplyTo[i] && (this.nodesReplyTo[i].length > 0))
+						{
+							refcache += (i + ": \"" + StringUtil.joinResNumbers(this.nodesReplyTo[i]) + "\", ");
+						}
+					}
+					refcache= "{" + refcache + "}";
+				}
+				Skin.CommonPref.writeThreadObject("RefCache", refcache);
+			},
+			_saveIdCache: function MessageStructure__saveIdCache()
+			{
+				if (!this.idCacheDirty) return;
+				this.idCacheDirty = false;
+				//IDの保存
+				var idcache = "";
+				if (this.disableIdCache)
+				{
+					idcache = "DISABLED";
+				}
+				else
+				{
+					for(var id in this.nodesById)
+					{
+						idcache += ( "\"" + id + "\": \"" + StringUtil.joinResNumbers(this.nodesById[id]) + "\", ");
+					}
+					idcache = "{" + idcache + "}";
+				}
+				Skin.CommonPref.writeThreadObject("IdCache", idcache);
+			},
+			_addEntry: function MessageStructure__addEntry(table, key, value)
+			{
+				if (!table[key])
+				{
+					table[key] = [ value ];
+					return true;
+				}
+				else if (table[key].include(value) == false)
+				{
+					table[key].push(value);
+					return true;
+				}
+				return false;
+			},
+			_hasEntry: function MessageStructure__hasEntry(table, key)
+			{
+				return (table[key]) && (table[key].length != 0);
+			},
 			_analyze: function MessageStructure__analyze(node)
 			{
 				var obj = node.dataset;
@@ -1200,51 +1395,119 @@ Thread: {
 				//IDによる構造
 				if (obj.aid.length > 5)		//"????"回避
 				{
-					if (!this.nodesById[obj.aid]) this.nodesById[obj.aid] = new Array();
-					this.nodesById[obj.aid].push(obj.no);
-					if (this.nodesById[obj.aid].length == 2)
+					this.idCacheDirty |= this._addEntry(this.nodesById, obj.aid, parseInt(obj.no));
+					if (!this.idStyled[obj.aid] && (this.nodesById[obj.aid].length >= 2))
 					{	//IDの強調表示。複数あるものだけIDCOLORとIDBACKGROUNDCOLORが有効。そして太字。
 						html += "article[data-aid=\"{0}\"] > h2 > .id { color: {1}; background-color: {2}; font-weight: bold; }\n"
 						       .format(obj.aid, obj.idcolor, obj.idbackcolor);
+						this.idStyled[obj.aid] = true;
 					}
 				}
 				
-				//Replyによる構造
-				var replyTo = this._getReplyTo(node);
-				for(var i=0, j=replyTo.length; i < j; i++)
-				{
-					var t = replyTo[i];
-					if(!this.nodesReplyFrom[t])
-					{
-						this.nodesReplyFrom[t] = new Array();
-					}
-					//強調はマーカーサービス(HasReplyMark)でやります
-					this.nodesReplyFrom[t].push(obj.no);
-				}
+				//suggest
+				this._getSuggest(node);
 				return html;
 			},
-			_getReplyTo: function MessageStructure__getReplyTo(node)
+			_getSuggest: function MessageStructure__getSuggest(node)
 			{
-				var anchors = node.getElementsByClassName("resPointer");
-				var replyTo = new Array();
-				for (var i=0, j=anchors.length; i<j; i++)
+				var content = node.getElementsByClassName("ct")[0].children;
+				var txt = "";
+				var leadA = 0;
+				var no = parseInt(node.dataset.no);
+				for(var i=0;  i<content.length; i++)
 				{
-					var target = anchors[i].textContent;
-					var ids = StringUtil.splitResNumbers(target);
-					if (ids.length < Preference.ReplyCheckMaxWidth)
+					var e = content[i];
+					if (e.tagName)
 					{
-						for (var ii=0, jj = ids.length; ii < jj; ii++)
+						if (e.tagName == "A")
 						{
-							replyTo[ids[ii]] = 1;
+							this._getSuggestElement(leadA, txt, no);
+							leadA = e;
+							txt = "";
+						}
+						//else if (e.tagName == "BR")
+						//{
+						//	if (txt) txt += "\n";
+						//}
+					}
+					else
+					{
+						txt += e.textContent;
+					}
+				}
+				this._getSuggestElement(leadA, txt, no);
+			},
+			_getSuggestElement:function MessageStructure__getSuggestElement(a, txt, no)
+			{
+				if (a && txt)
+				{
+					//初期化
+					if (this._noticePtnReg == null)
+					{
+						this._noticePtnReg = {};
+						for(var key in this._noticePtn)
+						{
+							this._noticePtnReg[key] = new RegExp(this._noticePtn[key], "i");
+						}
+					}
+					var linkto;
+					if (a.className == "resPointer")
+					{
+						linkto = StringUtil.splitResNumbers(a.textContent);
+						this._addSuggest("ref", linkto, no);
+					}
+					for (var key in this._noticePtnReg)
+					{
+						if (this._noticePtnReg[key].test(txt))
+						{
+							if (a.className == "resPointer")
+							{	//resPointerの指す先をサジェスト
+								this._addSuggest(key, linkto, no);
+							}
+							else
+							{	//自分自身をサジェスト
+								this._addSuggest(key, no, no);
+							}
 						}
 					}
 				}
-				var ret = new Array();
-				for(var i=0, j=replyTo.length; i<j; i++)
+			},
+			_addSuggest: function MessageStructure__addSuggest(cls, no , src)
+			{
+				if (getType(no) != 'array')
 				{
-					if (replyTo[i]) ret.push(i);
+					var t = new Array();
+					t.push(no);
+					no = t;
 				}
-				return ret;	
+				if (((Preference.ReplyCheckIgnoreTo1 == false) || (!no.include(1)))
+					 && (no.length < Preference.ReplyCheckMaxWidth))
+				{
+					for (var i = 0, j = no.length; i < j; i++)
+					{
+						var id = no[i];
+						this._addEntry(this.nodesSuggests, id, cls);
+						if (cls == "ref")
+						{
+							this._addEntry(this.nodesReplyFrom, id, src);
+							this.replyCacheDirty |= this._addEntry(this.nodesReplyTo, src, id);
+						}
+					}
+				}
+			},
+			_noticePtn: { fav: "(gj|ＧＪ|詳細)", warn: "(グロ|注意|警告|危険|ブラクラ)" },
+			_noticePtnReg: null,
+			HasReference: function MessageStructure_HasReference(no)
+			{	//返事しているか（参照しているか）
+				return this._hasEntry(this.nodesReplyTo, parseInt(no));
+			},
+			HasReply: function MessageStructure_HasReply(no)
+			{	//返事があるか（参照されているか）
+				return this._hasEntry(this.nodesReplyFrom, parseInt(no));
+			},
+			HasSuggest: function MessageStructure_HasSuggest(id, cls)
+			{
+				return this.nodesSuggests[id] && this.nodesSuggests[id].include(cls);
 			},
 		},
 		_replaceStr: {
@@ -1592,12 +1855,16 @@ Services: {
 			Ignore.init();
 			Tracker.init();
 			HasReplyMark.init();
+			HasSuggestFavMark.init();
+			HasSuggestWarnMark.init();
 			this.push(NewMark);
 			this.push(Bookmark);
 			this.push(Pickup);
 			this.push(Ignore);
 			this.push(Tracker);
 			this.push(HasReplyMark);
+			this.push(HasSuggestFavMark);
+			this.push(HasSuggestWarnMark);
 		},
 		
 		push: function MarkerServices_push(service)
@@ -1640,7 +1907,8 @@ Services: {
 				var p = this.plugins[i].posivility(node.href);
 				if (p >= 1)
 				{
-					return this.plugins[i];
+					mpt = this.plugins[i];
+					break;
 				}
 				else
 				{
@@ -1651,6 +1919,7 @@ Services: {
 					}
 				}
 			}
+			if (mpt) node.dataset.linkClass = mpt.getClass(node.href);
 			return mpt;
 		},
 	},
@@ -1708,7 +1977,7 @@ ResMenu: {
 		if ((node != null) && (node.tagName == "ARTICLE"))
 		{
 			m.dataset.binding = node.dataset.no;
-			node.insertBefore(m, node.childNodes[1]);
+			node.insertBefore(m, node.children[1]);
 		}
 		else
 		{
@@ -1785,12 +2054,17 @@ Finder: {
 			p.closeOnMouseLeave = false;
 			p._init("Menu_Finder");
 			p.show(this.form);
-			$("fform").q.value = document.getSelection()
+			if (document.getSelection() != "")
+			{
+				$("fform").q.value = document.getSelection();
+			}
 			p.container.dataset.finder = "y";
 			this.popup = p;
 
 			this.pageY = window.scrollY;
 			document.body.dataset.expressMode="y";
+			
+			this.express();
 		}
 	},
 	leaveExpressMode: function Finder_leaveExpressMode()
@@ -1810,6 +2084,7 @@ Finder: {
 		var icase=!$("fform").i.checked;
 		var pick = $("fform").p.checked;
 		
+		this.clearFoundKey()
 		if (cond.match(/\[resto:(\d+)\]/))
 		{
 			this.expressReffer(parseInt(RegExp.$1));
@@ -1821,20 +2096,70 @@ Finder: {
 			return;
 		}
 		if (!reg) cond = this.escape(cond);
-		var flag = icase ? "i" : "";
+		var flag = icase ? "ig" : "g";
 		var exp = null;
-		try
+		if (cond != "")
 		{
-			exp = new RegExp(cond, flag);
+			try
+			{
+				exp = new RegExp(cond, flag);
+			}
+			catch(e)
+			{
+				$("fformerr").innerHTML = "<br>" + e;
+				return;
+			}
+			Skin.Thread.Message.foreach((function Finder_markFound(node){
+				node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
+				if (node.dataset.express == "y") this.markFoundKey(node, exp);
+			}).bind(this), false);
 		}
-		catch(e)
+		else
 		{
-			$("fformerr").innerHTML = "<br>" + e;
-			return;
+			Skin.Thread.Message.foreach(function Finder_markFound(node){
+				node.dataset.express = "y";
+			}, false);
 		}
-		Skin.Thread.Message.foreach(function Finder_markFound(node){
-			node.dataset.express = (!pick || node.dataset.pickuped =="y") && exp.test(node.textContent) ? "y" : "n";
-		}, false);
+	},
+	markFoundKey: function Finder_markFoundKey(node, exp)
+	{
+		for (var n = node.firstChild; n; n = n.nextSibling)
+		{
+			if (n.tagName)
+			{	//element
+				this.markFoundKey(n, exp);
+			}
+			else
+			{	//text
+				var m = exp.exec(n.nodeValue);
+				while(m)
+				{
+					this._wrapText(n, m.index, m.index+m[0].length);
+					m = exp.exec(n.nodeValue);
+				}
+			}
+		}
+	},
+	_wrapText: function Finder__wrapText(textNode, begin, end)
+	{ // タグで挟む部分より前のテキストを新しいテキスト ノードにして textNode の前に挿入
+		var fore = document.createTextNode(textNode.nodeValue.substring(0, begin));
+		textNode.parentNode.insertBefore(fore, textNode);
+		// タグで挟む部分を新しい要素にして textNode の前に挿入 
+		var wrapped = document.createElement("SPAN"); 
+		wrapped.appendChild(document.createTextNode(textNode.nodeValue.substring(begin, end))); 
+		wrapped.className="foundkey";
+		textNode.parentNode.insertBefore(wrapped, textNode);
+		// textNode の内容からタグで挟んだ部分までを削除 
+		textNode.nodeValue = textNode.nodeValue.substring(end);
+	},
+	clearFoundKey: function Finder_clearFoundKey()
+	{
+		//先行する全マークを解体
+		var keys =$("resContainer").getElementsByClassName("foundkey");
+		for(var i=0, j=keys.length; i<j; i++)
+		{	//stripの結果、keysの配列からなくなってしまうので常に0を指定しなければならない。
+			DOMUtil.stripElement(keys[0]);
+		}
 	},
 	expressReffer: function Finder_expressReffer(no)
 	{
@@ -1868,6 +2193,65 @@ Finder: {
 			ret += str[i];
 		}
 		return ret;
+	},
+},
+StructuredViewer: {
+	init: function StructuredViewer_init()
+	{
+		if (Preference.AutoStructure)
+		{
+			this.enter();
+		}
+	},
+	toggle: function StructuredViewer_enter()
+	{
+		if (document.body.dataset.structuredMode == "y")
+		{
+			this.leave();
+		}
+		else
+		{
+			this.enter();
+		}
+	},
+	enter: function StructuredViewer_enter()
+	{
+		this.leave();
+		document.body.dataset.structuredMode = "y";
+		//前から順番に展開していく・・・
+		Skin.Thread.Message.foreach(function StructuredViewer_setMark(node)
+		{
+			if (node.dataset.strfetched != "y")
+			{
+				node.dataset.treed = ("y");
+				$M(node)._openRefTreeEx(node.dataset.no, node, function(cn)
+				{
+					if (!cn) return false;
+					var node0 = Skin.Thread.Message.getNode(cn.dataset.no, false);
+					if (node0)
+					{
+						if (node0.dataset.strfetched == "y")
+						{
+							return (Preference.FullStructured) ? true : false;	//そのままpref値を返しても問題なさげ
+						}
+						if (parseInt(node.dataset.no) < parseInt(node0.dataset.no))
+						{	//先を指すアンカーでおかしくなるので・・・
+							node0.dataset.strfetched = "y";
+						}
+					}
+					return true;
+				});
+			}
+		}, false);
+	},
+	leave: function StructuredViewer_leave()
+	{
+		document.body.dataset.structuredMode = "n";
+		Skin.Thread.Message.foreach(function StructuredViewer_resetMark(node)
+		{	//全ノードのツリーを解体して
+			node.dataset.strfetched = "n";
+			$M(node).closeRefTree();
+		}, false);
 	},
 },
 Viewer: {
@@ -1971,7 +2355,7 @@ Viewer: {
 				var thumb = DOMUtil.createDIV(cid, "viewerThumb");
 				var img = document.createElement("IMG");
 				img.dataset.state="preload";
-				thumb.insertBefore(img, thumb.childNodes[0]);
+				thumb.insertBefore(img, thumb.children[0]);
 				tcont.appendChild(thumb);
 				cont.appendChild(tcont);
 				entry.thumbnail = img;
@@ -2009,7 +2393,7 @@ Viewer: {
 	},
 	_clearContainer: function Viewer__clearContainer()
 	{
-		var nodes = $A(this.container.childNodes);
+		var nodes = $A(this.container.children);
 		for(var i=0, j=nodes.length; i<j; i++)
 		{
 			this.container.removeChild(nodes[i]);
@@ -2192,7 +2576,7 @@ Notice: {
 	add: function Notice_add(msg)
 	{
 		if (!this.container) this.init();
-		if (this.container.childNodes.length == Preference.NoticeLength)
+		if (this.container.children.length == Preference.NoticeLength)
 		{
 			this.container.removeChild(this.container.firstChild);
 		}
@@ -2607,14 +2991,9 @@ Diagnostics: {
 		var ret = [];
 		for (var i=min ;i <=max; i++)
 		{
-			if (Structure.nodesReplyFrom[i])	//被参照
+			if (Structure.HasReply(i) && !Structure.HasReference(i))
 			{
-				var node = Skin.Thread.Message.domobj[i];
-				if (node)
-				{
-					var resto = Structure._getReplyTo(node);
-					if (resto.length == 0) ret.push(i);
-				}
+				ret.push(i);
 			}
 		}
 		return ret;
@@ -2803,6 +3182,16 @@ Util: {
 			if (className) e.className = className;
 			if (innerHTML) e.innerHTML = innerHTML;
 			return e;
+		},
+		stripElement: function DOMUtil_removeStripElement(node)
+		{
+			for(var i=0, j = node.children.length; i < j; i++)
+			{
+				var n = node.children[0];	//↓でremoveしてしまうので常に0
+				node.removeChild(n);
+				node.parentNode.insertBefore(n, node);
+			}
+			node.parentNode.removeChild(node);
 		},
 	},
 },
@@ -3055,6 +3444,7 @@ EventHandler: {
 		Menu_NewMark:		Macro.FocusNew,
 		Menu_Navi:			Macro.Navigation,
 		Menu_Config:		Macro.Config,
+		Menu_Structured: function(){ Skin.StructuredViewer.toggle(); },
 		RMenu_Ref: function IdClickhandler_RMenu_Ref(t, ev)
 		{
 			var node = DOMUtil.getDecendantNode(t, "ARTICLE");
@@ -3145,6 +3535,11 @@ EventHandler: {
 		{
 			t.popup.close();
 		},
+		no: function ClassClickHandler_no(t, ev)
+		{
+			$M(DOMUtil.getDecendantNode(t, "ARTICLE")).resTo(t);
+			return false;
+		},
 	},
 	mouseWheel: function EventHandler_mouseWheel(e)
 	{
@@ -3186,7 +3581,7 @@ EventHandler: {
 		t = DOMUtil.getDecendantNodeByData(e.target, "popupEnchanted", "y");
 		if (t)
 		{
-			t = t.childNodes[0];
+			t = t.children[0];
 			if(((e.detail<0)&&(t.scrollTop==0))||
 			   ((e.detail>0)&&(t.offsetHeight+t.scrollTop+1>=t.scrollHeight))){
 				e.preventDefault();
@@ -3295,16 +3690,20 @@ URL.prototype = {
 			}
 			
 			//スレッド判定
-			this.maybeThread = url.match(/\/read.cgi\//) ? true : false;
+			this.maybeThread = url.match(/\/read\.cgi\//) ? true : false;
 			
 			//4つ(2chか町BBSか2chのクローンかその他WWWか）に分類
-			if (this.domain.match(/(2ch.net|bbspink.com)$/))
+			if (this.domain.match(/(2ch\.net|bbspink\.com)$/))
 			{
 				this.type =  "2CH";
 			}
-			else if(this.domain.match(/(machi.to)$/))
+			else if(this.domain.match(/(machi\.to)$/))
 			{
 				this.type = "MACHI";
+			}
+			else if(this.domain.match(/(jbbs\.livedoor\.jp)$/))
+			{
+				this.type = "JBBS";
 			}
 			else if(this.maybeThread)
 			{
@@ -3343,7 +3742,7 @@ URL.prototype = {
 					case "MACHI":
 						this.boardId = "machi.";
 						break;
-					default:
+					default:	//JBBSもここ。デフォの板一覧に入ってないんだからその他有象無象と同じだ！
 						this.boardId = this.domain + ".";
 						break;
 				}
@@ -3357,7 +3756,7 @@ URL.prototype = {
 			console.log("INVALID URL\t:" + url);
 		}
 		
-		console.log(this);
+		//console.log(this);
 	},
 	startWith: function URL_startWith(x)
 	{
@@ -3739,7 +4138,7 @@ var HasReplyMark = new MarkerService(false, null, "hasReply", true);
 	}
 	HasReplyMark.getMarkerClass = function HasReplyMark_getMarkerClass(node)
 	{
-		return (Skin.Thread.Message.Structure.getReplyIdsByNo(node.dataset.no)) ? "y" : "";
+		return (Skin.Thread.Message.Structure.HasSuggest(node.dataset.no, "ref")) ? "y" : "";
 	}
 	HasReplyMark.nodeLoaded = function HasReplyMark_nodeLoaded(nodes)
 	{	//他のノードによって勝手にマークされるので。
@@ -3747,6 +4146,40 @@ var HasReplyMark = new MarkerService(false, null, "hasReply", true);
 		this.setMark();
 	}
 	HasReplyMark.getSaveStr = HasReplyMark._del = HasReplyMark._add = HasReplyMark.marked = function HasReplyMark_dmy(){}
+
+/* ■サジェストマーク(fav)■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var HasSuggestFavMark = new MarkerService(false, null, "suggestFav", true);
+	HasSuggestFavMark.init = function HasSuggestFavMark_init()
+	{
+		this.setMark();
+	}
+	HasSuggestFavMark.getMarkerClass = function HasSuggestFavMark_getMarkerClass(node)
+	{
+		return (Skin.Thread.Message.Structure.HasSuggest(node.dataset.no, "fav")) ? "y" : "";
+	}
+	HasSuggestFavMark.nodeLoaded = function HasSuggestFavMark_nodeLoaded(nodes)
+	{	//他のノードによって勝手にマークされるので。
+		//Trackerも似たようなものだが都度addされるので問題ない。
+		this.setMark();
+	}
+	HasSuggestFavMark.getSaveStr = HasSuggestFavMark._del = HasSuggestFavMark._add = HasSuggestFavMark.marked = function HasSuggestFavMark_dmy(){}
+
+/* ■サジェストマーク(warn)■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
+var HasSuggestWarnMark = new MarkerService(false, null, "suggestWarn", true);
+	HasSuggestWarnMark.init = function HasSuggestFavMark_init()
+	{
+		this.setMark();
+	}
+	HasSuggestWarnMark.getMarkerClass = function HasSuggestWarnMark_getMarkerClass(node)
+	{
+		return (Skin.Thread.Message.Structure.HasSuggest(node.dataset.no, "warn")) ? "y" : "";
+	}
+	HasSuggestWarnMark.nodeLoaded = function HasSuggestWarnMarkk_nodeLoaded(nodes)
+	{	//他のノードによって勝手にマークされるので。
+		//Trackerも似たようなものだが都度addされるので問題ない。
+		this.setMark();
+	}
+	HasSuggestWarnMark.getSaveStr = HasSuggestWarnMark._del = HasSuggestWarnMark._add = HasSuggestWarnMark.marked = function HasSuggestWarnMark_dmy(){}
 
 /* ■ブックマーク■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 var Bookmark = new MarkerService(false, "bm", "bm", true);
@@ -4151,10 +4584,11 @@ TrackerEntry.prototype = {
 
 /* ■外部リンクプラグイン■■■■■■■■■■■■■■■■■■■■■■■■■■■ */
 
-function OutlinkPlugin(type){ this.type = type; }
+function OutlinkPlugin(type, cls){ this.type = type; this.cls = cls; }
 OutlinkPlugin.prototype = {
 	posivility:  function OutlinkPlugin_posivility(href){ return 0; },
 	getPreviewy: function OutlinkPlugin_getPreviewy(href, onload, isPopup){ return 0; },
+	getClass: function OutlinkPlugin_getClass(href){ return this.cls; },
 	popupPreview: function OutlinkPlugin_popupPreview(anchor, ev)
 	{
 		if (anchor != null)
@@ -4188,7 +4622,7 @@ OutlinkPlugin.prototype = {
 	},
 };
 
-var OutlinkPluginForImage = new OutlinkPlugin(OUTLINK_IMAGE);
+var OutlinkPluginForImage = new OutlinkPlugin(OUTLINK_IMAGE, "image");
 	OutlinkPluginForImage.posivility = function OutlinkPluginForImage_posivility(href)
 	{
 		if (href.match(/\.jpg$|jpeg$|bmp$|png$|gif$/i))
@@ -4204,8 +4638,8 @@ var OutlinkPluginForImage = new OutlinkPlugin(OUTLINK_IMAGE);
 		return p.container;
 	}
 
-var OutlinkPluginForMovie = new OutlinkPlugin(OUTLINK_MOVIE);
-var OutlinkPluginForNicoNico = new OutlinkPlugin(OUTLINK_MOVIE);
+var OutlinkPluginForMovie = new OutlinkPlugin(OUTLINK_MOVIE, "movie-etc");
+var OutlinkPluginForNicoNico = new OutlinkPlugin(OUTLINK_MOVIE, "movie-nico");
 	OutlinkPluginForNicoNico.posivility = function OutlinkPluginForNicoNico_posivility(href)
 	{	
 		if(href.match(/http:\/\/www.nicovideo.jp\/watch\/sm\d+/i))
@@ -4226,7 +4660,7 @@ var OutlinkPluginForNicoNico = new OutlinkPlugin(OUTLINK_MOVIE);
 		return null;
 	}
 
-var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
+var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH, "thread-unknown");
 	OutlinkPluginForThread.posivility = function OutlinkPluginForThread_posivility(href)
 	{
 		//本来、URL.maybeThreadを確認すればよいが、無駄なアクションも多いので処理だけ抽出
@@ -4295,8 +4729,29 @@ var OutlinkPluginForThread = new OutlinkPlugin(OUTLINK_2CH);
 		Skin.Thread.Navigator.setNextThread(aEvent.target.dataset.ref, true, 0);
 		Notice.add($C("messageNextThreadSet").format(aEvent.target.dataset.ref));
 	}
+	OutlinkPluginForThread.getClass = function OutlinkPluginForThread_getClass(href)
+	{
+		var url= new URL(href);
+		if (url.type == "2CH")
+		{
+			return "thread-2ch";
+		}
+		else if (url.type == "MACHI")
+		{
+			return "thread-machi";
+		}
+		else if (url.type == "JBBS")
+		{
+			return "thread-jbbs";
+		}
+		else if (url.type == "CLONE")
+		{
+			return "thread-etc";
+		}
+		return "thread-unknown";
+	}
 
-var OutlinkPluginForDefault = new OutlinkPlugin(OUTLINK_ETC);
+var OutlinkPluginForDefault = new OutlinkPlugin(OUTLINK_ETC, "etc");
 	OutlinkPluginForDefault.posivility = function OutlinkPluginForDefault_posivility(href)
 	{
 		return 1;
@@ -4803,7 +5258,7 @@ ResManipulator.prototype = {
 	{
 		if (this.node)
 		{
-			var nodes = $A(this.node.childNodes).filter(function closeRefTree_findChild(x){ return x.tagName == "ARTICLE"; });
+			var nodes = $A(this.node.children).filter(function closeRefTree_findChild(x){ return x.tagName == "ARTICLE"; });
 			for(var i=0,j=nodes.length; i<j; i++)
 			{
 				this.node.removeChild(nodes[i]);
@@ -4990,7 +5445,7 @@ ResManipulator.prototype = {
 		Skin.Finder.leaveExpressMode();
 		this.focus();
 	},
-	_openRefTreeEx: function ResManipulator__openRefTreeEx(from, c)
+	_openRefTreeEx: function ResManipulator__openRefTreeEx(from, c, onclonecallback)
 	{
 		var rf = Skin.Thread.Message.Structure.getReplyIdsByNo(from);
 		if(rf)
@@ -4998,9 +5453,16 @@ ResManipulator.prototype = {
 			for(var i=0, j = rf.length; i < j; i++)
 			{
 				var node = Skin.Thread.Message.getNode(rf[i], true);	//ARTICLE
+				if (onclonecallback)
+				{
+					if (onclonecallback(node) == false)
+					{	//コールバックがfalseを返すときは展開しない
+						return;
+					}
+				}
 				if (rf[i] > from)
 				{	//基点より前のレスは再帰的に開かない（無限ループ対策）
-					this._openRefTreeEx(rf[i], node);
+					this._openRefTreeEx(rf[i], node, onclonecallback);
 				}
 				else
 				{

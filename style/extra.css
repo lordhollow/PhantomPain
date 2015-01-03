@@ -3,8 +3,74 @@
 /* 無効にするには、同設定にて「クリア」をクリックしてください。 */
 /* @importは使えません */
 
-body
+
+
+h2
 {
-	background-color: black;
-	color: white;
+	border: none;
+}
+
+h2
+{
+	white-space:  	normal;
+	margin-top: -1px;
+	float: left !important;
+}
+
+h2 > span
+{
+	display: block;
+	width: auto;
+	padding-left: 2px;
+	font-size: 85%;
+}
+
+article
+{
+	border-top: solid 1px #9F9;
+	border-left: solid 3px #9F9;
+	border-color: #99F;
+	margin-bottom: 0.5em;
+}
+article[data-bm="y"]
+{
+	border-color: #F9F;
+}
+article[data-new="y"]
+{
+	border-color: #F99;
+}
+article[data-ng="y"],
+article[data-ignored="y"]
+{
+	border-color: #CCC;
+}
+
+.no
+{
+	font-size: 100%;
+}
+.id
+{
+	width: auto;
+	text-align: left;
+	margin-right: auto;
+	display: table-cell;
+}
+.id:before
+{
+	content: "ID:";
+}
+
+.nm
+{
+	padding-left: 2px;
+}
+
+.ct
+{
+	padding-left: 1em;
+	margin: 0;
+	margin-bottom: 1em;
+	display: table-cell;
 }

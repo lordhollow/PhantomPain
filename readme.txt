@@ -1,4 +1,4 @@
-Chaika用Skin - PhantomPain3 Beta2
+Chaika用Skin - PhantomPain3 Beta3
 ★firefox13以降推奨
 
 ■操作方法
@@ -171,5 +171,46 @@ Chaika用Skin - PhantomPain3 Beta2
 ◆更新履歴
 Beta1→Beta2
 	したらばの板IDが理解できないために板名を保存できない
+Beta2→Beta3
+	自動構造化（ツリー化）オプション
+	警告アンカー解析
+	検索ハイライト
+	EXTRAスタイルのサンプルを強化
+	IDの数を数えて表示
+	範囲外レスの参照とIDをキャッシュ
+	その他バグ修正とスタイル調整
 
+
+★スレッド構造のキャッシュ
+	設定＞読み込みにある
+	「IDと参照をキャッシュする」を使用すると、
+	読み込み済みのレスのIDと参照先をCookieに保存することで、
+	読み込まれていないレスからの参照有無などを表示することができます。
+
+	たとえば、No.3～5のレスにID:AAAAAAA からのレスが存在するとき、
+	<THREADURL>/4-5 にアクセスした場合、
+	4, 5レスにつけられるID別発言回数は従来"2"でしたが、
+	キャッシュ機能をＯＮすることで"3"が表示されるようになります。
+
+	[キャッシュOFF]          [キャッシュON]
+	4 ID:AAAAAA[1/2]         4 ID:AAAAAA[2/3] 
+	5 ID:AAAAAA[2/2]         5 ID:AAAAAA[3/3] 
+
+
+■アイコン等の情報
+以下のサイトにより提供されているものを使用しています。
+一部のアイコンには色変換の処理を行なっています。
+
+--------------------------------------------------------
+Fugue Icons
+	http://p.yusukekamiyamane.com/
+	see also fugue-readme.txt
+--------------------------------------------------------
+16x16 Free Application Icons - 
+	http://www.small-icons.com/stock-icons/16x16-free-application-icons.htm
+	16x16FreeApplicationIcons-readme.txt
+--------------------------------------------------------
+Free Icons by Axialis Software 
+	http://www.axialis.com 
+	see also Free Icons by Axialis Software-readme.txt
 

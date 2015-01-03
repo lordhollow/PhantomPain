@@ -242,6 +242,26 @@ span.space
 	{
 		background-color: #DDD;
 	}
+	article[data-strfetched="y"],
+	article[data-strfetched="y"] a,
+	article[data-strfetched="y"] *
+	{
+		color: #CCC;
+		font-size: 80%;
+	}
+	article[data-strfetched="y"]:hover > .ct:after
+	{
+		color: #000;
+		content: "構造展開済み";
+		display: block;
+		position: absolute;
+		right: 8px;
+		bottom: 4px;
+		border: solid 1px #000;
+		border-radius: 3px;
+		background-color: #F88;
+		padding: 2px 4px;
+	}
 
 /* レスヘッダ */
 h2
@@ -277,11 +297,6 @@ h2
 	{
 		border-color: #CCC;
 	}
-	article[data-has-reply="y"]  .no
-	{
-		font-family: "Arial Black", sans-serif;
-		font-weight:  bold;
-	}
 	article[data-bm="y"] > h2
 	{
 		border-color: #F9F;
@@ -292,10 +307,27 @@ h2
 	}
 	.no
 	{
-		padding-left: 2px;
+		padding-left: 18px;
 		width: 4em;
 		font-family: monospace;
+		background-repeat: no-repeat;
+		background-image: -moz-image-rect(url(buttons.png), 64,128, 80,112);
+		background-size: contain;
 	}
+		article[data-has-reply="y"]  > h2 > .no
+		{
+			font-family: "Arial Black", sans-serif;
+			font-weight:  bold;
+			background-image: -moz-image-rect(url(buttons.png), 48, 96, 64, 80);
+		}
+		article[data-suggest-fav="y"]  > h2 > .no
+		{
+			background-image: -moz-image-rect(url(buttons.png), 32, 48, 48, 32);
+		}
+		article[data-suggest-warn="y"]  > h2 > .no
+		{
+			background-image: -moz-image-rect(url(buttons.png), 16, 96, 32, 80);
+		}
 	.dt
 	{
 		width: 12em;
@@ -312,6 +344,10 @@ h2
 	{
 		/* content: "ID:" */
 	}
+		body[data-show-id-count-info="y"] .id:after
+		{
+			content: "[" attr(data-id-seq) "/"  attr(data-id-total) "]"
+		}
 	.nm
 	{
 		padding-left: 1em;
@@ -330,7 +366,7 @@ h2
 	}
 	.ml
 	{
-		color: #888;
+		color: #008;
 	}
 		.ml:before
 		{
@@ -342,7 +378,12 @@ h2
 		}
 		.ml[title="sage"]
 		{
+			color: #888;
 			--display: none;
+		}
+		.ml[title=""]
+		{
+			display: none;
 		}
 		.mis
 		{
@@ -396,6 +437,8 @@ h2
 		.treeoff{ display: none; }
 		article[data-treed="y"] > div > ul > li > ul > li> .treeon { display: none; }
 		article[data-treed="y"] > div > ul > li > ul > li> .treeoff{ display: inline; }
+		body[data-structured-mode="y"] .treeon { display: none; }
+		body[data-structured-mode="y"] .treeoff { display: none; }
 
 		/* トラッキング */
 		.trackon { display: inline; }
@@ -427,6 +470,12 @@ h2
 			-moz-animation: turnImage 1s linear infinite;
 		}
 
+		/* 構造化 */
+		.stron { display: inline; }
+		.stroff{ display: none; }
+		body[data-structured-mode="y"] .stron { display: none; }
+		body[data-structured-mode="y"] .stroff{ display: inline; }
+
 		.tweet
 		{
 			margin: -1px;
@@ -457,6 +506,44 @@ article article
 	article[data-track="m0"] > .ct { background-color: #DDF; } 
 	article[data-track="m1"] > .ct { background-color: #DFD; } 
 	article[data-track="m2"] > .ct { background-color: #FDD; } 
+
+/* 安価 */
+a[href]
+{
+	font-weight: bold;
+	color: #00F;
+}
+	a.resPointer
+	{
+	}
+	a.outLink
+	{
+		padding-left: 18px;
+		background-repeat: no-repeat;
+		background-size: contain;
+		background-position: left bottom;
+	}
+	article[data-suggest-warn="y"] > .ct > a.outLink
+	{	/* 警告されているレスの外部リンク */
+		color: #C00;
+	}
+	a.outLink[data-link-class^="image"]
+	{
+		background-image: -moz-image-rect(url(buttons.png), 32,112, 48, 96);
+	}
+	a.outLink[data-link-class^="movie"]
+	{
+		background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80);
+	}
+	a.outLink[data-link-class$="zip"]
+	{
+		background-image: -moz-image-rect(url(buttons.png), 80, 80, 96, 64);
+	}
+	a.outLink[data-link-class^="thread"],
+	a.outLink[data-link-class="etc"]
+	{
+		padding-left: 0px;
+	}
 
 /* タブ */
 .tabContainer {}
@@ -644,6 +731,11 @@ article article
 	#fformerr { font-size: 70%; color: red }
 	.only_expressMode { display: none; }
 	body[data-express-mode="y"] .only_expressMode { display: inherit; }
+
+.foundkey
+{
+	background-color: yellow;
+}
 
 /* Viewer */
 #ViewerContainer
@@ -1124,6 +1216,35 @@ article article
 		background-color: transparent;
 	}
 
+/* フッタコントロール */
+#footCtrl
+{
+	display: none;
+	position: fixed;
+	width: 50px;
+	height: 50px;
+	right: 0;
+	bottom: 0;
+	padding: 4px 0px 0px 4px;
+	margin: 0;
+	text-align: left;
+	border-top-left-radius: 8px;
+	background-color: #FF7;
+	border-left: solid 1px #883;
+	border-top: solid 1px #883;
+	opacity: .5;
+}
+	#footCtrl:hover
+	{
+		opacity: 1;
+	}
+	#footCtrl button
+	{
+		width: 48px;
+		height: 48px;
+		margin: 0px 0px;
+	}
+
 /* フッタ */
 #footer
 {
@@ -1133,7 +1254,17 @@ article article
 	margin-left: 8px;
 	padding-top: 15em;
 }
-
+#footer-license
+{
+	color: #CCC;
+	font-size: 10px;
+	text-align: left;
+	margin-left: 8px;
+}
+#footer-license a
+{
+	color: #CCC;
+}
 /* svg Filter */
 .blurFilter
 {
@@ -1216,13 +1347,22 @@ body[data-deployed-first="y"] .icon_backward { display:none; }
 .icon_viewlast  { background-image: -moz-image-rect(url(buttons.png), 64, 80, 80, 64); }
 .icon_viewnext  { background-image: -moz-image-rect(url(buttons.png), 64, 96, 80, 80); }
 .icon_viewprev  { background-image: -moz-image-rect(url(buttons.png), 64,112, 80, 96); }
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 64,128, 80,112); } */
+.icon_nores     { background-image: -moz-image-rect(url(buttons.png), 64,128, 80,112); }
 
 .icon_write     { background-image: -moz-image-rect(url(buttons.png), 80, 16, 96,  0); }
 .icon_config    { background-image: -moz-image-rect(url(buttons.png), 80, 32, 96, 16); }
 .icon_find      { background-image: -moz-image-rect(url(buttons.png), 80, 48, 96, 32); }
-.icon_navi      { background-image: -moz-image-rect(url(buttons.png), 80, 64, 96, 48); } */
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 80, 96, 64); } */
-/* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); } */
+.icon_navi      { background-image: -moz-image-rect(url(buttons.png), 80, 64, 96, 48); } 
+.icon_zip       { background-image: -moz-image-rect(url(buttons.png), 80, 80, 96, 64); }
+.icon_movie     { background-image: -moz-image-rect(url(buttons.png), 80, 96, 96, 80); }
 /* .icon_blank  { background-image: -moz-image-rect(url(buttons.png), 80,112, 96, 96); } */
 /* .icon_blank   { background-image: -moz-image-rect(url(buttons.png), 80,128, 96,112); } */
+
+.icon_more_l    { background-image: -moz-image-rect(url(buttons.png),96, 48, 144, 0);}
+.icon_more_nl    { background-image: -moz-image-rect(url(buttons.png),96, 96, 144, 48);}
+body[data-deployed-all="y"] .icon_more_l { 
+	background-image: -moz-image-rect(url(buttons.png),  96, 96, 144, 48); 
+}
+/*
+
+*/
