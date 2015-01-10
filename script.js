@@ -1410,7 +1410,7 @@ Thread: {
 			},
 			_getSuggest: function MessageStructure__getSuggest(node)
 			{
-				var content = node.getElementsByClassName("ct")[0].children;
+				var content = node.getElementsByClassName("ct")[0].childNodes;
 				var txt = "";
 				var leadA = 0;
 				var no = parseInt(node.dataset.no);

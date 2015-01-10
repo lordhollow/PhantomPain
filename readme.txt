@@ -1,5 +1,5 @@
 Chaika用Skin - PhantomPain3 Beta3
-★firefox13以降推奨
+★fx34以降 + chaika1.7.3以降推奨
 
 ■操作方法
 ★スレッドメニュー
